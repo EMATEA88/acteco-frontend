@@ -3,6 +3,7 @@ import TeamHistory from './TeamHistory'
 
 type User = {
   id: number
+  publicId: string
   phone: string
   createdAt: string
 }
@@ -26,8 +27,7 @@ export default function TeamList({
   loading,
   hasNetwork,
 }: Props) {
-  const [selectedUser, setSelectedUser] =
-    useState<User | null>(null)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
   if (loading) {
     return (
@@ -55,7 +55,6 @@ export default function TeamList({
 
   return (
     <>
-      {/* LISTA COM SCROLL CONTROLADO */}
       <div
         className="
           mt-4
@@ -65,7 +64,7 @@ export default function TeamList({
           pr-1
         "
       >
-        {list[tab].map(u => (
+        {list[tab].map((u) => (
           <button
             key={u.id}
             onClick={() => setSelectedUser(u)}
@@ -82,8 +81,9 @@ export default function TeamList({
               <p className="text-sm font-medium text-gray-900">
                 {u.phone}
               </p>
+
               <span className="text-[11px] text-gray-400">
-                ID #{u.publicId}.padStart(8, '0')
+                ID #{String(u.publicId).padStart(8, '0')}
               </span>
             </div>
 
@@ -95,7 +95,6 @@ export default function TeamList({
         ))}
       </div>
 
-      {/* MODAL DE HISTÓRICO */}
       {selectedUser && (
         <TeamHistory
           user={selectedUser}

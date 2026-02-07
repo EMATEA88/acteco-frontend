@@ -9,18 +9,36 @@ type Recharge = {
   approvedAt?: string
 }
 
+type ApiResponse = {
+  data: Recharge[]
+}
+
 export default function RechargeHistory() {
   const [items, setItems] = useState<Recharge[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    RechargeService.myHistory()
-      .then(res => setItems(res.data))
-      .finally(() => setLoading(false))
+    async function load() {
+      try {
+        const res: ApiResponse = await RechargeService.myHistory()
+        setItems(res.data || [])
+      } catch (error) {
+        console.error('Erro ao carregar histórico:', error)
+        setItems([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    load()
   }, [])
 
   if (loading) {
-    return <p className="p-6 text-sm opacity-60">Loading history…</p>
+    return (
+      <p className="p-6 text-sm opacity-60">
+        Loading history…
+      </p>
+    )
   }
 
   return (
@@ -36,10 +54,18 @@ export default function RechargeHistory() {
       )}
 
       <div className="space-y-4">
-        {items.map(item => (
+        {items.map((item) => (
           <div
             key={item.id}
-            className="bg-white rounded-2xl p-4 shadow flex justify-between items-center"
+            className="
+              bg-white
+              rounded-2xl
+              p-4
+              shadow
+              flex
+              justify-between
+              items-center
+            "
           >
             <div>
               <p className="font-semibold">

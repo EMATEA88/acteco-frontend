@@ -13,27 +13,24 @@ const POLL_INTERVAL = 30000
 export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [hasSystem, setHasSystem] = useState(false)
-  const isOnline = useRef(true) // 🔑 controle de falha
+  const isOnline = useRef(true)
 
   async function load() {
     if (!isOnline.current) return
 
     try {
-      const [count, list] = await Promise.all([
-        NotificationService.unreadCount(),
-        NotificationService.list({ limit: 10 }),
-      ])
+      const response = await NotificationService.list({ limit: 10 })
 
-      setUnreadCount(count)
+      const items: Notification[] = response.items
 
-      const systemUnread = list.some(
-        (n: Notification) =>
-          !n.isRead && n.type === 'SYSTEM'
-      )
+      const unread = items.filter(n => !n.isRead)
+
+      setUnreadCount(unread.length)
+
+      const systemUnread = unread.some(n => n.type === 'SYSTEM')
 
       setHasSystem(systemUnread)
     } catch {
-      // 🔴 backend caiu → parar polling
       isOnline.current = false
       setUnreadCount(0)
       setHasSystem(false)
