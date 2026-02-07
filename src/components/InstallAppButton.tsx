@@ -5,54 +5,61 @@ let deferredPrompt: any = null
 
 export default function InstallAppButton() {
   const [canInstall, setCanInstall] = useState(false)
+  const [isStandalone, setIsStandalone] = useState(false)
 
   useEffect(() => {
-    function handler(e: any) {
+    const standalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      // @ts-ignore
+      window.navigator.standalone === true
+
+    setIsStandalone(standalone)
+
+    function onBeforeInstallPrompt(e: any) {
       e.preventDefault()
       deferredPrompt = e
       setCanInstall(true)
     }
 
-    window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener(
+      'beforeinstallprompt',
+      onBeforeInstallPrompt
+    )
 
     return () => {
       window.removeEventListener(
         'beforeinstallprompt',
-        handler
+        onBeforeInstallPrompt
       )
     }
   }, [])
 
-  async function install() {
-    if (!deferredPrompt) return
-
-    deferredPrompt.prompt()
-    await deferredPrompt.userChoice
-
-    deferredPrompt = null
-    setCanInstall(false)
-  }
-
-  // Se não puder instalar (ou já está instalado), não mostra
-  if (!canInstall) return null
+  if (isStandalone) return null
 
   return (
     <button
-      onClick={install}
+      onClick={async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt()
+          await deferredPrompt.userChoice
+          deferredPrompt = null
+          setCanInstall(false)
+        } else {
+          alert(
+            'Para instalar:\n\nChrome ▸ Menu ⋮ ▸ "Adicionar à tela inicial"'
+          )
+        }
+      }}
       className="
-        w-full
-        bg-gradient-to-r from-emerald-600 to-emerald-500
-        text-white
-        rounded-2xl
-        px-5 py-4
-        font-semibold
-        shadow-card
-        flex items-center justify-center gap-2
-        active:scale-95 transition
+        w-full flex items-center justify-center gap-2
+        bg-emerald-600 hover:bg-emerald-700
+        text-white font-medium
+        rounded-2xl h-12
+        shadow-card active:scale-95 transition
       "
     >
-      <Download size={18} />
-      Download APP
+      <Download size={19} />
+      {canInstall ? 'Instalar App' : 'Download APP'}
     </button>
   )
 }

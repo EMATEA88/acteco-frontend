@@ -10,40 +10,20 @@ const NotificationBell = lazy(() => import('../components/NotificationBell'))
 
 export default function Home() {
   return (
-    <>
-      <Suspense fallback={null}>
-        <WelcomeModal />
-      </Suspense>
+    <Suspense fallback={null}>
+      <WelcomeModal />
 
       <main className="w-full max-w-6xl mx-auto pb-24 space-y-6">
-        {/* HERO / BANNERS */}
-        <section>
-          <Suspense fallback={<div className="h-40" />}>
-            <PromoCarousel />
-          </Suspense>
-        </section>
-
-        {/* ACTIONS */}
-        <section>
-          <Suspense fallback={<div className="h-24" />}>
-            <HomeActions />
-          </Suspense>
-        </section>
-
-        {/* FEATURED PRODUCTS */}
+        <PromoCarousel />
+        <HomeActions />
         <section className="px-4">
-          <Suspense fallback={<div className="h-48" />}>
-            <FeaturedProducts />
-            <HomeHighlights />
-          </Suspense>
+          <FeaturedProducts />
+          <HomeHighlights />
         </section>
       </main>
 
-      {/* FLOATING ELEMENTS */}
-      <Suspense fallback={null}>
-        <WhatsAppFloating />
-        <NotificationBell />
-      </Suspense>
-    </>
+      <WhatsAppFloating />
+      <NotificationBell />
+    </Suspense>
   )
 }

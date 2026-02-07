@@ -15,10 +15,29 @@ interface UserProduct {
   productId: number
 }
 
+const CACHE_KEY = 'products-cache'
+
+type CacheShape = {
+  products: Product[]
+  ownedIds: number[]
+}
+
 export default function Products() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [ownedProductIds, setOwnedProductIds] = useState<Set<number>>(new Set())
-  const [loading, setLoading] = useState(true)
+  /* ================= CACHE INIT ================= */
+
+  const cachedRaw = localStorage.getItem(CACHE_KEY)
+  const cached: CacheShape | null = cachedRaw
+    ? JSON.parse(cachedRaw)
+    : null
+
+  const [products, setProducts] = useState<Product[]>(
+    cached?.products ?? []
+  )
+
+  const [ownedProductIds, setOwnedProductIds] = useState<Set<number>>(
+    new Set(cached?.ownedIds ?? [])
+  )
+
   const [buyingId, setBuyingId] = useState<number | null>(null)
 
   const [toastVisible, setToastVisible] = useState(false)
@@ -26,43 +45,48 @@ export default function Products() {
   const [toastType, setToastType] =
     useState<'success' | 'error'>('error')
 
+  /* ================= BACKGROUND LOAD ================= */
+
   useEffect(() => {
     let mounted = true
 
-    async function load() {
-      try {
-        const [productsRes, myProductsRes] = await Promise.all([
-          ProductService.list(),
-          ProductService.myProducts(),
-        ])
-
+    Promise.all([
+      ProductService.list(),
+      ProductService.myProducts(),
+    ])
+      .then(([productsRes, myProductsRes]) => {
         if (!mounted) return
 
-        setProducts(productsRes.data)
-
-        setOwnedProductIds(
-          new Set(
-            myProductsRes.data.map(
-              (p: UserProduct) => p.productId
-            )
-          )
+        const ownedIds = myProductsRes.data.map(
+          (p: UserProduct) => p.productId
         )
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
 
-    load()
+        setProducts(productsRes.data)
+        setOwnedProductIds(new Set(ownedIds))
+
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            products: productsRes.data,
+            ownedIds,
+          })
+        )
+      })
+      .catch(() => {})
     return () => {
       mounted = false
     }
   }, [])
+
+  /* ================= TOAST AUTO-HIDE ================= */
 
   useEffect(() => {
     if (!toastVisible) return
     const t = setTimeout(() => setToastVisible(false), 2000)
     return () => clearTimeout(t)
   }, [toastVisible])
+
+  /* ================= BUY ================= */
 
   const handleBuy = useCallback(async (productId: number) => {
     try {
@@ -73,6 +97,20 @@ export default function Products() {
       setOwnedProductIds(prev => {
         const next = new Set(prev)
         next.add(productId)
+
+        // 🔁 cache update silencioso
+        const current = localStorage.getItem(CACHE_KEY)
+        if (current) {
+          const parsed: CacheShape = JSON.parse(current)
+          localStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({
+              ...parsed,
+              ownedIds: [...new Set([...parsed.ownedIds, productId])],
+            })
+          )
+        }
+
         return next
       })
 
@@ -88,13 +126,15 @@ export default function Products() {
     }
   }, [])
 
-  if (loading) {
-    return <div className="p-6 text-sm text-gray-500" />
-  }
+  /* ================= RENDER ================= */
 
   return (
     <div className="min-h-screen bg-muted px-5 pt-6 pb-28 animate-fadeZoom">
-      <Toast visible={toastVisible} message={toastMessage} type={toastType} />
+      <Toast
+        visible={toastVisible}
+        message={toastMessage}
+        type={toastType}
+      />
 
       <div className="grid grid-cols-1 gap-6">
         {products.map(p => {
@@ -112,7 +152,10 @@ export default function Products() {
               className="bg-surface rounded-2xl shadow-card overflow-hidden"
             >
               <img
-                src={productImages[productKey] ?? '/placeholder.webp'}
+                src={
+                  productImages[productKey] ??
+                  '/placeholder.webp'
+                }
                 alt={p.name}
                 className="w-full h-44 object-cover"
                 loading="lazy"
@@ -130,7 +173,9 @@ export default function Products() {
                       {p.price} Kz
                     </strong>
                   </p>
-                  <p>Rendimento diário: {p.dailyIncome} Kz</p>
+                  <p>
+                    Rendimento diário: {p.dailyIncome} Kz
+                  </p>
                   <p>Duração: {p.durationDays} dias</p>
                 </div>
 
