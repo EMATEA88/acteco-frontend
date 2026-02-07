@@ -3,7 +3,6 @@ import TeamHistory from './TeamHistory'
 
 type User = {
   id: number
-  publicId: string
   phone: string
   createdAt: string
 }
@@ -15,7 +14,7 @@ type Props = {
     level1: User[]
     level2: User[]
     level3: User[]
-  } | null
+  }
   tab: LevelKey
   loading: boolean
   hasNetwork: boolean
@@ -27,7 +26,8 @@ export default function TeamList({
   loading,
   hasNetwork,
 }: Props) {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [selectedUser, setSelectedUser] =
+    useState<User | null>(null)
 
   if (loading) {
     return (
@@ -45,7 +45,7 @@ export default function TeamList({
     )
   }
 
-  if (!list || list[tab].length === 0) {
+  if (list[tab].length === 0) {
     return (
       <div className="mt-4 text-sm text-gray-500">
         Nenhum utilizador neste nível
@@ -64,7 +64,7 @@ export default function TeamList({
           pr-1
         "
       >
-        {list[tab].map((u) => (
+        {list[tab].map(u => (
           <button
             key={u.id}
             onClick={() => setSelectedUser(u)}
@@ -83,7 +83,7 @@ export default function TeamList({
               </p>
 
               <span className="text-[11px] text-gray-400">
-                ID #{String(u.publicId).padStart(8, '0')}
+                ID #{String(u.id).padStart(8, '0')}
               </span>
             </div>
 

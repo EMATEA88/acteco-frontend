@@ -6,13 +6,19 @@ export type TeamSummary = {
   level1: number
   level2: number
   level3: number
+  total: number
 }
 
 export type TeamMember = {
   id: number
   phone: string
-  level: 'level1' | 'level2' | 'level3'
   createdAt: string
+}
+
+export type TeamListGrouped = {
+  level1: TeamMember[]
+  level2: TeamMember[]
+  level3: TeamMember[]
 }
 
 /* ================= SERVICE ================= */
@@ -23,6 +29,6 @@ export const TeamService = {
   },
 
   getList() {
-    return api.get<TeamMember[]>('/team/list')
+    return api.get<TeamListGrouped>('/team/list')
   },
 }

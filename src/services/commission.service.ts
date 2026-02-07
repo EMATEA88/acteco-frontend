@@ -1,3 +1,4 @@
+// src/services/commission.service.ts
 import { api } from './api'
 
 /* ================= TYPES ================= */
@@ -17,7 +18,8 @@ export type CommissionDailySummary = {
 export type CommissionHistoryItem = {
   id: number
   amount: number
-  level: 'level1' | 'level2' | 'level3'
+  level: number          // 🔴 INT (1, 2, 3)
+  fromUserId: number     // 🔴 CAMPO FALTANTE
   createdAt: string
 }
 
@@ -25,7 +27,9 @@ export type CommissionHistoryItem = {
 
 export const CommissionService = {
   getSummary() {
-    return api.get<CommissionSummary>('/commission/summary')
+    return api.get<CommissionSummary>(
+      '/commission/summary'
+    )
   },
 
   getDailySummary() {

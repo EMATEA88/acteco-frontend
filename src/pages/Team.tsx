@@ -7,14 +7,15 @@ import TeamEarnings from '../components/team/TeamEarnings'
 import TeamList from '../components/team/TeamList'
 import InviteBox from '../components/team/InviteBox'
 
-type LevelKey = 'level1' | 'level2' | 'level3'
-
 /* ================= TYPES ================= */
+
+type LevelKey = 'level1' | 'level2' | 'level3'
 
 type TeamSummary = {
   level1: number
   level2: number
   level3: number
+  total: number
 }
 
 type TeamEarningsSummary = {
@@ -27,26 +28,43 @@ type TeamEarningsSummary = {
 type TeamMember = {
   id: number
   phone: string
-  level: LevelKey
   createdAt: string
+}
+
+type TeamListGrouped = {
+  level1: TeamMember[]
+  level2: TeamMember[]
+  level3: TeamMember[]
 }
 
 /* ================= PAGE ================= */
 
 export default function Team() {
-  const [summary, setSummary] = useState<TeamSummary | null>(null)
-  const [list, setList] = useState<TeamMember[]>([])
+  const [summary, setSummary] =
+    useState<TeamSummary | null>(null)
+
+  const [list, setList] =
+    useState<TeamListGrouped>({
+      level1: [],
+      level2: [],
+      level3: [],
+    })
+
   const [earnings, setEarnings] =
     useState<TeamEarningsSummary | null>(null)
 
-  const [tab, setTab] = useState<LevelKey>('level1')
-  const [loading, setLoading] = useState(true)
+  const [tab, setTab] =
+    useState<LevelKey>('level1')
+
+  const [loading, setLoading] =
+    useState<boolean>(true)
 
   const user = JSON.parse(
     localStorage.getItem('user') || '{}'
   )
 
-  const inviteLink = `${window.location.origin}/register?invite=${user.inviteCode}`
+  const inviteLink =
+    `${window.location.origin}/register?invite=${user.inviteCode}`
 
   /* ================= DATA LOAD ================= */
 
@@ -86,8 +104,8 @@ export default function Team() {
     }
   }, [])
 
-  const hasNetwork =
-    summary &&
+  const hasNetwork: boolean =
+    !!summary &&
     (summary.level1 > 0 ||
       summary.level2 > 0 ||
       summary.level3 > 0)
@@ -101,8 +119,6 @@ export default function Team() {
         <h1 className="text-xl font-semibold text-gray-900">
           Minha Equipa
         </h1>
-        <p className="text-sm text-gray-600 mt-1">
-        </p>
       </div>
 
       {/* ================= STATS ================= */}
@@ -114,25 +130,23 @@ export default function Team() {
       {/* ================= TABS ================= */}
       <div className="px-5 mt-8">
         <div className="bg-white rounded-2xl p-1 shadow-card flex">
-          {(['level1', 'level2', 'level3'] as LevelKey[]).map(
-            (l) => (
-              <button
-                key={l}
-                onClick={() => setTab(l)}
-                className={`
-                  flex-1 py-2 text-sm font-medium rounded-xl
-                  transition-all duration-200
-                  ${
-                    tab === l
-                      ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow'
-                      : 'text-gray-500 hover:bg-gray-100'
-                  }
-                `}
-              >
-                {l.toUpperCase()}
-              </button>
-            )
-          )}
+          {(['level1', 'level2', 'level3'] as LevelKey[]).map(l => (
+            <button
+              key={l}
+              onClick={() => setTab(l)}
+              className={`
+                flex-1 py-2 text-sm font-medium rounded-xl
+                transition-all duration-200
+                ${
+                  tab === l
+                    ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow'
+                    : 'text-gray-500 hover:bg-gray-100'
+                }
+              `}
+            >
+              {l.toUpperCase()}
+            </button>
+          ))}
         </div>
       </div>
 

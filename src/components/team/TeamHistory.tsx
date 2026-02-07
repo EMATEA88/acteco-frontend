@@ -7,10 +7,13 @@ type User = {
   createdAt: string
 }
 
-type Commission = {
+/**
+ * DTO real vindo da API
+ * (não é o model Prisma)
+ */
+type CommissionHistoryItem = {
   id: number
   level: number
-  type: string
   amount: number
   createdAt: string
   fromUserId: number
@@ -22,18 +25,22 @@ type Props = {
 }
 
 export default function TeamHistory({ user, onClose }: Props) {
-  const [history, setHistory] = useState<Commission[]>([])
+  const [history, setHistory] = useState<CommissionHistoryItem[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!user?.id) return
 
     setLoading(true)
+
     CommissionService.getHistory()
       .then(res => {
-        const filtered = res.data.filter(
-          (c: Commission) => c.fromUserId === user.id
+        const data = res.data as CommissionHistoryItem[]
+
+        const filtered = data.filter(
+          c => c.fromUserId === user.id
         )
+
         setHistory(filtered)
       })
       .finally(() => setLoading(false))
@@ -52,10 +59,14 @@ export default function TeamHistory({ user, onClose }: Props) {
         </p>
 
         <div className="space-y-3 text-sm">
-          {loading && <p className="opacity-60">Loading…</p>}
+          {loading && (
+            <p className="opacity-60">Loading…</p>
+          )}
 
           {!loading && history.length === 0 && (
-            <p className="opacity-60">No commissions yet</p>
+            <p className="opacity-60">
+              No commissions yet
+            </p>
           )}
 
           {history.map(h => (
@@ -71,8 +82,9 @@ export default function TeamHistory({ user, onClose }: Props) {
                   {new Date(h.createdAt).toLocaleDateString()}
                 </p>
               </div>
-              <p className="font-medium text-green-600">
-                +{h.amount} Kz
+
+              <p className="font-medium text-emerald-600">
+                +{h.amount.toFixed(2)} Kz
               </p>
             </div>
           ))}
@@ -80,7 +92,7 @@ export default function TeamHistory({ user, onClose }: Props) {
 
         <button
           onClick={onClose}
-          className="mt-4 w-full bg-green-500 text-white py-2 rounded-xl text-sm"
+          className="mt-4 w-full bg-emerald-600 text-white py-2 rounded-xl text-sm"
         >
           Close
         </button>
