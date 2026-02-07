@@ -7,28 +7,39 @@ interface Summary {
   totalEarnings: number
 }
 
+const CACHE_KEY = 'dashboard-summary-v1'
+
 export default function Dashboard() {
   const [summary, setSummary] = useState<Summary | null>(null)
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    async function loadDashboard() {
+    // 1️⃣ Render imediato via cache
+    const cached = localStorage.getItem(CACHE_KEY)
+    if (cached) {
       try {
-        setLoading(true)
+        setSummary(JSON.parse(cached))
+      } catch {}
+    }
+
+    // 2️⃣ Atualização em background
+    async function load() {
+      try {
         const response = await api.get('/dashboard/summary')
         setSummary(response.data)
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify(response.data)
+        )
       } catch {
         setError('Erro ao carregar dashboard')
-      } finally {
-        setLoading(false)
       }
     }
 
-    loadDashboard()
+    load()
   }, [])
 
-  if (loading) {
+  if (!summary && !error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted">
         <p className="text-gray-500">
@@ -41,9 +52,7 @@ export default function Dashboard() {
   if (error || !summary) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted">
-        <p className="text-danger">
-          {error}
-        </p>
+        <p className="text-danger">{error}</p>
       </div>
     )
   }
@@ -54,9 +63,7 @@ export default function Dashboard() {
         Dashboard
       </h1>
 
-      {/* ================= CARDS ================= */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* SALDO */}
         <div className="bg-surface rounded-2xl p-5 shadow-card">
           <p className="text-sm text-gray-500 mb-1">
             Saldo disponível
@@ -66,7 +73,6 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* INVESTIDO */}
         <div className="bg-surface rounded-2xl p-5 shadow-soft">
           <p className="text-sm text-gray-500 mb-1">
             Total investido
@@ -76,7 +82,6 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* GANHOS */}
         <div className="bg-surface rounded-2xl p-5 shadow-soft">
           <p className="text-sm text-gray-500 mb-1">
             Ganhos totais

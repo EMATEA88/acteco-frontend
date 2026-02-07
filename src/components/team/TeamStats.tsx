@@ -22,7 +22,7 @@ export default function TeamStats({ summary }: Props) {
   ]
 
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <div className="grid grid-cols-4 gap-2">
       {items.map(i => {
         const value = summary?.[i.key] ?? 0
 
@@ -30,7 +30,7 @@ export default function TeamStats({ summary }: Props) {
           <div
             key={i.key}
             className={`
-              rounded-xl p-4 text-center shadow-sm
+              rounded-lg px-2 py-3 text-center
               ${
                 i.highlight
                   ? 'bg-emerald-600 text-white'
@@ -40,7 +40,7 @@ export default function TeamStats({ summary }: Props) {
           >
             <p
               className={`
-                text-[11px] uppercase tracking-wide
+                text-[10px] font-medium uppercase
                 ${
                   i.highlight
                     ? 'text-white/80'
@@ -51,7 +51,7 @@ export default function TeamStats({ summary }: Props) {
               {i.label}
             </p>
 
-            <p className="text-2xl font-semibold mt-1">
+            <p className="text-lg font-semibold leading-tight">
               {value}
             </p>
           </div>

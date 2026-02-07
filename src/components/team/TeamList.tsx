@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import TeamHistory from './TeamHistory'
 
 type User = {
@@ -29,10 +29,18 @@ export default function TeamList({
   const [selectedUser, setSelectedUser] =
     useState<User | null>(null)
 
+  const openUser = useCallback((u: User) => {
+    setSelectedUser(u)
+  }, [])
+
+  const closeUser = useCallback(() => {
+    setSelectedUser(null)
+  }, [])
+
   if (loading) {
     return (
       <div className="mt-4 text-sm text-gray-500">
-        Loading...
+        A carregar…
       </div>
     )
   }
@@ -45,7 +53,9 @@ export default function TeamList({
     )
   }
 
-  if (list[tab].length === 0) {
+  const currentList = list[tab]
+
+  if (currentList.length === 0) {
     return (
       <div className="mt-4 text-sm text-gray-500">
         Nenhum utilizador neste nível
@@ -64,10 +74,10 @@ export default function TeamList({
           pr-1
         "
       >
-        {list[tab].map(u => (
+        {currentList.map(u => (
           <button
             key={u.id}
-            onClick={() => setSelectedUser(u)}
+            onClick={() => openUser(u)}
             className="
               w-full text-left
               bg-white rounded-xl p-4
@@ -98,7 +108,7 @@ export default function TeamList({
       {selectedUser && (
         <TeamHistory
           user={selectedUser}
-          onClose={() => setSelectedUser(null)}
+          onClose={closeUser}
         />
       )}
     </>

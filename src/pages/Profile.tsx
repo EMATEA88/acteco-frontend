@@ -36,6 +36,8 @@ type UserProfile = {
   balance: number
 }
 
+const CACHE_KEY = 'profile-cache-v1'
+
 export default function Profile() {
   const navigate = useNavigate()
 
@@ -49,37 +51,72 @@ export default function Profile() {
   const [copiedId, setCopiedId] = useState(false)
   const [copiedInvite, setCopiedInvite] = useState(false)
 
+  // ===== LOAD COM CACHE + REQUESTS PARALELOS =====
   useEffect(() => {
-    async function load() {
+    // 1️⃣ Render imediato com cache
+    const cached = localStorage.getItem(CACHE_KEY)
+    if (cached) {
       try {
-        const userRes = await UserService.me()
-        setUser(userRes.data)
+        const parsed = JSON.parse(cached)
+        setUser(parsed.user)
+        setCommission(parsed.commission)
+        setTeamSize(parsed.teamSize)
+      } catch {}
+    }
 
-        const { data } =
-          await CommissionService.getDailySummary()
+    // 2️⃣ Atualização em background
+    async function loadFresh() {
+      try {
+        const [userRes, commissionRes, teamRes] =
+          await Promise.all([
+            UserService.me(),
+            CommissionService.getDailySummary(),
+            TeamService.getSummary(),
+          ])
 
-        setCommission({
-          today: Number(data.today ?? 0),
-          yesterday: Number(data.yesterday ?? 0),
-        })
+        const freshUser = userRes.data
+        const freshCommission = {
+          today: Number(commissionRes.data?.today ?? 0),
+          yesterday: Number(commissionRes.data?.yesterday ?? 0),
+        }
 
-        const teamRes = await TeamService.getSummary()
         const {
           level1 = 0,
           level2 = 0,
           level3 = 0,
         } = teamRes.data
 
-        setTeamSize(level1 + level2 + level3)
+        const freshTeamSize =
+          level1 + level2 + level3
+
+        setUser(freshUser)
+        setCommission(freshCommission)
+        setTeamSize(freshTeamSize)
+
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            user: freshUser,
+            commission: freshCommission,
+            teamSize: freshTeamSize,
+          })
+        )
       } catch (e) {
         console.error('Profile load error', e)
       }
     }
 
-    load()
+    loadFresh()
   }, [])
 
-  if (!user) return null
+  // ===== SKELETON LEVE (nunca tela branca) =====
+  if (!user) {
+    return (
+      <div className="p-6 text-center text-gray-400">
+        Carregando perfil…
+      </div>
+    )
+  }
 
   const shortId = user.publicId.slice(0, 8)
 
@@ -153,8 +190,6 @@ export default function Profile() {
       {/* ================= BLOCO PRINCIPAL ================= */}
       <div className="-mt-12 px-5">
         <div className="bg-emerald-50 rounded-2xl p-5 shadow-card space-y-6">
-
-          {/* MÉTRICAS */}
           <div className="bg-white rounded-xl p-4">
             <p className="font-semibold mb-4">
               Resumo financeiro
@@ -162,46 +197,22 @@ export default function Profile() {
 
             <div className="grid grid-cols-4 gap-3">
               <Stat
-                icon={
-                  <Wallet
-                    size={22}
-                    weight="fill"
-                    className="text-emerald-600"
-                  />
-                }
+                icon={<Wallet size={22} weight="fill" className="text-emerald-600" />}
                 value={`${commission.today.toFixed(2)} Kz`}
                 label="Hoje"
               />
               <Stat
-                icon={
-                  <TrendUp
-                    size={22}
-                    weight="fill"
-                    className="text-blue-600"
-                  />
-                }
+                icon={<TrendUp size={22} weight="fill" className="text-blue-600" />}
                 value={`${commission.yesterday.toFixed(2)} Kz`}
                 label="Ontem"
               />
               <Stat
-                icon={
-                  <Users
-                    size={22}
-                    weight="fill"
-                    className="text-indigo-600"
-                  />
-                }
+                icon={<Users size={22} weight="fill" className="text-indigo-600" />}
                 value={String(teamSize)}
                 label="Equipa"
               />
               <Stat
-                icon={
-                  <ChartLineUp
-                    size={22}
-                    weight="fill"
-                    className="text-orange-500"
-                  />
-                }
+                icon={<ChartLineUp size={22} weight="fill" className="text-orange-500" />}
                 value={`${user.balance.toFixed(2)} Kz`}
                 label="Saldo"
                 highlight
@@ -209,7 +220,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* AÇÕES */}
           <div className="grid grid-cols-2 gap-4">
             <ActionButton
               label="Recarregar"
@@ -229,9 +239,7 @@ export default function Profile() {
 
       {/* ================= MINHA CONTA ================= */}
       <div className="px-5 mt-8">
-        <p className="font-semibold mb-4">
-          Minha conta
-        </p>
+        <p className="font-semibold mb-4">Minha conta</p>
 
         <div className="grid grid-cols-4 gap-3">
           <Item label="Banco" icon={<Bank size={22} weight="fill" />} onClick={() => navigate('/bank')} />
@@ -245,12 +253,10 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* ================= INSTALL APP ================= */}
       <div className="px-5 mt-10">
         <InstallAppButton />
       </div>
 
-      {/* ================= LOGOUT ================= */}
       <div className="px-5 mt-6 flex justify-center">
         <button
           onClick={() => {
@@ -260,11 +266,10 @@ export default function Profile() {
           className="group flex flex-col items-center gap-2"
         >
           <div className="relative w-16 h-16 rounded-full bg-emerald-600 flex items-center justify-center shadow-card animate-pulse-slow">
-            <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center shadow-inner group-hover:scale-110 transition">
+            <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center shadow-inner">
               <Power size={18} className="text-white" />
             </div>
           </div>
-
           <span className="text-xs text-gray-600 font-medium">
             Logout
           </span>
@@ -287,13 +292,7 @@ function Stat({ icon, value, label, highlight }: StatProps) {
   return (
     <div className="flex flex-col items-center gap-1 text-center">
       {icon}
-      <p
-        className={`font-semibold ${
-          highlight
-            ? 'text-gray-900'
-            : 'text-gray-800'
-        }`}
-      >
+      <p className={`font-semibold ${highlight ? 'text-gray-900' : 'text-gray-800'}`}>
         {value}
       </p>
       <p className="text-xs text-gray-500">{label}</p>
@@ -308,12 +307,7 @@ type ActionButtonProps = {
   onClick: () => void
 }
 
-function ActionButton({
-  label,
-  icon,
-  color,
-  onClick,
-}: ActionButtonProps) {
+function ActionButton({ label, icon, color, onClick }: ActionButtonProps) {
   const colors = {
     emerald: 'bg-emerald-600 hover:bg-emerald-700',
     red: 'bg-red-500 hover:bg-red-600',
@@ -340,12 +334,9 @@ function Item({ label, icon, onClick }: ItemProps) {
   return (
     <button
       onClick={onClick}
-      className="rounded-xl p-4 flex flex-col items-center gap-2
-                 bg-emerald-50 hover:bg-emerald-100
-                 active:scale-95 transition"
+      className="rounded-xl p-4 flex flex-col items-center gap-2 bg-emerald-50 hover:bg-emerald-100 active:scale-95 transition"
     >
-      <div className="w-11 h-11 rounded-full bg-emerald-600/10
-                      flex items-center justify-center text-emerald-700">
+      <div className="w-11 h-11 rounded-full bg-emerald-600/10 flex items-center justify-center text-emerald-700">
         {icon}
       </div>
       <span className="text-xs font-medium text-emerald-900">
