@@ -17,16 +17,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // 🔑 REIDRATAÇÃO CONTROLADA
+  // 🔑 REIDRATAÇÃO SEGURA
   useEffect(() => {
     const storedToken = localStorage.getItem('token')
+
     if (storedToken) {
       setToken(storedToken)
     }
+
+    // ⚠️ só depois de ler o storage
     setLoading(false)
   }, [])
 
-  const isAuthenticated = !!token
+  // 🚨 isAuthenticated só é confiável quando loading === false
+  const isAuthenticated = !loading && !!token
 
   function login(newToken: string) {
     localStorage.setItem('token', newToken)

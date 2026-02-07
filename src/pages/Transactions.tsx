@@ -21,6 +21,8 @@ type Transaction = {
   createdAt: string
 }
 
+const CACHE_KEY = 'transactions-cache'
+
 const TYPE_META: Record<
   Transaction['type'],
   {
@@ -69,28 +71,32 @@ const TYPE_META: Record<
 }
 
 export default function Transactions() {
-  const [items, setItems] = useState<Transaction[]>([])
-  const [loading, setLoading] = useState(true)
+  const cached = localStorage.getItem(CACHE_KEY)
+  const initial = cached ? JSON.parse(cached) : []
+
+  const [items, setItems] = useState<Transaction[]>(initial)
 
   useEffect(() => {
-    async function load() {
-      try {
-        const data = await TransactionService.list()
-        if (Array.isArray(data)) setItems(data)
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [])
+    let mounted = true
 
-  if (loading) {
-    return (
-      <div className="p-6 text-sm text-gray-500">
-        A carregar transações…
-      </div>
-    )
-  }
+    TransactionService.list()
+      .then(data => {
+        if (!mounted || !Array.isArray(data)) return
+
+        setItems(data)
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify(data)
+        )
+      })
+      .catch(() => {
+        // silencioso
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   if (items.length === 0) {
     return (
@@ -133,7 +139,9 @@ export default function Transactions() {
                   {meta.label}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {new Date(tx.createdAt).toLocaleDateString()}
+                  {new Date(
+                    tx.createdAt
+                  ).toLocaleDateString()}
                 </p>
               </div>
             </div>

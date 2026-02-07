@@ -12,13 +12,10 @@ import {
   ArrowsLeftRight,
   Receipt,
   Gift,
-  Users,
-  TrendUp,
   ShieldCheck,
   LockKey,
   Info,
   UserPlus,
-  ChartLineUp,
   Copy,
 } from '@phosphor-icons/react'
 import { Power, Check } from 'lucide-react'
@@ -86,6 +83,7 @@ export default function Profile() {
         )
       })
       .catch(() => {})
+
     return () => {
       mounted = false
     }
@@ -105,8 +103,8 @@ export default function Profile() {
 
   return (
     <div className="pb-28 bg-gray-50">
-      {/* HEADER */}
-      <div className="bg-emerald-600 px-5 pt-6 pb-16">
+      {/* ================= HEADER ================= */}
+      <div className="bg-emerald-600 px-5 pt-6 pb-20">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center overflow-hidden shadow">
             <img src="/logo.png" alt="ACTECO" className="w-full h-full object-cover" />
@@ -134,63 +132,39 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* CONTEÚDO */}
-      <div className="-mt-12 px-5">
-        <div className="bg-emerald-50 rounded-2xl p-5 shadow-card space-y-6">
-          {/* RESUMO FINANCEIRO (NOVO DESIGN) */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <p className="font-semibold text-base mb-5">
-              Resumo financeiro
-            </p>
+      {/* ================= CONTEÚDO ================= */}
+      <div className="-mt-14 px-5 space-y-6">
+        {/* ===== CARD SALDO (VERDE, ISOLADO) ===== */}
+        <div className="rounded-3xl p-6 shadow-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white">
+          <p className="text-sm opacity-90 mb-4">Saldo & Atividade</p>
 
-            <div className="grid grid-cols-2 gap-4">
-              <FinanceCard
-                icon={<Wallet size={24} className="text-emerald-600" />}
-                value={`${commission.today.toFixed(2)} Kz`}
-                label="Hoje"
-              />
-
-              <FinanceCard
-                icon={<TrendUp size={24} className="text-blue-600" />}
-                value={`${commission.yesterday.toFixed(2)} Kz`}
-                label="Ontem"
-              />
-
-              <FinanceCard
-                icon={<Users size={24} className="text-indigo-600" />}
-                value={String(teamSize)}
-                label="Equipa"
-              />
-
-              <FinanceCard
-                icon={<ChartLineUp size={24} className="text-orange-500" />}
-                value={`${user.balance.toFixed(2)} Kz`}
-                label="Saldo"
-                highlight
-              />
-            </div>
+          <div className="grid grid-cols-4 gap-3 text-center">
+            <MetricDark value={commission.today} label="Hoje" />
+            <MetricDark value={commission.yesterday} label="Ontem" />
+            <MetricDark value={teamSize} label="Equipa" />
+            <MetricDark value={user.balance} label="Saldo" />
           </div>
+        </div>
 
-          {/* AÇÕES */}
-          <div className="grid grid-cols-2 gap-4">
-            <ActionButton
-              label="Recarregar"
-              color="emerald"
-              icon={<Wallet size={20} weight="fill" />}
-              onClick={() => navigate('/deposit')}
-            />
-            <ActionButton
-              label="Retirar"
-              color="red"
-              icon={<ArrowDown size={20} weight="fill" />}
-              onClick={() => navigate('/withdraw')}
-            />
-          </div>
+        {/* ===== AÇÕES (FORA DO CARD) ===== */}
+        <div className="grid grid-cols-2 gap-4">
+          <ActionButton
+            label="Recarregar"
+            color="emerald"
+            icon={<Wallet size={20} weight="fill" />}
+            onClick={() => navigate('/deposit')}
+          />
+          <ActionButton
+            label="Retirar"
+            color="red"
+            icon={<ArrowDown size={20} weight="fill" />}
+            onClick={() => navigate('/withdraw')}
+          />
         </div>
       </div>
 
-      {/* MINHA CONTA */}
-      <div className="px-5 mt-8">
+      {/* ================= MINHA CONTA ================= */}
+      <div className="px-5 mt-10">
         <p className="font-semibold mb-4">Minha conta</p>
 
         <div className="grid grid-cols-4 gap-3">
@@ -205,12 +179,11 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* INSTALL APP */}
       <div className="px-5 mt-10">
         <InstallAppButton />
       </div>
 
-      {/* LOGOUT */}
+      {/* ================= LOGOUT (COM ONDAS) ================= */}
       <div className="px-5 mt-6 flex justify-center">
         <button
           onClick={() => {
@@ -224,9 +197,7 @@ export default function Profile() {
               <Power size={18} className="text-white" />
             </div>
           </div>
-          <span className="text-xs text-gray-600 font-medium">
-            Logout
-          </span>
+          <span className="text-xs text-gray-600 font-medium">Logout</span>
         </button>
       </div>
     </div>
@@ -235,51 +206,13 @@ export default function Profile() {
 
 /* ================= COMPONENTES ================= */
 
-function FinanceCard({
-  icon,
-  value,
-  label,
-  highlight,
-}: {
-  icon: React.ReactNode
-  value: string
-  label: string
-  highlight?: boolean
-}) {
+function MetricDark({ value, label }: { value: number; label: string }) {
   return (
-    <div
-      className={`
-        rounded-2xl p-4 flex items-center gap-4
-        ${highlight ? 'bg-emerald-600 text-white' : 'bg-emerald-50'}
-      `}
-    >
-      <div
-        className={`
-          w-12 h-12 rounded-full flex items-center justify-center
-          ${highlight ? 'bg-white/20' : 'bg-white'}
-        `}
-      >
-        {icon}
-      </div>
-
-      <div>
-        <p
-          className={`
-            text-lg font-semibold leading-tight
-            ${highlight ? 'text-white' : 'text-gray-900'}
-          `}
-        >
-          {value}
-        </p>
-        <p
-          className={`
-            text-xs mt-1
-            ${highlight ? 'text-white/80' : 'text-gray-500'}
-          `}
-        >
-          {label}
-        </p>
-      </div>
+    <div>
+      <p className="text-xl font-bold leading-tight">
+        {value.toLocaleString()} Kz
+      </p>
+      <p className="text-xs opacity-80 mt-1">{label}</p>
     </div>
   )
 }

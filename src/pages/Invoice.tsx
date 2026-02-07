@@ -8,23 +8,40 @@ type Transaction = {
   createdAt: string
 }
 
+const CACHE_KEY = 'invoice-cache'
+
 export default function Invoice() {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [loading, setLoading] = useState(true)
+  const cached = localStorage.getItem(CACHE_KEY)
+  const initial = cached ? JSON.parse(cached) : []
+
+  const [transactions, setTransactions] =
+    useState<Transaction[]>(initial)
 
   useEffect(() => {
-    async function load() {
-      try {
-        const data = await InvoiceService.get()
-        if (data?.transactions) {
-          setTransactions(data.transactions)
-        }
-      } finally {
-        setLoading(false)
-      }
-    }
+    let mounted = true
 
-    load()
+    InvoiceService.get()
+      .then(data => {
+        if (
+          !mounted ||
+          !data?.transactions
+        )
+          return
+
+        setTransactions(data.transactions)
+
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify(data.transactions)
+        )
+      })
+      .catch(() => {
+        // silencioso
+      })
+
+    return () => {
+      mounted = false
+    }
   }, [])
 
   const total = transactions.reduce(
@@ -32,16 +49,8 @@ export default function Invoice() {
     0
   )
 
-  if (loading) {
-    return (
-      <div className="p-6 text-sm text-gray-500">
-        A carregar fatura…
-      </div>
-    )
-  }
-
   return (
-    <div className="p-4 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-4 space-y-6 bg-gray-50 min-h-screen animate-fadeZoom">
       {/* HEADER */}
       <div>
         <h1 className="text-lg font-semibold text-gray-900">
@@ -79,7 +88,9 @@ export default function Invoice() {
                   {t.type}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {new Date(t.createdAt).toLocaleDateString()}
+                  {new Date(
+                    t.createdAt
+                  ).toLocaleDateString()}
                 </p>
               </div>
 

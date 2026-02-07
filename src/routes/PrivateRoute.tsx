@@ -1,15 +1,27 @@
-import { Navigate } from 'react-router-dom';
-import { useContext } from 'react';
-import type { ReactNode } from 'react';
+import { Navigate } from 'react-router-dom'
+import { useContext } from 'react'
+import type { ReactNode } from 'react'
 
-import { AuthContext } from '../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContext'
 
-export function PrivateRoute({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useContext(AuthContext);
+export function PrivateRoute({
+  children,
+}: {
+  children: ReactNode
+}) {
+  const { isAuthenticated, loading } =
+    useContext(AuthContext)
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+  // ⏳ enquanto reidrata o token
+  if (loading) {
+    return null
+    // ou um splash neutro, se quiser
   }
 
-  return children;
+  // 🔒 decisão só depois do loading
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  return children
 }
