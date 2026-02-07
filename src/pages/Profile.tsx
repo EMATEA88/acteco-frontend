@@ -207,12 +207,18 @@ export default function Profile() {
 /* ================= COMPONENTES ================= */
 
 function MetricDark({ value, label }: { value: number; label: string }) {
+  const isTeam = label === 'Equipa'
+
   return (
     <div>
-      <p className="text-xl font-bold leading-tight">
-        {value.toLocaleString()} Kz
+      <p className="text-lg font-bold text-whit-900 truncate">
+        {isTeam
+          ? value.toLocaleString()
+          : value.toFixed(2)}
       </p>
-      <p className="text-xs opacity-80 mt-1">{label}</p>
+      <p className="text-xs text-whit-600 mt-1">
+        {label}
+      </p>
     </div>
   )
 }
