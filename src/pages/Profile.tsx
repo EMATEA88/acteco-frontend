@@ -19,24 +19,36 @@ import {
   Info,
   UserPlus,
   ChartLineUp,
+  Copy,
 } from '@phosphor-icons/react'
-import { Power } from 'lucide-react'
+import { Power, Check } from 'lucide-react'
+import InstallAppButton from '../components/InstallAppButton'
 
 type CommissionProfile = {
   today: number
   yesterday: number
 }
 
+type UserProfile = {
+  phone: string
+  publicId: string
+  inviteCode: string
+  balance: number
+}
+
 export default function Profile() {
   const navigate = useNavigate()
 
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<UserProfile | null>(null)
   const [commission, setCommission] =
     useState<CommissionProfile>({
       today: 0,
       yesterday: 0,
     })
   const [teamSize, setTeamSize] = useState(0)
+
+  const [copiedId, setCopiedId] = useState(false)
+  const [copiedInvite, setCopiedInvite] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -70,10 +82,23 @@ export default function Profile() {
 
   if (!user) return null
 
+  const shortId = user.publicId.slice(0, 8)
+
+  async function copyText(
+    value: string,
+    setter: (v: boolean) => void
+  ) {
+    try {
+      await navigator.clipboard.writeText(value)
+      setter(true)
+      setTimeout(() => setter(false), 2000)
+    } catch {}
+  }
+
   return (
     <div className="pb-28 bg-gray-50">
       {/* ================= HEADER ================= */}
-      <div className="bg-emerald-600 px-5 pt-6 pb-16">
+      <div className="bg-emerald-600 px-5 pt-6 pb-14">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center overflow-hidden shadow">
             <img
@@ -83,18 +108,55 @@ export default function Profile() {
             />
           </div>
 
-          <div className="text-white text-sm leading-5">
+          <div className="text-white text-sm leading-5 flex-1">
             <p className="font-semibold text-base">
               {user.phone}
             </p>
-            <p>ID: {user.publicId}</p>
-            <p>Código convite: {user.inviteCode}</p>
+
+            {/* ID */}
+            <div className="flex items-center gap-2 text-xs mt-1">
+              <span>ID: {shortId}</span>
+              <button
+                onClick={() =>
+                  copyText(user.publicId, setCopiedId)
+                }
+                className="opacity-80 hover:opacity-100"
+              >
+                {copiedId ? (
+                  <Check size={14} />
+                ) : (
+                  <Copy size={14} />
+                )}
+              </button>
+            </div>
+
+            {/* INVITE */}
+            <div className="flex items-center gap-2 text-xs mt-1">
+              <span className="px-2 py-0.5 bg-white/20 rounded-full">
+                Convite: {user.inviteCode}
+              </span>
+              <button
+                onClick={() =>
+                  copyText(
+                    user.inviteCode,
+                    setCopiedInvite
+                  )
+                }
+                className="opacity-80 hover:opacity-100"
+              >
+                {copiedInvite ? (
+                  <Check size={14} />
+                ) : (
+                  <Copy size={14} />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* ================= MÉTRICAS ================= */}
-      <div className="-mt-12 px-5">
+      <div className="-mt-10 px-5">
         <div className="bg-white rounded-2xl p-5 shadow-card">
           <p className="font-semibold mb-4">
             Resumo financeiro
@@ -102,30 +164,55 @@ export default function Profile() {
 
           <div className="grid grid-cols-4 gap-3">
             <Stat
-              icon={<Wallet size={22} weight="fill" className="text-emerald-600" />}
+              icon={
+                <Wallet
+                  size={22}
+                  weight="fill"
+                  className="text-emerald-600"
+                />
+              }
               value={`${commission.today.toFixed(2)} Kz`}
               label="Hoje"
             />
             <Stat
-              icon={<TrendUp size={22} weight="fill" className="text-blue-600" />}
+              icon={
+                <TrendUp
+                  size={22}
+                  weight="fill"
+                  className="text-blue-600"
+                />
+              }
               value={`${commission.yesterday.toFixed(2)} Kz`}
               label="Ontem"
             />
             <Stat
-              icon={<Users size={22} weight="fill" className="text-indigo-600" />}
+              icon={
+                <Users
+                  size={22}
+                  weight="fill"
+                  className="text-indigo-600"
+                />
+              }
               value={String(teamSize)}
               label="Equipa"
             />
             <Stat
-              icon={<ChartLineUp size={22} weight="fill" className="text-orange-500" />}
+              icon={
+                <ChartLineUp
+                  size={22}
+                  weight="fill"
+                  className="text-orange-500"
+                />
+              }
               value={`${user.balance.toFixed(2)} Kz`}
               label="Saldo"
+              highlight
             />
           </div>
         </div>
       </div>
 
-      {/* ================= AÇÕES RÁPIDAS ================= */}
+      {/* ================= AÇÕES ================= */}
       <div className="px-5 mt-6 grid grid-cols-2 gap-4">
         <ActionButton
           label="Recarregar"
@@ -159,8 +246,13 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* ================= LOGOUT PREMIUM ================= */}
-      <div className="px-5 mt-12 flex justify-center">
+      {/* ================= INSTALL APP ================= */}
+<div className="px-5 mt-10">
+  <InstallAppButton />
+</div>
+
+{/* ================= LOGOUT ================= */}
+<div className="px-5 mt-6 flex justify-center">
         <button
           onClick={() => {
             localStorage.clear()
@@ -172,8 +264,6 @@ export default function Profile() {
             <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center shadow-inner group-hover:scale-110 transition">
               <Power size={18} className="text-white" />
             </div>
-
-            <span className="absolute inset-0 rounded-full border-2 border-emerald-400 opacity-60 animate-wave" />
           </div>
 
           <span className="text-xs text-gray-600 font-medium">
@@ -187,18 +277,45 @@ export default function Profile() {
 
 /* ================= COMPONENTES ================= */
 
-function Stat({ icon, value, label }: any) {
+type StatProps = {
+  icon: React.ReactNode
+  value: string
+  label: string
+  highlight?: boolean
+}
+
+function Stat({ icon, value, label, highlight }: StatProps) {
   return (
     <div className="flex flex-col items-center gap-1 text-center">
       {icon}
-      <p className="font-semibold text-gray-900">{value}</p>
+      <p
+        className={`font-semibold ${
+          highlight
+            ? 'text-gray-900'
+            : 'text-gray-800'
+        }`}
+      >
+        {value}
+      </p>
       <p className="text-xs text-gray-500">{label}</p>
     </div>
   )
 }
 
-function ActionButton({ label, icon, color, onClick }: any) {
-  const colors: any = {
+type ActionButtonProps = {
+  label: string
+  icon: React.ReactNode
+  color: 'emerald' | 'red'
+  onClick: () => void
+}
+
+function ActionButton({
+  label,
+  icon,
+  color,
+  onClick,
+}: ActionButtonProps) {
+  const colors = {
     emerald: 'bg-emerald-600 hover:bg-emerald-700',
     red: 'bg-red-500 hover:bg-red-600',
   }
@@ -214,7 +331,13 @@ function ActionButton({ label, icon, color, onClick }: any) {
   )
 }
 
-function Item({ label, icon, onClick }: any) {
+type ItemProps = {
+  label: string
+  icon: React.ReactNode
+  onClick: () => void
+}
+
+function Item({ label, icon, onClick }: ItemProps) {
   return (
     <button
       onClick={onClick}

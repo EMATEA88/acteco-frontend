@@ -32,7 +32,7 @@ export default function TeamList({
   if (loading) {
     return (
       <div className="mt-4 text-sm text-gray-500">
-        A carregar…
+        Loading...
       </div>
     )
   }

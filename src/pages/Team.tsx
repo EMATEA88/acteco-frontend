@@ -9,10 +9,35 @@ import InviteBox from '../components/team/InviteBox'
 
 type LevelKey = 'level1' | 'level2' | 'level3'
 
+/* ================= TYPES ================= */
+
+type TeamSummary = {
+  level1: number
+  level2: number
+  level3: number
+}
+
+type TeamEarningsSummary = {
+  level1: number
+  level2: number
+  level3: number
+  total: number
+}
+
+type TeamMember = {
+  id: number
+  phone: string
+  level: LevelKey
+  createdAt: string
+}
+
+/* ================= PAGE ================= */
+
 export default function Team() {
-  const [summary, setSummary] = useState<any>(null)
-  const [list, setList] = useState<any>(null)
-  const [earnings, setEarnings] = useState<any>(null)
+  const [summary, setSummary] = useState<TeamSummary | null>(null)
+  const [list, setList] = useState<TeamMember[]>([])
+  const [earnings, setEarnings] =
+    useState<TeamEarningsSummary | null>(null)
 
   const [tab, setTab] = useState<LevelKey>('level1')
   const [loading, setLoading] = useState(true)
@@ -22,6 +47,8 @@ export default function Team() {
   )
 
   const inviteLink = `${window.location.origin}/register?invite=${user.inviteCode}`
+
+  /* ================= DATA LOAD ================= */
 
   useEffect(() => {
     let mounted = true
@@ -65,6 +92,8 @@ export default function Team() {
       summary.level2 > 0 ||
       summary.level3 > 0)
 
+  /* ================= RENDER ================= */
+
   return (
     <div className="min-h-screen pb-28 bg-gradient-to-b from-emerald-50 to-white animate-fadeZoom">
       {/* ================= HEADER ================= */}
@@ -73,7 +102,6 @@ export default function Team() {
           Minha Equipa
         </h1>
         <p className="text-sm text-gray-600 mt-1">
-          Estrutura, comissões e rendimento da sua rede
         </p>
       </div>
 
@@ -87,12 +115,13 @@ export default function Team() {
       <div className="px-5 mt-8">
         <div className="bg-white rounded-2xl p-1 shadow-card flex">
           {(['level1', 'level2', 'level3'] as LevelKey[]).map(
-            l => (
+            (l) => (
               <button
                 key={l}
                 onClick={() => setTab(l)}
                 className={`
-                  flex-1 py-2 text-sm font-medium rounded-xl transition
+                  flex-1 py-2 text-sm font-medium rounded-xl
+                  transition-all duration-200
                   ${
                     tab === l
                       ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow'
@@ -107,7 +136,7 @@ export default function Team() {
         </div>
       </div>
 
-      {/* ================= LISTA ================= */}
+      {/* ================= LIST ================= */}
       <div className="px-5 mt-6">
         <div className="bg-white rounded-2xl shadow-card p-4">
           <TeamList

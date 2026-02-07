@@ -2,33 +2,37 @@
 import { useEffect, useState } from 'react'
 
 const banners = [
-  '/src/assets/banners/home/banner-01.webp',
-  '/src/assets/banners/home/banner-02.webp',
-  '/src/assets/banners/home/banner-03.webp',
-  '/src/assets/banners/home/banner-04.webp',
+  '/banners/home/banner-01.webp',
+  '/banners/home/banner-02.webp',
+  '/banners/home/banner-03.webp',
+  '/banners/home/banner-04.webp',
 ]
 
 export default function PromoCarousel() {
   const [index, setIndex] = useState(0)
 
   useEffect(() => {
-    const i = setInterval(() => {
+    const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % banners.length)
-    }, 4000)
+    }, 4500)
 
-    return () => clearInterval(i)
+    return () => clearInterval(interval)
   }, [])
 
   return (
-    <div className="relative w-full h-[220px] overflow-hidden">
+    <div className="relative w-full h-[200px] md:h-[240px] overflow-hidden">
       <img
+        key={banners[index]}
         src={banners[index]}
-        className="w-full h-full object-cover transition-opacity duration-700"
-        alt="Banner"
+        alt="ACTECO promotion banner"
+        className="
+          w-full h-full object-cover
+          transition-opacity duration-700 ease-in-out
+        "
       />
 
-      {/* overlay escuro opcional */}
-      <div className="absolute inset-0 bg-black/20" />
+      {/* overlay profissional */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
     </div>
   )
 }
