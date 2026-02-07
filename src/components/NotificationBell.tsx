@@ -1,0 +1,78 @@
+import { useEffect, useRef, useState } from 'react'
+import { Bell } from 'lucide-react'
+import { NotificationService } from '../services/notification.service'
+
+type Notification = {
+  id: number
+  type: 'INFO' | 'WARNING' | 'SUCCESS' | 'SYSTEM'
+  isRead: boolean
+}
+
+const POLL_INTERVAL = 30000
+
+export default function NotificationBell() {
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [hasSystem, setHasSystem] = useState(false)
+  const isOnline = useRef(true) // 🔑 controle de falha
+
+  async function load() {
+    if (!isOnline.current) return
+
+    try {
+      const [count, list] = await Promise.all([
+        NotificationService.unreadCount(),
+        NotificationService.list({ limit: 10 }),
+      ])
+
+      setUnreadCount(count)
+
+      const systemUnread = list.some(
+        (n: Notification) =>
+          !n.isRead && n.type === 'SYSTEM'
+      )
+
+      setHasSystem(systemUnread)
+    } catch {
+      // 🔴 backend caiu → parar polling
+      isOnline.current = false
+      setUnreadCount(0)
+      setHasSystem(false)
+    }
+  }
+
+  useEffect(() => {
+    load()
+
+    const interval = setInterval(load, POLL_INTERVAL)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div className="relative">
+      <Bell
+        size={22}
+        className={`
+          transition
+          ${
+            hasSystem
+              ? 'text-red-600 animate-pulse'
+              : 'text-gray-700'
+          }
+        `}
+      />
+
+      {unreadCount > 0 && (
+        <span
+          className="
+            absolute -top-1 -right-1
+            bg-red-600 text-white text-xs
+            w-5 h-5 rounded-full
+            flex items-center justify-center
+          "
+        >
+          {unreadCount}
+        </span>
+      )}
+    </div>
+  )
+}
