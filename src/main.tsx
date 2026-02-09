@@ -1,8 +1,22 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import App from "./App";
-import "./index.css";
+import React from "react"
+import ReactDOM from "react-dom/client"
+import { BrowserRouter } from "react-router-dom"
+import App from "./App"
+import "./index.css"
+
+import { registerSW } from 'virtual:pwa-register'
+
+registerSW({
+  immediate: true,
+
+  onNeedRefresh() {
+    window.location.reload()
+  },
+
+  onOfflineReady() {
+    console.log('PWA pronta para offline')
+  }
+})
 
 ReactDOM.createRoot(
   document.getElementById("root")!
@@ -12,4 +26,4 @@ ReactDOM.createRoot(
       <App />
     </BrowserRouter>
   </React.StrictMode>
-);
+)

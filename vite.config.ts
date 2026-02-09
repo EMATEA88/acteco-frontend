@@ -7,36 +7,23 @@ export default defineConfig({
     react(),
 
     VitePWA({
-      /* =========================
-         REGISTRO DO SERVICE WORKER
-      ========================= */
       registerType: 'autoUpdate',
       injectRegister: 'auto',
 
-      /* =========================
-         PWA ATIVO EM DEV (IMPORTANTE)
-      ========================= */
       devOptions: {
-        enabled: true, // 🔴 sem isto, NÃO aparece botão instalar em npm run dev
+        enabled: true
       },
 
-      /* =========================
-         ASSETS ESTÁTICOS
-      ========================= */
       includeAssets: [
         'icons/icon-192.png',
         'icons/icon-512.png',
-        'icons/icon-512-maskable.png',
+        'icons/icon-512-maskable.png'
       ],
 
-      /* =========================
-         MANIFEST
-      ========================= */
       manifest: {
         name: 'ACTECO S.A',
         short_name: 'ACTECO',
-        description:
-          'Plataforma de investimento sustentável ACTECO S.A',
+        description: 'Plataforma de investimento sustentável ACTECO S.A',
 
         start_url: '/',
         scope: '/',
@@ -44,28 +31,52 @@ export default defineConfig({
 
         background_color: '#ffffff',
         theme_color: '#059669',
-
         orientation: 'portrait',
 
         icons: [
           {
             src: '/icons/icon-192.png',
             sizes: '192x192',
-            type: 'image/png',
+            type: 'image/png'
           },
           {
             src: '/icons/icon-512.png',
             sizes: '512x512',
-            type: 'image/png',
+            type: 'image/png'
           },
           {
             src: '/icons/icon-512-maskable.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'maskable',
-          },
-        ],
+            purpose: 'maskable'
+          }
+        ]
       },
-    }),
+
+      workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+
+        runtimeCaching: [
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|webp|gif)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30
+              }
+            }
+          }
+        ]
+      }
+    })
   ],
+
+  build: {
+    sourcemap: false,
+    chunkSizeWarningLimit: 1600
+  }
 })
