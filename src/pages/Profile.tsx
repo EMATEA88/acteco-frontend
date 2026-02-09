@@ -133,9 +133,9 @@ export default function Profile() {
       </div>
 
       {/* ================= CONTEÚDO ================= */}
-      <div className="-mt-14 px-5 space-y-6">
+      <div className="-mt-14 px-4 space-y-6">
 
-        {/* ===== CARD SALDO (AJUSTADO PARA NÃO CORTAR VALOR) ===== */}
+        {/* ===== CARD SALDO ===== */}
         <div className="rounded-3xl p-6 shadow-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white">
           <p className="text-sm opacity-90 mb-4">Saldo & Atividade</p>
 
