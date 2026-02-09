@@ -19,11 +19,16 @@ type Notification = {
 export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
+  const [processingId, setProcessingId] = useState<number | null>(null)
+
+  /* =========================
+     LOAD
+  ========================= */
 
   async function load() {
     try {
       const res = await NotificationService.list({ limit: 50 })
-      setNotifications(res.items)
+      setNotifications(res.items || [])
     } catch {
       setNotifications([])
     } finally {
@@ -33,7 +38,36 @@ export default function Notifications() {
 
   useEffect(() => {
     load()
+
+    // Auto refresh
+    const interval = setInterval(load, 15000)
+    return () => clearInterval(interval)
   }, [])
+
+  /* =========================
+     MARK AS READ
+  ========================= */
+
+  async function handleRead(notification: Notification) {
+    if (notification.isRead) return
+
+    try {
+      setProcessingId(notification.id)
+
+      await NotificationService.markAsRead(notification.id)
+
+      // 🔥 Atualiza lista imediatamente
+      await load()
+    } catch {
+      // fail silent (padrão seu)
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
+  /* =========================
+     UI STATES
+  ========================= */
 
   if (loading) {
     return (
@@ -52,17 +86,27 @@ export default function Notifications() {
     )
   }
 
+  /* =========================
+     RENDER
+  ========================= */
+
   return (
     <div className="p-4 space-y-3 pb-28">
       {notifications.map(n => (
         <div
           key={n.id}
+          onClick={() => handleRead(n)}
           className={`
-            rounded-2xl p-4 shadow-sm border transition
+            rounded-2xl p-4 shadow-sm border transition cursor-pointer
             ${
               n.isRead
                 ? 'bg-white border-gray-200'
-                : 'bg-emerald-50 border-emerald-200'
+                : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100'
+            }
+            ${
+              processingId === n.id
+                ? 'opacity-60 pointer-events-none'
+                : ''
             }
           `}
         >

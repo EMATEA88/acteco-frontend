@@ -134,19 +134,20 @@ export default function Profile() {
 
       {/* ================= CONTEÚDO ================= */}
       <div className="-mt-14 px-5 space-y-6">
-        {/* ===== CARD SALDO (VERDE, ISOLADO) ===== */}
+
+        {/* ===== CARD SALDO (AJUSTADO PARA NÃO CORTAR VALOR) ===== */}
         <div className="rounded-3xl p-6 shadow-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white">
           <p className="text-sm opacity-90 mb-4">Saldo & Atividade</p>
 
-          <div className="grid grid-cols-4 gap-3 text-center">
+          <div className="flex flex-wrap justify-between gap-4 text-center">
             <MetricDark value={commission.today} label="Hoje" />
             <MetricDark value={commission.yesterday} label="Ontem" />
             <MetricDark value={teamSize} label="Equipa" />
-            <MetricDark value={user.balance} label="Saldo" />
+            <MetricDark value={user.balance} label="Saldo" highlight />
           </div>
         </div>
 
-        {/* ===== AÇÕES (FORA DO CARD) ===== */}
+        {/* ===== AÇÕES ===== */}
         <div className="grid grid-cols-2 gap-4">
           <ActionButton
             label="Recarregar"
@@ -183,7 +184,7 @@ export default function Profile() {
         <InstallAppButton />
       </div>
 
-      {/* ================= LOGOUT (COM ONDAS) ================= */}
+      {/* ================= LOGOUT ================= */}
       <div className="px-5 mt-6 flex justify-center">
         <button
           onClick={() => {
@@ -206,19 +207,25 @@ export default function Profile() {
 
 /* ================= COMPONENTES ================= */
 
-function MetricDark({ value, label }: { value: number; label: string }) {
+function MetricDark({
+  value,
+  label,
+  highlight = false,
+}: {
+  value: number
+  label: string
+  highlight?: boolean
+}) {
   const isTeam = label === 'Equipa'
 
   return (
-    <div>
-      <p className="text-lg font-bold text-whit-900 truncate">
+    <div className={`${highlight ? 'flex-1 min-w-[120px]' : 'min-w-[80px]'}`}>
+      <p className={`${highlight ? 'text-2xl' : 'text-lg'} font-bold whitespace-nowrap`}>
         {isTeam
           ? value.toLocaleString()
           : value.toFixed(2)}
       </p>
-      <p className="text-xs text-whit-600 mt-1">
-        {label}
-      </p>
+      <p className="text-xs opacity-90 mt-1">{label}</p>
     </div>
   )
 }
