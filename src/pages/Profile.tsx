@@ -103,7 +103,7 @@ export default function Profile() {
 
   return (
     <div className="pb-28 bg-gray-50">
-      {/* ================= HEADER ================= */}
+      {/* HEADER */}
       <div className="bg-emerald-600 px-5 pt-6 pb-20">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center overflow-hidden shadow">
@@ -132,22 +132,22 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* ================= CONTEÚDO ================= */}
-      <div className="-mt-14 px-4 space-y-6">
+      {/* CONTEÚDO */}
+      <div className="-mt-14 px-3 space-y-6">
 
-        {/* ===== CARD SALDO ===== */}
+        {/* CARD SALDO */}
         <div className="rounded-3xl p-6 shadow-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white">
           <p className="text-sm opacity-90 mb-4">Saldo & Atividade</p>
 
-          <div className="flex flex-wrap justify-between gap-4 text-center">
+          <div className="grid grid-cols-4 gap-3 text-center">
             <MetricDark value={commission.today} label="Hoje" />
             <MetricDark value={commission.yesterday} label="Ontem" />
             <MetricDark value={teamSize} label="Equipa" />
-            <MetricDark value={user.balance} label="Saldo" highlight />
+            <MetricDark value={user.balance} label="Saldo" />
           </div>
         </div>
 
-        {/* ===== AÇÕES ===== */}
+        {/* AÇÕES */}
         <div className="grid grid-cols-2 gap-4">
           <ActionButton
             label="Recarregar"
@@ -164,7 +164,7 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* ================= MINHA CONTA ================= */}
+      {/* MINHA CONTA */}
       <div className="px-5 mt-10">
         <p className="font-semibold mb-4">Minha conta</p>
 
@@ -184,7 +184,7 @@ export default function Profile() {
         <InstallAppButton />
       </div>
 
-      {/* ================= LOGOUT ================= */}
+      {/* LOGOUT */}
       <div className="px-5 mt-6 flex justify-center">
         <button
           onClick={() => {
@@ -205,27 +205,28 @@ export default function Profile() {
   )
 }
 
-/* ================= COMPONENTES ================= */
+/* COMPONENTES */
 
-function MetricDark({
-  value,
-  label,
-  highlight = false,
-}: {
-  value: number
-  label: string
-  highlight?: boolean
-}) {
+function formatMoneySmart(value: number) {
+  if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(2) + 'B'
+  if (value >= 1_000_000) return (value / 1_000_000).toFixed(2) + 'M'
+  if (value >= 1_000) return (value / 1_000).toFixed(2) + 'K'
+  return value.toFixed(2)
+}
+
+function MetricDark({ value, label }: { value: number; label: string }) {
   const isTeam = label === 'Equipa'
 
   return (
-    <div className={`${highlight ? 'flex-1 min-w-[120px]' : 'min-w-[80px]'}`}>
-      <p className={`${highlight ? 'text-2xl' : 'text-lg'} font-bold whitespace-nowrap`}>
+    <div>
+      <p className="text-lg font-bold">
         {isTeam
           ? value.toLocaleString()
-          : value.toFixed(2)}
+          : formatMoneySmart(value)}
       </p>
-      <p className="text-xs opacity-90 mt-1">{label}</p>
+      <p className="text-xs opacity-90 mt-1">
+        {label}
+      </p>
     </div>
   )
 }
