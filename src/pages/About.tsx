@@ -22,7 +22,7 @@ export default function About() {
       {/* INTRODUÇÃO INSTITUCIONAL */}
       <section className="space-y-4">
         <p className="text-gray-800 text-sm leading-relaxed">
-          A <strong>ACTECO S.A</strong> é uma empresa angolana especializada
+          A <strong>ACTECO S.A</strong> é uma empresa especializada
           em <strong>reciclagem sustentável de resíduos plásticos</strong>,
           atuando de forma estratégica na transformação de desafios ambientais
           em oportunidades económicas estruturadas.
