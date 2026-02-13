@@ -7,9 +7,11 @@ interface FeaturedProduct {
 }
 
 const featuredProducts: FeaturedProduct[] = [
-  { id: 1, name: 'PET - Etileno' },
-  { id: 2, name: 'PEAD - Polietileno' },
-  { id: 3, name: 'PVC - Policlorreto' },
+  { id: 1, name: 'USDT' },
+  { id: 2, name: 'USDC' },
+  { id: 3, name: 'TRX' },
+  { id: 4, name: 'BNB' },
+  { id: 5, name: 'BTC' },
 ]
 
 export default function FeaturedProducts() {
@@ -17,41 +19,50 @@ export default function FeaturedProducts() {
 
   return (
     <section className="mt-6">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">
-        Featured recycling products
+      <h3 className="text-sm font-semibold text-blue-800 mb-3">
+        Produtos em Destaque
       </h3>
 
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+
         {featuredProducts.map((p) => {
-          const productKey = p.name.split('-')[0].trim().toUpperCase()
+          const productKey = p.name.toUpperCase()
+          const imageSrc = productImages[productKey]
 
           return (
             <button
               key={p.id}
               onClick={() => navigate('/products')}
               className="
-                relative min-w-[180px] h-24
-                rounded-xl overflow-hidden
-                shadow-sm
-                text-left
+                relative
+                min-w-[170px] h-28
+                rounded-2xl
+                overflow-hidden
+                shadow-lg
+                border border-blue-300
+                transition hover:scale-105
               "
             >
+              {/* IMAGEM COBRINDO 100% */}
               <img
-                src={productImages[productKey]}
+                src={imageSrc}
                 alt={p.name}
                 className="absolute inset-0 w-full h-full object-cover"
               />
 
-              <div className="absolute inset-0 bg-black/40" />
+              {/* Overlay leve para contraste */}
+              <div className="absolute inset-0 bg-black/30" />
 
-              <div className="relative z-10 h-full p-3 flex items-end text-white">
-                <span className="text-xs font-medium">
+              {/* Nome */}
+              <div className="relative z-10 h-full flex items-end p-3">
+                <span className="text-xs font-semibold text-white">
                   {p.name}
                 </span>
               </div>
             </button>
           )
         })}
+
       </div>
     </section>
   )
