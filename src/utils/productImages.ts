@@ -1,15 +1,15 @@
-import pet from '../assets/products/pet.webp'
-import pead from '../assets/products/pead.webp'
-import pvc from '../assets/products/pvc.webp'
-import pbd from '../assets/products/pbd.webp'
-import ps from '../assets/products/ps.webp'
-import pla from '../assets/products/pla.webp'
+import usdt from '../assets/products/usdt.png'
+import usdc from '../assets/products/usdc.png'
+import btc from '../assets/products/btc.png'
+import bnb from '../assets/products/bnb.png'
+import eur from '../assets/products/eur.png'
+import trx from '../assets/products/trx.png'
 
 export const productImages: Record<string, string> = {
-  PET: pet,
-  PEAD: pead,
-  PVC: pvc,
-  PBD: pbd,
-  PS: ps,
-  PLA: pla,
+  USDT: usdt,
+  USDC: usdc,
+  BTC: btc,
+  BNB: bnb,
+  EUR: eur,
+  TRX: trx,
 }

@@ -3,12 +3,13 @@ import { useEffect, useState } from 'react'
 import { ProductService } from '../services/product.service'
 
 // imagens locais
-import petImg from '../assets/products/pet.webp'
-import peadImg from '../assets/products/pead.webp'
-import pvcImg from '../assets/products/pvc.webp'
-import pbdImg from '../assets/products/pbd.webp'
-import psImg from '../assets/products/ps.webp'
-import plaImg from '../assets/products/pla.webp'
+import usdt from '../assets/products/usdt.png'
+import usdc from '../assets/products/usdc.png'
+import btc from '../assets/products/btc.png'
+import bnb from '../assets/products/bnb.png'
+import eur from '../assets/products/eur.png'
+import trx from '../assets/products/trx.png'
+import placeholder from '../assets/products/placeholder.png'
 
 type Product = {
   id: number
@@ -23,19 +24,20 @@ type Product = {
 
 // 🔗 associação produto → imagem
 const productImages: Record<string, string> = {
-  PET: petImg,
-  PEAD: peadImg,
-  PVC: pvcImg,
-  PBD: pbdImg,
-  PS: psImg,
-  PLA: plaImg,
+  USDT: usdt,
+    USDC: usdc,
+    BTC: btc,
+    BNB: bnb,
+    EUR: eur,
+    TRX: trx,
 }
 
 function getProductImage(name: string) {
   const key = Object.keys(productImages).find(k =>
     name.toUpperCase().includes(k)
   )
-  return key ? productImages[key] : petImg
+
+  return key ? productImages[key] : placeholder
 }
 
 export default function Shop() {

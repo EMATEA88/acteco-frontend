@@ -1,15 +1,18 @@
 // src/components/ui/WelcomeModal.tsx
 import { useEffect, useState } from 'react'
-import { X } from 'lucide-react'
+import { X, MessageCircle, Users } from 'lucide-react'
 
-const WHATSAPP_LINK =
-  'https://chat.whatsapp.com/FvRSde9OrURE2LZ72BcXnT?mode=gi_t'
+const WHATSAPP_MANAGER =
+  'https://wa.me/244928270636'
+
+const WHATSAPP_GROUP =
+  'https://chat.whatsapp.com/CaiU4nncaaa7vUnzO6HTzB?mode=gi_t'
 
 export default function WelcomeModal() {
   const [open, setOpen] = useState(false)
+  const [showOptions, setShowOptions] = useState(false)
 
   useEffect(() => {
-    // SEM sessionStorage → aparece SEMPRE ao entrar na Home
     setOpen(true)
   }, [])
 
@@ -22,6 +25,7 @@ export default function WelcomeModal() {
     >
       <div className="w-[90%] max-w-sm animate-fadeZoom">
         <div className="relative bg-white rounded-3xl px-6 pt-10 pb-6 shadow-card text-center">
+
           {/* CLOSE */}
           <button
             onClick={() => setOpen(false)}
@@ -49,29 +53,78 @@ export default function WelcomeModal() {
 
           {/* TEXT */}
           <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-            Olá, junte-se à Acteco, uma empresa de reciclagem sustentável com rendimentos
-            diários e crescimento em equipa.
+            Junte-se à ACTECO, empresa sustentável com rendimentos diários
+            e crescimento em equipa.
           </p>
 
-          {/* CTA */}
-          <a
-            href={WHATSAPP_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="
-              block w-full h-12 rounded-xl
-              bg-emerald-600 text-white font-semibold
-              flex items-center justify-center
-              hover:bg-emerald-700 transition
-              active:scale-95
-            "
-          >
-            Entrar no Grupo WhatsApp
-          </a>
+          {/* BOTÃO PRINCIPAL */}
+          {!showOptions && (
+            <button
+              onClick={() => setShowOptions(true)}
+              className="
+                block w-full h-12 rounded-xl
+                bg-emerald-600 text-white font-semibold
+                flex items-center justify-center gap-2
+                hover:bg-emerald-700 transition
+                active:scale-95
+              "
+            >
+              <MessageCircle size={18} />
+              WhatsApp ACTECO
+            </button>
+          )}
+
+          {/* OPÇÕES */}
+          {showOptions && (
+            <div className="space-y-3">
+
+              {/* GERENTE */}
+              <a
+                href={WHATSAPP_MANAGER}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="
+                  w-full h-12 rounded-xl
+                  bg-green-500 text-white font-semibold
+                  flex items-center justify-center gap-2
+                  hover:bg-green-600 transition
+                  active:scale-95
+                "
+              >
+                <MessageCircle size={18} />
+                Falar com Gerente
+              </a>
+
+              {/* GRUPO */}
+              <a
+                href={WHATSAPP_GROUP}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="
+                  w-full h-12 rounded-xl
+                  bg-emerald-600 text-white font-semibold
+                  flex items-center justify-center gap-2
+                  hover:bg-emerald-700 transition
+                  active:scale-95
+                "
+              >
+                <Users size={18} />
+                Entrar no Grupo Oficial
+              </a>
+
+              <button
+                onClick={() => setShowOptions(false)}
+                className="text-xs text-gray-400 mt-2"
+              >
+                Voltar
+              </button>
+            </div>
+          )}
 
           <p className="mt-4 text-xs text-gray-400">
-            Comunidade oficial ACTECO
+            Comunidade oficial ACTECO S.A
           </p>
+
         </div>
       </div>
     </div>

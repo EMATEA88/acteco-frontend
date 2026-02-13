@@ -1,12 +1,19 @@
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useEffect, useState, useContext } from 'react'
 import type { ReactNode } from 'react'
+
+interface User {
+  id: number
+  name?: string
+  email?: string
+  role?: string
+}
 
 interface AuthContextData {
   isAuthenticated: boolean
   token: string | null
-  user: any | null
+  user: User | null
   loading: boolean
-  login: (token: string, user: any) => void
+  login: (token: string, user: User) => void
   logout: () => void
 }
 
@@ -16,7 +23,7 @@ export const AuthContext = createContext<AuthContextData>(
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null)
-  const [user, setUser] = useState<any | null>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -31,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !loading && !!token
 
-  function login(newToken: string, newUser: any) {
+  function login(newToken: string, newUser: User) {
     localStorage.setItem('token', newToken)
     localStorage.setItem('user', JSON.stringify(newUser))
 
@@ -61,4 +68,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
+}
+
+/**
+ * Custom hook para acesso ao contexto de autenticação
+ */
+export function useAuth() {
+  return useContext(AuthContext)
 }

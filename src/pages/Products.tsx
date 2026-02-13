@@ -73,6 +73,7 @@ export default function Products() {
         )
       })
       .catch(() => {})
+
     return () => {
       mounted = false
     }
@@ -98,7 +99,6 @@ export default function Products() {
         const next = new Set(prev)
         next.add(productId)
 
-        // 🔁 cache update silencioso
         const current = localStorage.getItem(CACHE_KEY)
         if (current) {
           const parsed: CacheShape = JSON.parse(current)
@@ -146,20 +146,24 @@ export default function Products() {
           const alreadyOwned = ownedProductIds.has(p.id)
           const isBuying = buyingId === p.id
 
+          const imageSrc =
+            productImages[productKey] ??
+            '/placeholder.webp'
+
           return (
             <div
               key={p.id}
               className="bg-surface rounded-2xl shadow-card overflow-hidden"
             >
-              <img
-                src={
-                  productImages[productKey] ??
-                  '/placeholder.webp'
-                }
-                alt={p.name}
-                className="w-full h-44 object-cover"
-                loading="lazy"
-              />
+              {/* 🔥 CONTAINER PROFISSIONAL DE IMAGEM */}
+              <div className="w-full h-52 bg-white flex items-center justify-center">
+                <img
+                  src={imageSrc}
+                  alt={p.name}
+                  className="max-h-full max-w-full object-contain"
+                  loading="lazy"
+                />
+              </div>
 
               <div className="p-5">
                 <h2 className="font-semibold text-lg text-gray-900">

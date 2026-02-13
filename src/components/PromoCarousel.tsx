@@ -6,6 +6,10 @@ const banners = [
   '/banners/home/banner-02.webp',
   '/banners/home/banner-03.webp',
   '/banners/home/banner-04.webp',
+  '/banners/home/banner-05.webp',
+  '/banners/home/banner-06.webp',
+  '/banners/home/banner-07.webp',
+  '/banners/home/banner-08.webp',
 ]
 
 export default function PromoCarousel() {

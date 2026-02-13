@@ -1,7 +1,6 @@
 import { lazy, Suspense } from 'react'
 
 import WelcomeModal from '../components/ui/WelcomeModal'
-import WhatsAppFloating from '../components/WhatsAppFloating'
 import NotificationBell from '../components/NotificationBell'
 
 const PromoCarousel = lazy(() => import('../components/PromoCarousel'))
@@ -33,7 +32,6 @@ export default function Home() {
       </main>
 
       {/* FLOATING — SEM LAZY */}
-      <WhatsAppFloating />
       <NotificationBell />
     </>
   )

@@ -16,6 +16,7 @@ import History from './pages/History'
 import Profile from './pages/Profile'
 import About from './pages/About'
 import Notifications from './pages/Notifications'
+import Support from "./pages/support/SupportPage"
 
 /* ===== FINANCE ===== */
 import Deposit from './pages/Deposit'
@@ -101,6 +102,15 @@ function App() {
             path="/notifications"
             element={<Notifications />}
           />
+
+          <Route
+  path="/support"
+  element={
+    <PrivateRoute>
+      <Support />
+    </PrivateRoute>
+  }
+/>
         </Route>
       </Routes>
     </AuthProvider>
