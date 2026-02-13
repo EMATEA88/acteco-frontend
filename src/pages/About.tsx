@@ -21,6 +21,7 @@ export default function About() {
           A <strong>EMATEA</strong> é uma empresa angolana fundada em 04 de março de 2023,
           sediada em Malanje – Controlo nº1, atuando de forma estratégica nos
           setores de tecnologia, ativos digitais e comércio diversificado.
+          Atualmente é permitido apenas fazer um investimento apenas membros membros registrados na base de dados da empresa.
         </p>
 
         <p className="text-gray-700 text-sm leading-relaxed">

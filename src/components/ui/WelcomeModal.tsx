@@ -48,12 +48,12 @@ export default function WelcomeModal() {
 
           {/* TITLE */}
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Bem-vindo à ACTECO
+            Bem-vindo à EMATEA
           </h2>
 
           {/* TEXT */}
           <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-            Junte-se à ACTECO, empresa sustentável com rendimentos diários
+            Junte-se à EMATEA, empresa sustentável com rendimentos diários
             e crescimento em equipa.
           </p>
 
@@ -122,7 +122,7 @@ export default function WelcomeModal() {
           )}
 
           <p className="mt-4 text-xs text-gray-400">
-            Comunidade oficial ACTECO S.A
+            Comunidade oficial EMATEA
           </p>
 
         </div>
