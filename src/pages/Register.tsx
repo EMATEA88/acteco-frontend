@@ -3,8 +3,10 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import AuthLayout from '../layouts/AuthLayout'
 import { api } from '../services/api'
 import Toast from '../components/ui/Toast'
+import { Phone } from '@phosphor-icons/react'
 
 export default function Register() {
+
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -16,7 +18,6 @@ export default function Register() {
   const [inviteCode, setInviteCode] = useState(inviteFromUrl)
 
   const [loading, setLoading] = useState(false)
-
   const [toastVisible, setToastVisible] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
 
@@ -51,12 +52,15 @@ export default function Register() {
       })
 
       navigate('/login')
+
     } catch (err: any) {
+
       setToastMessage(
         err?.response?.data?.message ||
-          'Erro ao criar conta'
+        'Erro ao criar conta'
       )
       setToastVisible(true)
+
     } finally {
       setLoading(false)
     }
@@ -67,112 +71,110 @@ export default function Register() {
       title="Criar conta"
       subtitle="Registe-se para começar"
     >
-      {/* TOAST */}
+
       <Toast
         visible={toastVisible}
         message={toastMessage}
       />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Phone */}
+      <form onSubmit={handleSubmit} className="space-y-5">
+
+        {/* PHONE */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm text-gray-400 mb-1">
             Número de telefone
           </label>
 
-          <div className="flex items-center rounded-xl border border-gray-300 px-3 h-12 focus-within:ring-2 focus-within:ring-emerald-500">
-            <span className="text-gray-500 text-sm mr-2">
-              +244
-            </span>
+          <div className="
+            flex items-center gap-2
+            h-12 rounded-xl
+            bg-white/5
+            border border-white/10
+            px-3
+            focus-within:border-emerald-500
+            transition
+          ">
+            <Phone size={18} className="text-gray-400" />
+            <span className="text-gray-400 text-sm">+244</span>
             <input
               type="tel"
-              placeholder="Digite seu número"
-              className="flex-1 h-full outline-none text-sm"
+              className="flex-1 bg-transparent outline-none text-sm text-white"
               value={phone}
               onChange={e => setPhone(e.target.value)}
             />
           </div>
         </div>
 
-        {/* Password */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
-          <input
-            type="password"
-            placeholder="Digite sua password"
-            className="
-              w-full h-12 rounded-xl border border-gray-300
-              px-3 text-sm outline-none
-              focus:ring-2 focus:ring-emerald-500
-            "
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
-        </div>
+        {/* PASSWORD */}
+        <input
+          type="password"
+          placeholder="Password"
+          className="
+            w-full h-12 rounded-xl
+            bg-white/5
+            border border-white/10
+            px-3 text-sm text-white
+            outline-none
+            focus:border-emerald-500
+          "
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
 
-        {/* Confirm Password */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Confirmar password
-          </label>
-          <input
-            type="password"
-            placeholder="Confirme sua password"
-            className="
-              w-full h-12 rounded-xl border border-gray-300
-              px-3 text-sm outline-none
-              focus:ring-2 focus:ring-emerald-500
-            "
-            value={confirmPassword}
-            onChange={e => setConfirmPassword(e.target.value)}
-          />
-        </div>
+        {/* CONFIRM */}
+        <input
+          type="password"
+          placeholder="Confirmar password"
+          className="
+            w-full h-12 rounded-xl
+            bg-white/5
+            border border-white/10
+            px-3 text-sm text-white
+            outline-none
+            focus:border-emerald-500
+          "
+          value={confirmPassword}
+          onChange={e => setConfirmPassword(e.target.value)}
+        />
 
-        {/* Invitation Code */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Código de convite
-          </label>
-          <input
-            type="text"
-            placeholder="Código de convite"
-            className="
-              w-full h-12 rounded-xl border border-gray-300
-              px-3 text-sm outline-none
-              focus:ring-2 focus:ring-emerald-500
-            "
-            value={inviteCode}
-            onChange={e => setInviteCode(e.target.value)}
-          />
-        </div>
+        {/* INVITE */}
+        <input
+          type="text"
+          placeholder="Código de convite"
+          className="
+            w-full h-12 rounded-xl
+            bg-white/5
+            border border-white/10
+            px-3 text-sm text-white
+            outline-none
+            focus:border-emerald-500
+          "
+          value={inviteCode}
+          onChange={e => setInviteCode(e.target.value)}
+        />
 
-        {/* Button */}
         <button
           type="submit"
           disabled={loading}
           className={`
             w-full h-12 rounded-xl font-semibold transition
-            ${
-              loading
-                ? 'bg-emerald-400 text-white'
-                : 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95'
-            }
+            ${loading
+              ? 'bg-emerald-500/60 cursor-not-allowed'
+              : 'bg-emerald-600 hover:bg-emerald-700 active:scale-95'}
           `}
         >
           {loading ? 'Criando…' : 'Criar conta'}
         </button>
 
-        {/* Login link */}
         <div className="text-center">
           <Link
             to="/login"
-            className="text-sm text-emerald-600 font-medium"
+            className="text-sm text-emerald-400 hover:text-emerald-300 transition"
           >
             Já tenho conta
           </Link>
         </div>
+
       </form>
     </AuthLayout>
   )

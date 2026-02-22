@@ -1,11 +1,26 @@
-import { createContext, useEffect, useState, useContext } from 'react'
-import type { ReactNode } from 'react'
+import { createContext, useEffect, useState, useContext } from "react"
+import type { ReactNode } from "react"
+import { api } from "../services/api"
+
+interface UserBank {
+  id: number
+  name: string
+  bank: string
+  iban: string
+}
+
+interface UserVerification {
+  status: string
+}
 
 interface User {
   id: number
-  name?: string
-  email?: string
+  phone?: string
   role?: string
+  balance?: number
+  isVerified?: boolean
+  verification?: UserVerification | null
+  bank?: UserBank | null
 }
 
 interface AuthContextData {
@@ -13,8 +28,10 @@ interface AuthContextData {
   token: string | null
   user: User | null
   loading: boolean
-  login: (token: string, user: User) => void
+  isUserVerified: boolean
+  login: (token: string, user: User) => Promise<void>
   logout: () => void
+  refreshUser: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextData>(
@@ -22,33 +39,89 @@ export const AuthContext = createContext<AuthContextData>(
 )
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+
   const [token, setToken] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token')
-    const storedUser = localStorage.getItem('user')
+  // =========================
+  // FETCH USER FROM BACKEND
+  // =========================
+  async function fetchUserFromApi() {
+    try {
+      const response = await api.get("/profile")
 
-    if (storedToken) setToken(storedToken)
-    if (storedUser) setUser(JSON.parse(storedUser))
+      const normalizedUser: User = {
+        ...response.data,
+        balance: Number(response.data.balance ?? 0)
+      }
 
-    setLoading(false)
-  }, [])
+      localStorage.setItem("user", JSON.stringify(normalizedUser))
+      setUser(normalizedUser)
 
-  const isAuthenticated = !loading && !!token
-
-  function login(newToken: string, newUser: User) {
-    localStorage.setItem('token', newToken)
-    localStorage.setItem('user', JSON.stringify(newUser))
-
-    setToken(newToken)
-    setUser(newUser)
+    } catch (err) {
+      logout()
+    }
   }
 
+  // =========================
+  // INITIAL LOAD
+  // =========================
+  useEffect(() => {
+
+    const storedToken = localStorage.getItem("token")
+
+    if (!storedToken) {
+      setLoading(false)
+      return
+    }
+
+    setToken(storedToken)
+
+    fetchUserFromApi()
+      .finally(() => setLoading(false))
+
+  }, [])
+
+  const isAuthenticated = !!token && !loading
+
+  const isUserVerified = (() => {
+    if (!user) return false
+
+    if (user.isVerified === true) return true
+
+    if (user.verification?.status === "VERIFIED") return true
+
+    if (user.verification?.status === "APPROVED") return true
+
+    return false
+  })()
+
+  // =========================
+  // LOGIN
+  // =========================
+  async function login(newToken: string, _userFromLogin: User) {
+
+    localStorage.setItem("token", newToken)
+    setToken(newToken)
+
+    // 🔥 Sempre sincroniza com backend real
+    await fetchUserFromApi()
+  }
+
+  // =========================
+  // REFRESH USER
+  // =========================
+  async function refreshUser() {
+    await fetchUserFromApi()
+  }
+
+  // =========================
+  // LOGOUT
+  // =========================
   function logout() {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    localStorage.removeItem("token")
+    localStorage.removeItem("user")
 
     setToken(null)
     setUser(null)
@@ -61,8 +134,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token,
         user,
         loading,
+        isUserVerified,
         login,
         logout,
+        refreshUser
       }}
     >
       {children}
@@ -70,9 +145,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 }
 
-/**
- * Custom hook para acesso ao contexto de autenticação
- */
 export function useAuth() {
   return useContext(AuthContext)
 }

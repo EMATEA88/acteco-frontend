@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
-import { Landmark, CheckCircle2 } from 'lucide-react'
+import { Landmark } from 'lucide-react'
+import { toast } from 'sonner'
 
 type BankForm = {
   name: string
@@ -11,15 +13,16 @@ type BankForm = {
 const CACHE_KEY = 'bank-cache'
 
 export default function Bank() {
+
+  const navigate = useNavigate()
+
   const cached = localStorage.getItem(CACHE_KEY)
   const initial = cached
     ? JSON.parse(cached)
     : { name: '', bank: '', iban: '' }
 
   const [form, setForm] = useState<BankForm>(initial)
-
   const [saving, setSaving] = useState(false)
-  const [success, setSuccess] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -34,9 +37,7 @@ export default function Bank() {
           JSON.stringify(res.data)
         )
       })
-      .catch(() => {
-        // totalmente silencioso
-      })
+      .catch(() => {})
 
     return () => {
       mounted = false
@@ -44,8 +45,11 @@ export default function Bank() {
   }, [])
 
   async function save() {
+    if (saving) return
+
     try {
       setSaving(true)
+
       await api.post('/user-bank', form)
 
       localStorage.setItem(
@@ -53,23 +57,49 @@ export default function Bank() {
         JSON.stringify(form)
       )
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 2500)
+      // 🔔 Toast verde profissional
+      toast.success('Dados bancários salvos com sucesso')
+
+      // 🔄 Pequeno delay para UX
+      setTimeout(() => {
+        navigate('/profile')
+      }, 800)
+
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.error ||
+        'Erro ao salvar dados'
+      )
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <div className="p-4 space-y-6 pb-24 animate-fadeZoom">
-      <div className="flex items-center gap-2">
-        <Landmark className="text-emerald-600" />
-        <h1 className="text-lg font-semibold">
+    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white px-6 pt-16 pb-28">
+
+      {/* HEADER */}
+      <div className="flex items-center gap-3 mb-8">
+        <div className="w-10 h-10 rounded-full bg-emerald-600/20 flex items-center justify-center">
+          <Landmark size={20} className="text-emerald-400" />
+        </div>
+
+        <h1 className="text-lg font-semibold tracking-wide">
           Dados Bancários
         </h1>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-card p-4 space-y-4">
+      {/* CARD */}
+      <div className="
+        bg-white/5
+        backdrop-blur-xl
+        border border-white/10
+        rounded-3xl
+        p-8
+        space-y-6
+        shadow-2xl
+      ">
+
         <Input
           label="Nome do titular"
           value={form.name}
@@ -101,22 +131,21 @@ export default function Bank() {
             w-full h-12 rounded-xl font-semibold
             bg-emerald-600 text-white
             hover:bg-emerald-700 transition
-            active:scale-95 disabled:opacity-60
+            active:scale-95 disabled:opacity-50
           "
         >
-          {saving ? 'A guardar…' : 'Salvar'}
+          {saving ? 'A guardar…' : 'Salvar dados'}
         </button>
 
-        {success && (
-          <div className="flex items-center justify-center gap-2 text-sm text-emerald-600">
-            <CheckCircle2 size={16} />
-            Dados salvos com sucesso
-          </div>
-        )}
       </div>
+
     </div>
   )
 }
+
+/* ============================= */
+/* INPUT PROFISSIONAL */
+/* ============================= */
 
 function Input({
   label,
@@ -128,16 +157,23 @@ function Input({
   onChange: (v: string) => void
 }) {
   return (
-    <div className="space-y-1">
-      <label className="text-xs text-gray-500">
+    <div className="space-y-2">
+      <label className="text-xs text-gray-400 tracking-wide">
         {label}
       </label>
+
       <input
         value={value}
         onChange={e => onChange(e.target.value)}
         className="
-          w-full h-12 rounded-xl border px-4 text-sm
-          focus:ring-2 focus:ring-emerald-500 outline-none
+          w-full h-12 rounded-xl
+          bg-white/5
+          border border-white/10
+          px-4 text-sm text-white
+          focus:ring-2 focus:ring-emerald-500
+          focus:border-emerald-500
+          outline-none
+          transition
         "
       />
     </div>

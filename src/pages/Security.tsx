@@ -1,70 +1,74 @@
-import { ArrowLeft, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, ShieldCheck, Lock, Wifi, Smartphone, AlertTriangle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export default function Security() {
+
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      {/* HEADER */}
-      <div className="flex items-center gap-3 mb-4">
+    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white">
+
+      {/* HEADER FIXO */}
+      <div className="sticky top-0 z-50 bg-[#0F172A] border-b border-white/10 px-6 py-4 flex items-center gap-4">
+
         <button
           onClick={() => navigate(-1)}
-          className="p-1 rounded-full hover:bg-gray-100 transition"
+          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition"
         >
-          <ArrowLeft />
+          <ArrowLeft size={18} />
         </button>
-        <h1 className="text-lg font-semibold">
+
+        <h1 className="text-lg font-semibold tracking-wide">
           Segurança da Conta
         </h1>
+
       </div>
 
-      {/* CARD */}
-      <div className="bg-white rounded-2xl p-5 shadow-card space-y-4 text-sm animate-fadeZoom">
-        <div className="flex items-center gap-2 text-emerald-600">
-          <ShieldCheck />
-          <h2 className="font-medium text-gray-900">
-            Boas práticas de segurança
-          </h2>
+      <div className="px-6 py-8 space-y-8 max-w-xl mx-auto">
+
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl space-y-6">
+
+          <div className="flex items-center gap-3 text-emerald-400">
+            <ShieldCheck size={22} />
+            <h2 className="font-semibold text-white">
+              Boas práticas de segurança
+            </h2>
+          </div>
+
+          <SecurityItem icon={<Lock size={18} />} text="Nunca partilhe sua senha de login com terceiros." />
+          <SecurityItem icon={<ShieldCheck size={18} />} text="Utilize senha exclusiva para levantamentos." />
+          <SecurityItem icon={<Smartphone size={18} />} text="Ative bloqueio de tela no seu dispositivo." />
+          <SecurityItem icon={<Wifi size={18} />} text="Evite redes Wi-Fi públicas ou desconhecidas." />
+          <SecurityItem icon={<ShieldCheck size={18} />} text="Confirme sempre que está no aplicativo oficial." />
+          <SecurityItem icon={<AlertTriangle size={18} />} text="Nunca forneça senha ou códigos por mensagens." />
+
         </div>
 
-        <ul className="space-y-3 text-gray-700 leading-relaxed">
-          <li>
-            • Nunca partilhe sua <strong>senha de login</strong> com
-            terceiros, mesmo que aleguem representar a ACTECO.
-          </li>
-
-          <li>
-            • Utilize uma <strong>senha exclusiva para levantamentos</strong>,
-            diferente da senha de acesso à plataforma.
-          </li>
-
-          <li>
-            • Ative o <strong>bloqueio de tela</strong> do seu dispositivo
-            (PIN, impressão digital ou reconhecimento facial).
-          </li>
-
-          <li>
-            • Evite acessar sua conta em <strong>dispositivos públicos</strong>
-            ou redes Wi-Fi desconhecidas.
-          </li>
-
-          <li>
-            • Verifique sempre se está no <strong>site ou aplicativo oficial</strong>
-            da ACTECO antes de inserir seus dados.
-          </li>
-
-          <li>
-            • A <strong>ACTECO nunca solicita</strong> sua senha, códigos de
-            verificação ou dados bancários por mensagens ou chamadas.
-          </li>
-        </ul>
-
-        <div className="pt-2 text-xs text-gray-500">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-5 text-sm text-red-300 leading-relaxed">
           Em caso de atividade suspeita, altere sua senha imediatamente
           e contacte o suporte oficial.
         </div>
+
       </div>
+    </div>
+  )
+}
+
+function SecurityItem({
+  icon,
+  text,
+}: {
+  icon: React.ReactNode
+  text: string
+}) {
+  return (
+    <div className="flex items-start gap-4">
+      <div className="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+        {icon}
+      </div>
+      <p className="text-sm text-gray-300 leading-relaxed">
+        {text}
+      </p>
     </div>
   )
 }

@@ -1,50 +1,60 @@
 type ToastProps = {
   message: string
   visible: boolean
-  type?: 'success' | 'error'
+  type?: "success" | "error"
+  onClose?: () => void
 }
 
 export default function Toast({
   message,
   visible,
-  type = 'error',
+  type = "error",
+  onClose,
 }: ToastProps) {
   if (!visible) return null
 
   const styles =
-    type === 'success'
+    type === "success"
       ? {
-          container: 'bg-emerald-600',
-          text: 'text-white',
-          iconBg: 'bg-emerald-100',
-          icon: '✓',
+          container: "bg-white",
+          text: "text-emerald-600",
+          iconBg: "bg-emerald-100",
+          icon: "✓",
         }
       : {
-          container: 'bg-red-600',
-          text: 'text-white',
-          iconBg: 'bg-red-100',
-          icon: '!',
+          container: "bg-white",
+          text: "text-red-600",
+          iconBg: "bg-red-100",
+          icon: "!",
         }
 
   return (
-    <div className="fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2">
+    <div
+      className="
+        fixed inset-0 z-50
+        flex items-center justify-center
+        bg-black/30 backdrop-blur-sm
+      "
+      onClick={onClose}
+    >
       <div
         className={`
           ${styles.container}
-          rounded-2xl px-8 py-6 shadow-xl
-          flex flex-col items-center gap-3
-          min-w-[220px]
+          rounded-2xl px-8 py-6 shadow-2xl
+          flex flex-col items-center gap-4
+          min-w-[260px]
+          animate-fadeZoom
         `}
       >
         <div
-          className={`w-10 h-10 rounded-full ${styles.iconBg}
-          flex items-center justify-center text-lg font-bold`}
+          className={`w-12 h-12 rounded-full ${styles.iconBg}
+          flex items-center justify-center text-xl font-bold ${styles.text}`}
         >
           {styles.icon}
         </div>
 
         <p
-          className={`text-sm font-medium text-center ${styles.text}`}
+          className={`text-base font-semibold text-center ${styles.text}`}
         >
           {message}
         </p>

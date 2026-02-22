@@ -1,263 +1,285 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
 import { UserService } from '../services/user.service'
-import { CommissionService } from '../services/commission.service'
-import { TeamService } from '../services/team.service'
+import { KYCService } from '../services/kyc'
+import { ChartLineUp } from '@phosphor-icons/react'
 
 import {
   Wallet,
   ArrowDown,
   Bank,
   ArrowsLeftRight,
-  Receipt,
   Gift,
   ShieldCheck,
   LockKey,
   Info,
-  UserPlus,
   Copy,
+  DownloadSimple,
 } from '@phosphor-icons/react'
-import { Power, Check } from 'lucide-react'
-import InstallAppButton from '../components/InstallAppButton'
 
-type CommissionProfile = {
-  today: number
-  yesterday: number
-}
+import { Check } from 'lucide-react'
 
 type UserProfile = {
   phone: string
   publicId: string
-  inviteCode: string
   balance: number
 }
 
-const CACHE_KEY = 'profile-cache'
-
 export default function Profile() {
+
   const navigate = useNavigate()
 
-  const cached = localStorage.getItem(CACHE_KEY)
-  const initial = cached ? JSON.parse(cached) : null
-
-  const [user, setUser] = useState<UserProfile | null>(initial?.user ?? null)
-  const [commission, setCommission] = useState<CommissionProfile>(
-    initial?.commission ?? { today: 0, yesterday: 0 }
-  )
-  const [teamSize, setTeamSize] = useState<number>(initial?.teamSize ?? 0)
+  const [user, setUser] = useState<UserProfile | null>(null)
+  const [kycStatus, setKycStatus] = useState<
+    'LOADING' | 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED'
+  >('LOADING')
 
   const [copiedId, setCopiedId] = useState(false)
-  const [copiedInvite, setCopiedInvite] = useState(false)
 
   useEffect(() => {
-    let mounted = true
-
-    Promise.all([
-      UserService.me(),
-      CommissionService.getDailySummary(),
-      TeamService.getSummary(),
-    ])
-      .then(([userRes, commissionRes, teamRes]) => {
-        if (!mounted) return
-
-        const commissionData = {
-          today: Number(commissionRes.data.today ?? 0),
-          yesterday: Number(commissionRes.data.yesterday ?? 0),
-        }
-
-        const { level1 = 0, level2 = 0, level3 = 0 } = teamRes.data
-        const size = level1 + level2 + level3
+    async function load() {
+      try {
+        const [userRes, kycRes] = await Promise.all([
+          UserService.me(),
+          KYCService.status(),
+        ])
 
         setUser(userRes.data)
-        setCommission(commissionData)
-        setTeamSize(size)
-
-        localStorage.setItem(
-          CACHE_KEY,
-          JSON.stringify({
-            user: userRes.data,
-            commission: commissionData,
-            teamSize: size,
-          })
-        )
-      })
-      .catch(() => {})
-
-    return () => {
-      mounted = false
+        setKycStatus(kycRes.data.status)
+      } catch (err) {
+        console.error(err)
+      }
     }
+
+    load()
   }, [])
 
   if (!user) return null
 
-  const shortId = user.publicId.slice(0, 8)
+  const shortId = user.publicId?.slice(0, 8)
 
-  async function copyText(value: string, setter: (v: boolean) => void) {
+  async function copyText(value: string) {
     try {
       await navigator.clipboard.writeText(value)
-      setter(true)
-      setTimeout(() => setter(false), 2000)
+      setCopiedId(true)
+      setTimeout(() => setCopiedId(false), 2000)
     } catch {}
   }
 
+  function handleLogout() {
+    localStorage.clear()
+    navigate('/login')
+  }
+
   return (
-    <div className="pb-28 bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white pb-32">
+
       {/* HEADER */}
-      <div className="bg-emerald-600 px-5 pt-6 pb-20">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center overflow-hidden shadow">
-            <img src="/logo.png" alt="ACTECO" className="w-full h-full object-cover" />
+      <div className="px-6 pt-14 pb-10 relative">
+
+        <div className="absolute inset-0 bg-emerald-600/20 blur-3xl opacity-30" />
+
+        <div className="relative flex items-center gap-5">
+
+          <div className="w-20 h-20 rounded-full overflow-hidden border border-white/10 shadow-xl">
+            <img
+              src="/logo.png"
+              alt="Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
 
-          <div className="text-white text-sm flex-1">
-            <p className="font-semibold text-base">{user.phone}</p>
+          <div className="flex-1">
 
-            <div className="flex items-center gap-2 text-xs mt-1">
+            <div className="flex items-center gap-2">
+              <p className="text-lg font-semibold tracking-wide">
+                {user.phone}
+              </p>
+
+              {kycStatus === 'VERIFIED' && (
+                <ShieldCheck size={18} weight="fill" className="text-emerald-400" />
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
               <span>ID: {shortId}</span>
-              <button onClick={() => copyText(user.publicId, setCopiedId)}>
+              <button onClick={() => copyText(user.publicId)}>
                 {copiedId ? <Check size={14} /> : <Copy size={14} />}
               </button>
             </div>
 
-            <div className="flex items-center gap-2 text-xs mt-1">
-              <span className="px-2 py-0.5 bg-white/20 rounded-full">
-                Convite: {user.inviteCode}
-              </span>
-              <button onClick={() => copyText(user.inviteCode, setCopiedInvite)}>
-                {copiedInvite ? <Check size={14} /> : <Copy size={14} />}
-              </button>
-            </div>
+            {kycStatus === 'PENDING' && (
+              <p className="text-xs mt-2 text-yellow-400">
+                Verificação em análise
+              </p>
+            )}
+
+            {kycStatus === 'REJECTED' && (
+              <p className="text-xs mt-2 text-red-400">
+                Verificação rejeitada
+              </p>
+            )}
+
           </div>
         </div>
       </div>
 
-      {/* CONTEÚDO */}
-      <div className="-mt-14 px-3 space-y-6">
-
-        {/* CARD SALDO */}
-        <div className="rounded-3xl p-6 shadow-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white">
-          <p className="text-sm opacity-90 mb-4">Saldo & Atividade</p>
-
-          <div className="grid grid-cols-4 gap-3 text-center">
-            <MetricDark value={commission.today} label="Hoje" />
-            <MetricDark value={commission.yesterday} label="Ontem" />
-            <MetricDark value={teamSize} label="Equipa" />
-            <MetricDark value={user.balance} label="Saldo" />
-          </div>
+      {/* SALDO */}
+      <div className="px-6">
+        <div className="rounded-3xl p-7 bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl">
+          <p className="text-sm text-gray-400 mb-2">
+            Saldo disponível
+          </p>
+          <p className="text-4xl font-bold tracking-tight">
+            {user.balance?.toLocaleString()} Kz
+          </p>
         </div>
+      </div>
 
-        {/* AÇÕES */}
-        <div className="grid grid-cols-2 gap-4">
-          <ActionButton
-            label="Recarregar"
-            color="emerald"
-            icon={<Wallet size={20} weight="fill" />}
-            onClick={() => navigate('/deposit')}
-          />
-          <ActionButton
-            label="Retirar"
-            color="red"
-            icon={<ArrowDown size={20} weight="fill" />}
-            onClick={() => navigate('/withdraw')}
-          />
-        </div>
+      {/* AÇÕES PRINCIPAIS */}
+      <div className="px-6 mt-8 grid grid-cols-2 gap-4">
+
+        <ActionButton
+          label="Recarregar"
+          color="emerald"
+          icon={<Wallet size={20} weight="fill" />}
+          onClick={() => navigate('/deposit')}
+        />
+
+        <ActionButton
+          label="Retirar"
+          color="red"
+          icon={<ArrowDown size={20} weight="fill" />}
+          onClick={() => navigate('/withdraw')}
+        />
+
       </div>
 
       {/* MINHA CONTA */}
-      <div className="px-5 mt-10">
-        <p className="font-semibold mb-4">Minha conta</p>
+      <div className="px-6 mt-12">
+        <p className="font-semibold mb-6 text-gray-400 tracking-wide">
+          MINHAS SESSÕES
+        </p>
 
-        <div className="grid grid-cols-4 gap-3">
-          <Item label="Banco" icon={<Bank size={22} weight="fill" />} onClick={() => navigate('/bank')} />
-          <Item label="Transações" icon={<ArrowsLeftRight size={22} weight="fill" />} onClick={() => navigate('/transactions')} />
-          <Item label="Fatura" icon={<Receipt size={22} weight="fill" />} onClick={() => navigate('/invoice')} />
-          <Item label="Presente" icon={<Gift size={22} weight="fill" />} onClick={() => navigate('/gift')} />
-          <Item label="Segurança" icon={<ShieldCheck size={22} weight="fill" />} onClick={() => navigate('/security')} />
-          <Item label="Senha" icon={<LockKey size={22} weight="fill" />} onClick={() => navigate('/password')} />
-          <Item label="Sobre" icon={<Info size={22} weight="fill" />} onClick={() => navigate('/about')} />
-          <Item label="Invite" icon={<UserPlus size={22} weight="fill" />} onClick={() => navigate('/team')} />
-        </div>
-      </div>
+        <div className="grid grid-cols-3 gap-5">
 
-      <div className="px-5 mt-10">
-        <InstallAppButton />
+  <Item label="Banco" icon={<Bank size={20} weight="fill" />} onClick={() => navigate('/bank')} />
+  <Item label="Transações" icon={<ArrowsLeftRight size={20} weight="fill" />} onClick={() => navigate('/transactions')} />
+  <Item label="Presente" icon={<Gift size={20} weight="fill" />} onClick={() => navigate('/gift')} />
+  <Item label="Segurança" icon={<ShieldCheck size={20} weight="fill" />} onClick={() => navigate('/security')} />
+  <Item label="Senha" icon={<LockKey size={20} weight="fill" />} onClick={() => navigate('/password')} />
+  <Item label="Verificação" icon={<ShieldCheck size={20} weight="fill" />} onClick={() => navigate('/kyc')} />
+  <Item label="Sobre" icon={<Info size={20} weight="fill" />} onClick={() => navigate('/about')} />
+
+  <Item
+    label="Aplicações"
+    icon={<ChartLineUp size={20} weight="fill" />}
+    onClick={() => navigate('/applications')}
+  />
+
+  <Item
+    label="Download APP"
+    icon={<DownloadSimple size={20} weight="fill" />}
+    onClick={() => window.dispatchEvent(new Event('beforeinstallprompt'))}
+    highlight
+  />
+
+</div>
       </div>
 
       {/* LOGOUT */}
-      <div className="px-5 mt-6 flex justify-center">
+      <div className="px-6 mt-12 flex justify-center">
         <button
-          onClick={() => {
-            localStorage.clear()
-            navigate('/login')
-          }}
-          className="group flex flex-col items-center gap-2"
+          onClick={handleLogout}
+          className="text-xs text-gray-500 hover:text-white transition"
         >
-          <div className="relative w-16 h-16 rounded-full bg-emerald-600 flex items-center justify-center shadow-card animate-pulse-slow">
-            <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center">
-              <Power size={18} className="text-white" />
-            </div>
-          </div>
-          <span className="text-xs text-gray-600 font-medium">Logout</span>
+          Encerrar sessão
         </button>
       </div>
+
     </div>
   )
 }
 
+/* ============================= */
 /* COMPONENTES */
+/* ============================= */
 
-function formatMoneySmart(value: number) {
-  if (value >= 1_000_000_000) return (value / 1_000_000_000).toFixed(2) + 'B'
-  if (value >= 1_000_000) return (value / 1_000_000).toFixed(2) + 'M'
-  if (value >= 1_000) return (value / 1_000).toFixed(2) + 'K'
-  return value.toFixed(2)
-}
+function ActionButton({
+  label,
+  icon,
+  color,
+  onClick,
+}: {
+  label: string
+  icon: React.ReactNode
+  color: 'emerald' | 'red'
+  onClick: () => void
+}) {
 
-function MetricDark({ value, label }: { value: number; label: string }) {
-  const isTeam = label === 'Equipa'
-
-  return (
-    <div>
-      <p className="text-lg font-bold">
-        {isTeam
-          ? value.toLocaleString()
-          : formatMoneySmart(value)}
-      </p>
-      <p className="text-xs opacity-90 mt-1">
-        {label}
-      </p>
-    </div>
-  )
-}
-
-function ActionButton({ label, icon, color, onClick }: any) {
-  const colors: any = {
+  const colors = {
     emerald: 'bg-emerald-600 hover:bg-emerald-700',
-    red: 'bg-red-500 hover:bg-red-600',
+    red: 'bg-red-600 hover:bg-red-700',
   }
 
   return (
     <button
       onClick={onClick}
-      className={`${colors[color]} text-white rounded-2xl p-5 flex items-center justify-between font-medium shadow-sm active:scale-95 transition`}
+      className={`
+        ${colors[color]}
+        rounded-2xl
+        p-6
+        flex flex-col
+        items-center
+        gap-3
+        shadow-xl
+        transition
+        active:scale-95
+      `}
     >
-      {label}
       {icon}
+      <span className="text-sm font-medium">
+        {label}
+      </span>
     </button>
   )
 }
 
-function Item({ label, icon, onClick }: any) {
+function Item({
+  label,
+  icon,
+  onClick,
+  highlight = false
+}: {
+  label: string
+  icon: React.ReactNode
+  onClick: () => void
+  highlight?: boolean
+}) {
+
   return (
     <button
       onClick={onClick}
-      className="rounded-xl p-4 flex flex-col items-center gap-2 bg-emerald-50 hover:bg-emerald-100 transition"
+      className={`
+        ${highlight ? 'bg-emerald-600/20 border-emerald-500/30' : 'bg-white/5 border-white/10'}
+        backdrop-blur-lg
+        border
+        rounded-2xl
+        p-5
+        flex flex-col
+        items-center
+        gap-3
+        hover:bg-white/10
+        transition
+      `}
     >
-      <div className="w-11 h-11 rounded-full bg-emerald-600/10 flex items-center justify-center text-emerald-700">
+      <div className={`w-10 h-10 rounded-full flex items-center justify-center 
+        ${highlight ? 'bg-emerald-600 text-white' : 'bg-emerald-600/20 text-emerald-400'}
+      `}>
         {icon}
       </div>
-      <span className="text-xs font-medium text-emerald-900">
+
+      <span className={`text-xs ${highlight ? 'text-emerald-300' : 'text-gray-300'}`}>
         {label}
       </span>
     </button>

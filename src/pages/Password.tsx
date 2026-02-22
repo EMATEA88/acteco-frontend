@@ -1,12 +1,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Lock, CheckCircle, AlertCircle } from 'lucide-react'
+import {
+  ArrowLeft,
+  Lock,
+  CheckCircle,
+  AlertCircle
+} from 'lucide-react'
 import { PasswordService } from '../services/password.service'
 
 export default function Password() {
+
   const navigate = useNavigate()
 
   /* ================= STATE ================= */
+
   const [loginCurrent, setLoginCurrent] = useState('')
   const [loginNew, setLoginNew] = useState('')
 
@@ -20,6 +27,7 @@ export default function Password() {
   } | null>(null)
 
   /* ================= HELPERS ================= */
+
   function showError(text: string) {
     setMessage({ type: 'error', text })
   }
@@ -39,7 +47,7 @@ export default function Password() {
     }
 
     if (loginNew.length < 6) {
-      showError('A nova senha de login deve ter pelo menos 6 caracteres')
+      showError('A nova senha deve ter pelo menos 6 caracteres')
       return
     }
 
@@ -54,10 +62,11 @@ export default function Password() {
       showSuccess('Senha de login alterada com sucesso')
       setLoginCurrent('')
       setLoginNew('')
+
     } catch (err: any) {
       showError(
         err?.response?.data?.error ??
-          'Erro ao alterar senha de login'
+        'Erro ao alterar senha de login'
       )
     } finally {
       setLoading(false)
@@ -73,9 +82,7 @@ export default function Password() {
     }
 
     if (withdrawNew.length < 4) {
-      showError(
-        'A senha de levantamento deve ter pelo menos 4 dígitos'
-      )
+      showError('A senha deve ter pelo menos 4 dígitos')
       return
     }
 
@@ -91,10 +98,11 @@ export default function Password() {
       showSuccess('Senha de levantamento definida com sucesso')
       setWithdrawCurrent('')
       setWithdrawNew('')
+
     } catch (err: any) {
       showError(
         err?.response?.data?.error ??
-          'Erro ao definir senha de levantamento'
+        'Erro ao definir senha de levantamento'
       )
     } finally {
       setLoading(false)
@@ -104,109 +112,188 @@ export default function Password() {
   /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 pb-24">
-      {/* HEADER */}
-      <div className="flex items-center gap-3 mb-5">
-        <button onClick={() => navigate(-1)}>
-          <ArrowLeft />
-        </button>
-        <h1 className="text-lg font-semibold">Senha</h1>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white">
 
-      {/* FEEDBACK */}
-      {message && (
-        <div
-          className={`mb-4 p-3 rounded-xl flex items-center gap-2 text-sm
-            ${
-              message.type === 'success'
-                ? 'bg-green-100 text-green-700'
-                : 'bg-red-100 text-red-700'
-            }`}
-        >
-          {message.type === 'success' ? (
-            <CheckCircle size={18} />
-          ) : (
-            <AlertCircle size={18} />
-          )}
-          {message.text}
-        </div>
-      )}
-
-      {/* ================= LOGIN PASSWORD ================= */}
-      <div className="bg-white rounded-2xl p-5 shadow mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Lock className="text-green-600" />
-          <h2 className="font-semibold">
-            Senha de login
-          </h2>
-        </div>
-
-        <input
-          type="password"
-          placeholder="Senha atual"
-          value={loginCurrent}
-          onChange={e =>
-            setLoginCurrent(e.target.value)
-          }
-          className="w-full h-11 rounded-xl border px-4 mb-3"
-        />
-
-        <input
-          type="password"
-          placeholder="Nova senha"
-          value={loginNew}
-          onChange={e => setLoginNew(e.target.value)}
-          className="w-full h-11 rounded-xl border px-4 mb-4"
-        />
+      {/* HEADER FIXO */}
+      <div className="sticky top-0 z-50 bg-[#0F172A] border-b border-white/10 px-6 py-4 flex items-center gap-4">
 
         <button
-          onClick={handleLoginPasswordChange}
-          disabled={loading}
-          className="w-full h-11 rounded-xl bg-green-600 text-white font-semibold
-            hover:bg-green-700 active:scale-95 disabled:opacity-60"
+          onClick={() => navigate(-1)}
+          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition"
         >
-          Alterar senha de login
+          <ArrowLeft size={18} />
         </button>
+
+        <h1 className="text-lg font-semibold tracking-wide">
+          Segurança de Senha
+        </h1>
+
       </div>
 
-      {/* ================= WITHDRAW PASSWORD ================= */}
-      <div className="bg-white rounded-2xl p-5 shadow">
-        <div className="flex items-center gap-2 mb-4">
-          <Lock className="text-green-600" />
-          <h2 className="font-semibold">
-            Senha de levantamento
-          </h2>
+      <div className="px-6 py-8 space-y-8 max-w-xl mx-auto pb-28">
+
+        {/* FEEDBACK */}
+        {message && (
+          <div
+            className={`
+              flex items-center gap-3 text-sm rounded-2xl p-4
+              ${message.type === 'success'
+                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                : 'bg-red-500/15 text-red-400 border border-red-500/20'}
+            `}
+          >
+            {message.type === 'success'
+              ? <CheckCircle size={18} />
+              : <AlertCircle size={18} />
+            }
+
+            {message.text}
+          </div>
+        )}
+
+        {/* LOGIN PASSWORD CARD */}
+        <div className="
+          bg-white/5
+          backdrop-blur-xl
+          border border-white/10
+          rounded-3xl
+          p-8
+          shadow-2xl
+          space-y-6
+        ">
+
+          <div className="flex items-center gap-3 text-emerald-400">
+            <Lock size={20} />
+            <h2 className="font-semibold text-white">
+              Senha de login
+            </h2>
+          </div>
+
+          <Input
+            type="password"
+            placeholder="Senha atual"
+            value={loginCurrent}
+            onChange={setLoginCurrent}
+          />
+
+          <Input
+            type="password"
+            placeholder="Nova senha"
+            value={loginNew}
+            onChange={setLoginNew}
+          />
+
+          <PrimaryButton
+            onClick={handleLoginPasswordChange}
+            loading={loading}
+          >
+            Alterar senha de login
+          </PrimaryButton>
+
         </div>
 
-        <input
-          type="password"
-          placeholder="Senha atual (se existir)"
-          value={withdrawCurrent}
-          onChange={e =>
-            setWithdrawCurrent(e.target.value)
-          }
-          className="w-full h-11 rounded-xl border px-4 mb-3"
-        />
+        {/* WITHDRAW PASSWORD CARD */}
+        <div className="
+          bg-white/5
+          backdrop-blur-xl
+          border border-white/10
+          rounded-3xl
+          p-8
+          shadow-2xl
+          space-y-6
+        ">
 
-        <input
-          type="password"
-          placeholder="Nova senha de levantamento"
-          value={withdrawNew}
-          onChange={e =>
-            setWithdrawNew(e.target.value)
-          }
-          className="w-full h-11 rounded-xl border px-4 mb-4"
-        />
+          <div className="flex items-center gap-3 text-emerald-400">
+            <Lock size={20} />
+            <h2 className="font-semibold text-white">
+              Senha de levantamento
+            </h2>
+          </div>
 
-        <button
-          onClick={handleWithdrawPasswordChange}
-          disabled={loading}
-          className="w-full h-11 rounded-xl bg-green-600 text-white font-semibold
-            hover:bg-green-700 active:scale-95 disabled:opacity-60"
-        >
-          Definir senha de levantamento
-        </button>
+          <Input
+            type="password"
+            placeholder="Senha atual (se existir)"
+            value={withdrawCurrent}
+            onChange={setWithdrawCurrent}
+          />
+
+          <Input
+            type="password"
+            placeholder="Nova senha de levantamento"
+            value={withdrawNew}
+            onChange={setWithdrawNew}
+          />
+
+          <PrimaryButton
+            onClick={handleWithdrawPasswordChange}
+            loading={loading}
+          >
+            Definir senha de levantamento
+          </PrimaryButton>
+
+        </div>
+
       </div>
     </div>
+  )
+}
+
+/* ============================= */
+/* COMPONENTES REUTILIZÁVEIS */
+/* ============================= */
+
+function Input({
+  type,
+  placeholder,
+  value,
+  onChange,
+}: {
+  type: string
+  placeholder: string
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <input
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className="
+        w-full h-12 rounded-xl
+        bg-white/5
+        border border-white/10
+        px-4 text-sm text-white
+        focus:ring-2 focus:ring-emerald-500
+        focus:border-emerald-500
+        outline-none
+        transition
+      "
+    />
+  )
+}
+
+function PrimaryButton({
+  children,
+  onClick,
+  loading,
+}: {
+  children: React.ReactNode
+  onClick: () => void
+  loading: boolean
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="
+        w-full h-12 rounded-xl font-semibold
+        bg-emerald-600 text-white
+        hover:bg-emerald-700 transition
+        active:scale-95 disabled:opacity-50
+      "
+    >
+      {loading ? 'Processando…' : children}
+    </button>
   )
 }

@@ -17,13 +17,12 @@ type Notification = {
 }
 
 export default function Notifications() {
+
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<number | null>(null)
 
-  /* =========================
-     LOAD
-  ========================= */
+  const unreadCount = notifications.filter(n => !n.isRead).length
 
   async function load() {
     try {
@@ -38,110 +37,159 @@ export default function Notifications() {
 
   useEffect(() => {
     load()
-
-    // Auto refresh
     const interval = setInterval(load, 15000)
     return () => clearInterval(interval)
   }, [])
 
-  /* =========================
-     MARK AS READ
-  ========================= */
-
   async function handleRead(notification: Notification) {
+
     if (notification.isRead) return
 
     try {
       setProcessingId(notification.id)
-
       await NotificationService.markAsRead(notification.id)
 
-      // 🔥 Atualiza lista imediatamente
-      await load()
-    } catch {
-      // fail silent (padrão seu)
+      setNotifications(prev =>
+        prev.map(n =>
+          n.id === notification.id
+            ? { ...n, isRead: true }
+            : n
+        )
+      )
     } finally {
       setProcessingId(null)
     }
   }
 
-  /* =========================
-     UI STATES
-  ========================= */
+  async function markAllAsRead() {
+    const unread = notifications.filter(n => !n.isRead)
+
+    if (unread.length === 0) return
+
+    try {
+      await Promise.all(
+        unread.map(n =>
+          NotificationService.markAsRead(n.id)
+        )
+      )
+
+      setNotifications(prev =>
+        prev.map(n => ({ ...n, isRead: true }))
+      )
+    } catch {
+      // silencioso
+    }
+  }
 
   if (loading) {
     return (
-      <div className="p-6 text-sm text-gray-500">
-        A carregar notificações…
+      <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white p-6 space-y-4">
+        {[1,2,3,4].map(i => (
+          <div
+            key={i}
+            className="h-20 bg-white/5 rounded-2xl animate-pulse"
+          />
+        ))}
       </div>
     )
   }
-
-  if (notifications.length === 0) {
-    return (
-      <div className="p-6 flex flex-col items-center text-center text-sm text-gray-500 gap-2">
-        <Bell size={28} className="text-gray-400" />
-        Nenhuma notificação disponível
-      </div>
-    )
-  }
-
-  /* =========================
-     RENDER
-  ========================= */
 
   return (
-    <div className="p-4 space-y-3 pb-28">
-      {notifications.map(n => (
-        <div
-          key={n.id}
-          onClick={() => handleRead(n)}
-          className={`
-            rounded-2xl p-4 shadow-sm border transition cursor-pointer
-            ${
-              n.isRead
-                ? 'bg-white border-gray-200'
-                : 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100'
-            }
-            ${
-              processingId === n.id
-                ? 'opacity-60 pointer-events-none'
-                : ''
-            }
-          `}
-        >
-          <div className="flex items-start gap-3">
-            {/* ICON */}
-            <div className="mt-0.5">
-              {renderIcon(n.type)}
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white">
 
-            {/* CONTENT */}
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-900">
-                {n.title}
-              </p>
+      {/* HEADER FIXO */}
+      <div className="sticky top-0 z-50 bg-[#0F172A] border-b border-white/10 px-6 py-4 flex items-center justify-between">
 
-              <p className="text-sm text-gray-600 mt-1">
-                {n.message}
-              </p>
+        <div className="flex items-center gap-3">
+          <Bell size={20} className="text-emerald-400" />
+          <h1 className="text-lg font-semibold tracking-wide">
+            Notificações
+          </h1>
 
-              <p className="text-xs text-gray-400 mt-2">
-                {formatDate(n.createdAt)}
-              </p>
+          {unreadCount > 0 && (
+            <span className="bg-emerald-600 text-xs px-2 py-0.5 rounded-full">
+              {unreadCount}
+            </span>
+          )}
+        </div>
+
+        {unreadCount > 0 && (
+          <button
+            onClick={markAllAsRead}
+            className="text-xs text-emerald-400 hover:text-emerald-300 transition"
+          >
+            Marcar todas
+          </button>
+        )}
+
+      </div>
+
+      <div className="px-6 py-8 max-w-xl mx-auto space-y-4 pb-28">
+
+        {notifications.length === 0 && (
+          <div className="flex flex-col items-center justify-center text-center text-sm text-gray-400 gap-3 py-16">
+            <Bell size={32} className="opacity-40" />
+            Nenhuma notificação disponível
+          </div>
+        )}
+
+        {notifications.map(n => (
+          <div
+            key={n.id}
+            onClick={() => handleRead(n)}
+            className={`
+              bg-white/5
+              backdrop-blur-xl
+              border border-white/10
+              rounded-2xl
+              p-5
+              transition
+              cursor-pointer
+              hover:border-emerald-500/40
+              hover:bg-white/10
+              ${processingId === n.id ? 'opacity-50 pointer-events-none' : ''}
+            `}
+          >
+            <div className="flex items-start gap-4">
+
+              <div className="mt-1">
+                {renderIcon(n.type)}
+              </div>
+
+              <div className="flex-1">
+
+                <div className="flex items-center justify-between gap-3">
+                  <p className={`text-sm font-semibold ${n.isRead ? 'text-gray-300' : 'text-white'}`}>
+                    {n.title}
+                  </p>
+
+                  {!n.isRead && (
+                    <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse" />
+                  )}
+                </div>
+
+                <p className="text-sm text-gray-400 mt-1 leading-relaxed">
+                  {n.message}
+                </p>
+
+                <p className="text-xs text-gray-500 mt-3">
+                  {formatDate(n.createdAt)}
+                </p>
+
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+
+      </div>
     </div>
   )
 }
 
-/* =========================
-   HELPERS
-========================= */
+/* ================= HELPERS ================= */
 
 function renderIcon(type: Notification['type']) {
+
   const size = 20
 
   switch (type) {
@@ -150,7 +198,7 @@ function renderIcon(type: Notification['type']) {
         <CheckCircle
           size={size}
           weight="fill"
-          className="text-emerald-600"
+          className="text-emerald-500"
         />
       )
 
@@ -168,7 +216,7 @@ function renderIcon(type: Notification['type']) {
         <Bell
           size={size}
           weight="fill"
-          className="text-blue-600"
+          className="text-blue-500"
         />
       )
 
@@ -177,7 +225,7 @@ function renderIcon(type: Notification['type']) {
         <Info
           size={size}
           weight="fill"
-          className="text-gray-500"
+          className="text-gray-400"
         />
       )
   }

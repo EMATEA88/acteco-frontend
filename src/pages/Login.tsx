@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Eye, EyeSlash } from '@phosphor-icons/react'
+import { Eye, EyeSlash, Phone } from '@phosphor-icons/react'
 
 import AuthLayout from '../layouts/AuthLayout'
 import { api } from '../services/api'
@@ -8,6 +8,7 @@ import Toast from '../components/ui/Toast'
 import { AuthContext } from '../contexts/AuthContext'
 
 export default function Login() {
+
   const navigate = useNavigate()
   const { login } = useContext(AuthContext)
 
@@ -46,43 +47,62 @@ export default function Login() {
       })
 
       const { token, user } = response.data
-
-      // ✅ CONTEXTO CENTRALIZADO
       login(token, user)
 
       setToastType('success')
-      setToastMessage('Conexão bem sucedida')
+      setToastMessage('Login realizado com sucesso')
       setToastVisible(true)
 
       setTimeout(() => navigate('/'), 600)
+
     } catch (err: any) {
+
       setToastType('error')
       setToastMessage(
         err?.response?.data?.message ||
-          'Telefone ou password inválidos'
+        'Telefone ou password inválidos'
       )
       setToastVisible(true)
+
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <AuthLayout title="Olá" subtitle="Bem-vindo à ACTECO S.A">
-      <Toast visible={toastVisible} message={toastMessage} type={toastType} />
+    <AuthLayout
+      title="Entrar"
+      subtitle="Aceda à sua conta"
+    >
+
+      <Toast
+        visible={toastVisible}
+        message={toastMessage}
+        type={toastType}
+      />
 
       <form onSubmit={handleSubmit} className="space-y-5">
+
         {/* PHONE */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm text-gray-400 mb-1">
             Número de telefone
           </label>
 
-          <div className="flex items-center rounded-xl border border-gray-300 px-3 h-12 focus-within:ring-2 focus-within:ring-emerald-500">
-            <span className="text-gray-500 text-sm mr-2">+244</span>
+          <div className="
+            flex items-center gap-2
+            h-12 rounded-xl
+            bg-white/5
+            border border-white/10
+            px-3
+            focus-within:border-emerald-500
+            transition
+          ">
+            <Phone size={18} className="text-gray-400" />
+            <span className="text-gray-400 text-sm">+244</span>
             <input
               type="tel"
-              className="flex-1 h-full outline-none text-sm"
+              className="flex-1 bg-transparent outline-none text-sm text-white"
               value={phone}
               onChange={e => setPhone(e.target.value)}
             />
@@ -91,14 +111,23 @@ export default function Login() {
 
         {/* PASSWORD */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm text-gray-400 mb-1">
             Password
           </label>
 
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
-              className="w-full h-12 rounded-xl border border-gray-300 px-3 pr-12 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+              className="
+                w-full h-12 rounded-xl
+                bg-white/5
+                border border-white/10
+                px-3 pr-12
+                text-sm text-white
+                outline-none
+                focus:border-emerald-500
+                transition
+              "
               value={password}
               onChange={e => setPassword(e.target.value)}
             />
@@ -106,7 +135,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => setShowPassword(v => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition"
             >
               {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
             </button>
@@ -116,20 +145,25 @@ export default function Login() {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full h-12 rounded-xl font-semibold transition ${
-            loading
-              ? 'bg-emerald-400 text-white'
-              : 'bg-emerald-600 text-white hover:bg-emerald-700'
-          }`}
+          className={`
+            w-full h-12 rounded-xl font-semibold transition
+            ${loading
+              ? 'bg-emerald-500/60 cursor-not-allowed'
+              : 'bg-emerald-600 hover:bg-emerald-700 active:scale-95'}
+          `}
         >
-          {loading ? 'Entrando…' : 'Login'}
+          {loading ? 'Entrando…' : 'Entrar'}
         </button>
 
         <div className="text-center">
-          <Link to="/register" className="text-sm text-emerald-600 font-medium">
+          <Link
+            to="/register"
+            className="text-sm text-emerald-400 hover:text-emerald-300 transition"
+          >
             Criar uma conta
           </Link>
         </div>
+
       </form>
     </AuthLayout>
   )

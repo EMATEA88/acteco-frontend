@@ -1,0 +1,12 @@
+export type TransactionType =
+  | 'RECHARGE'
+  | 'WITHDRAW'
+  | 'BUY_DEBIT'
+  | 'SELL_CREDIT'
+  | 'SERVICE_DEBIT'
+  | 'REFUND'
+  | 'COMMISSION'
+  | 'GIFT'
+  | 'INVESTMENT_DEBIT'
+  | 'INVESTMENT_CREDIT'
+  | 'INVESTMENT_CANCEL_REFUND'
