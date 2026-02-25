@@ -42,6 +42,7 @@ export default function OtcDetail() {
     setTimeout(() => setToastVisible(false), 2500)
   }
 
+  // ================= LOAD ASSET =================
   const loadAsset = useCallback(async () => {
     if (!assetId || isNaN(assetId)) {
       navigate("/otc")
@@ -50,7 +51,10 @@ export default function OtcDetail() {
 
     try {
       setAssetLoading(true)
-      const assets = await otcService.listAssets()
+
+      const response = await otcService.listAssets()
+      const assets = response?.data ?? response
+
       const found = assets.find((a: Asset) => a.id === assetId)
 
       if (!found || found.isActive === false) {
@@ -59,6 +63,7 @@ export default function OtcDetail() {
       }
 
       setAsset(found)
+
     } catch {
       triggerToast("Erro ao carregar ativo")
     } finally {
@@ -70,15 +75,18 @@ export default function OtcDetail() {
     loadAsset()
   }, [loadAsset])
 
+  // ================= VERIFICATION =================
   const isVerified =
     user?.isVerified === true ||
     user?.verification?.status === "VERIFIED"
 
+  // ================= BALANCE =================
   const userBalance = useMemo(() => {
     const balance = Number(user?.balance ?? 0)
     return isNaN(balance) ? 0 : balance
   }, [user])
 
+  // ================= PRICE =================
   const price = useMemo(() => {
     if (!asset) return 0
     return type === "BUY"
@@ -86,6 +94,7 @@ export default function OtcDetail() {
       : Number(asset.buyPrice)
   }, [asset, type])
 
+  // ================= QUANTITY =================
   const sanitizedQuantity = useMemo(() => {
     const numeric = Number(quantity)
     return isNaN(numeric) ? 0 : numeric
@@ -110,35 +119,60 @@ export default function OtcDetail() {
     setQuantity(sanitized)
   }
 
+  // ================= CREATE ORDER =================
   const createOrder = async () => {
-    if (isButtonDisabled) return
+
+    if (loading) return
+
+    if (!isVerified) {
+      triggerToast("Conta não verificada")
+      return
+    }
+
+    if (!isValidQuantity) {
+      triggerToast(`Quantidade mínima: ${MIN_QUANTITY}`)
+      return
+    }
+
+    if (!hasBalance && type === "BUY") {
+      triggerToast("Saldo insuficiente")
+      return
+    }
 
     try {
       setLoading(true)
 
-      const order = await otcService.createOrder({
+      const response = await otcService.createOrder({
         assetId,
         type,
         quantity: sanitizedQuantity
       })
+
+      const order = response?.data ?? response
 
       navigate(`/otc/order/${order.id}`, { replace: true })
 
     } catch (err: any) {
 
       const message =
-        err?.response?.data?.error ||
-        err?.response?.data?.message
+        err?.response?.data?.message ||
+        err?.response?.data?.error
 
       switch (message) {
         case "USER_NOT_VERIFIED":
           triggerToast("Conta não verificada")
           break
-        case "INSUFFICIENT_BALANCE":
-          triggerToast("Saldo insuficiente")
+        case "BANK_NOT_LINKED":
+          triggerToast("Conta bancária não vinculada")
+          break
+        case "ASSET_NOT_AVAILABLE":
+          triggerToast("Ativo indisponível")
+          break
+        case "INVALID_ORDER_DATA":
+          triggerToast("Dados inválidos")
           break
         default:
-          triggerToast("Erro ao criar ordem")
+          triggerToast(message || "Erro ao criar ordem")
       }
 
     } finally {
@@ -160,14 +194,7 @@ export default function OtcDetail() {
     <>
       <div className="relative min-h-screen">
 
-        {/* 🔝 HEADER STICKY */}
-        <div className="
-          sticky top-0 z-40
-          bg-[#0B1220]
-          border-b border-white/10
-          px-6 pt-6 pb-4
-          backdrop-blur-xl
-        ">
+        <div className="sticky top-0 z-40 bg-[#0B1220] border-b border-white/10 px-6 pt-6 pb-4 backdrop-blur-xl">
           <div className="text-center space-y-2">
             <h1 className="text-xl font-semibold text-white">
               {asset.symbol}
@@ -183,18 +210,9 @@ export default function OtcDetail() {
           </div>
         </div>
 
-
-        {/* CONTEÚDO */}
         <div className="px-6 pt-8 pb-24 max-w-xl mx-auto space-y-8">
 
-          {/* CARD PREÇO */}
-          <div className="
-            bg-white/5 border border-white/10
-            rounded-3xl p-6 space-y-4
-            transition-all duration-300
-            hover:bg-white/10
-          ">
-
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4">
             <div className="flex justify-between text-sm text-gray-400">
               <span>Preço atual</span>
               <span className="text-xl font-semibold text-white">
@@ -220,18 +238,12 @@ export default function OtcDetail() {
             )}
           </div>
 
-
-          {/* QUANTIDADE */}
           <div className="space-y-2">
             <label className="text-sm text-gray-400">
               Quantidade
             </label>
 
-            <div className="
-              bg-white/5 border border-white/10
-              rounded-2xl p-5 flex justify-between
-              transition hover:bg-white/10
-            ">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex justify-between">
               <input
                 type="text"
                 value={quantity}
@@ -245,24 +257,15 @@ export default function OtcDetail() {
             </div>
           </div>
 
-
-          {/* TOTAL */}
-          <div className="
-            bg-white/5 border border-white/10
-            rounded-3xl p-6 flex justify-between
-            transition hover:bg-white/10
-          ">
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-6 flex justify-between">
             <span className="text-gray-400">
               Total estimado
             </span>
-
             <span className="text-xl font-semibold text-white">
               {formatMoney(total)}
             </span>
           </div>
 
-
-          {/* BOTÃO */}
           <button
             onClick={createOrder}
             disabled={isButtonDisabled}

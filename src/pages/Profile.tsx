@@ -21,14 +21,16 @@ import { Check } from 'lucide-react'
 
 type UserProfile = {
   phone: string
+  email: string
   publicId: string
   balance: number
+  isVerified: boolean
+  createdAt: string
 }
 
 export default function Profile() {
 
   const navigate = useNavigate()
-
   const [user, setUser] = useState<UserProfile | null>(null)
   const [kycStatus, setKycStatus] = useState<
     'LOADING' | 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED'
@@ -46,11 +48,8 @@ export default function Profile() {
 
         setUser(userRes.data)
         setKycStatus(kycRes.data.status)
-      } catch (err) {
-        console.error(err)
-      }
+      } catch {}
     }
-
     load()
   }, [])
 
@@ -58,12 +57,13 @@ export default function Profile() {
 
   const shortId = user.publicId?.slice(0, 8)
 
+  const accountLevel = user.isVerified ? 'Premium' : 'Basic'
+  const accountLimit = user.isVerified ? 'Ilimitado' : '50.000 Kz / dia'
+
   async function copyText(value: string) {
-    try {
-      await navigator.clipboard.writeText(value)
-      setCopiedId(true)
-      setTimeout(() => setCopiedId(false), 2000)
-    } catch {}
+    await navigator.clipboard.writeText(value)
+    setCopiedId(true)
+    setTimeout(() => setCopiedId(false), 2000)
   }
 
   function handleLogout() {
@@ -72,122 +72,111 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white pb-32">
+    <div className="min-h-screen bg-[#0B1220] text-white pb-24">
 
-      {/* HEADER */}
-      <div className="px-6 pt-14 pb-10 relative">
+      {/* CARD SUPERIOR INSTITUCIONAL */}
+      <div className="px-6 pt-16">
+        <div className="bg-[#111827] border border-white/10 rounded-3xl p-6 shadow-2xl">
 
-        <div className="absolute inset-0 bg-emerald-600/20 blur-3xl opacity-30" />
+          {/* STATUS CONTA */}
+          <StatusBadge
+            isVerified={user.isVerified}
+            kycStatus={kycStatus}
+            onVerify={() => navigate('/kyc')}
+          />
 
-        <div className="relative flex items-center gap-5">
+          {/* INFO PRINCIPAL */}
+          <div className="flex items-center gap-4 mt-6">
 
-          <div className="w-20 h-20 rounded-full overflow-hidden border border-white/10 shadow-xl">
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
+            <div className="w-16 h-16 rounded-full overflow-hidden border border-white/10">
+              <img src="/logo.png" className="w-full h-full object-cover" />
+            </div>
 
-          <div className="flex-1">
+            <div className="flex-1 space-y-1">
 
-            <div className="flex items-center gap-2">
-              <p className="text-lg font-semibold tracking-wide">
+              <p className="text-sm text-gray-400">
+                {user.email}
+              </p>
+
+              <p className="text-lg font-medium tracking-wide">
                 {user.phone}
               </p>
 
-              {kycStatus === 'VERIFIED' && (
-                <ShieldCheck size={18} weight="fill" className="text-emerald-400" />
-              )}
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <span>ID: {shortId}</span>
+                <button onClick={() => copyText(user.publicId)}>
+                  {copiedId ? <Check size={14} /> : <Copy size={14} />}
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-500 mt-1">
+                Conta criada em {new Date(user.createdAt).toLocaleDateString('pt-AO')}
+              </p>
+
+            </div>
+          </div>
+
+          {/* SALDO + INFO CONTA */}
+          <div className="mt-6 border-t border-white/10 pt-6 flex items-center justify-between">
+
+            <div>
+              <p className="text-xs text-gray-400">
+                Saldo disponível
+              </p>
+              <p className="text-2xl font-semibold mt-1">
+                {user.balance?.toLocaleString()} Kz
+              </p>
+
+              <div className="mt-2 text-xs text-gray-500 space-y-1">
+                <p>Nível da conta: <span className="text-white">{accountLevel}</span></p>
+                <p>Limite diário: <span className="text-white">{accountLimit}</span></p>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
-              <span>ID: {shortId}</span>
-              <button onClick={() => copyText(user.publicId)}>
-                {copiedId ? <Check size={14} /> : <Copy size={14} />}
-              </button>
+            <div className="flex gap-3">
+
+              <SmallAction
+                label="Recarregar"
+                icon={<Wallet size={16} weight="fill" />}
+                onClick={() => navigate('/deposit')}
+              />
+
+              <SmallAction
+                label="Retirar"
+                icon={<ArrowDown size={16} weight="fill" />}
+                onClick={() => navigate('/withdraw')}
+              />
+
             </div>
-
-            {kycStatus === 'PENDING' && (
-              <p className="text-xs mt-2 text-yellow-400">
-                Verificação em análise
-              </p>
-            )}
-
-            {kycStatus === 'REJECTED' && (
-              <p className="text-xs mt-2 text-red-400">
-                Verificação rejeitada
-              </p>
-            )}
 
           </div>
+
         </div>
       </div>
 
-      {/* SALDO */}
-      <div className="px-6">
-        <div className="rounded-3xl p-7 bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl">
-          <p className="text-sm text-gray-400 mb-2">
-            Saldo disponível
-          </p>
-          <p className="text-4xl font-bold tracking-tight">
-            {user.balance?.toLocaleString()} Kz
-          </p>
-        </div>
-      </div>
+      {/* SESSÕES */}
+      <div className="px-6 mt-10">
 
-      {/* AÇÕES PRINCIPAIS */}
-      <div className="px-6 mt-8 grid grid-cols-2 gap-4">
-
-        <ActionButton
-          label="Recarregar"
-          color="emerald"
-          icon={<Wallet size={20} weight="fill" />}
-          onClick={() => navigate('/deposit')}
-        />
-
-        <ActionButton
-          label="Retirar"
-          color="red"
-          icon={<ArrowDown size={20} weight="fill" />}
-          onClick={() => navigate('/withdraw')}
-        />
-
-      </div>
-
-      {/* MINHA CONTA */}
-      <div className="px-6 mt-12">
-        <p className="font-semibold mb-6 text-gray-400 tracking-wide">
+        <p className="text-sm text-gray-400 mb-6 tracking-wide">
           MINHAS SESSÕES
         </p>
 
-        <div className="grid grid-cols-3 gap-5">
+        <div className="grid grid-cols-3 gap-4">
 
-  <Item label="Banco" icon={<Bank size={20} weight="fill" />} onClick={() => navigate('/bank')} />
-  <Item label="Transações" icon={<ArrowsLeftRight size={20} weight="fill" />} onClick={() => navigate('/transactions')} />
-  <Item label="Presente" icon={<Gift size={20} weight="fill" />} onClick={() => navigate('/gift')} />
-  <Item label="Segurança" icon={<ShieldCheck size={20} weight="fill" />} onClick={() => navigate('/security')} />
-  <Item label="Senha" icon={<LockKey size={20} weight="fill" />} onClick={() => navigate('/password')} />
-  <Item label="Verificação" icon={<ShieldCheck size={20} weight="fill" />} onClick={() => navigate('/kyc')} />
-  <Item label="Sobre" icon={<Info size={20} weight="fill" />} onClick={() => navigate('/about')} />
+          <Item label="Banco" icon={<Bank size={18} weight="fill" />} onClick={() => navigate('/bank')} />
+          <Item label="Transações" icon={<ArrowsLeftRight size={18} weight="fill" />} onClick={() => navigate('/transactions')} />
+          <Item label="Presente" icon={<Gift size={18} weight="fill" />} onClick={() => navigate('/gift')} />
+          <Item label="Segurança" icon={<ShieldCheck size={18} weight="fill" />} onClick={() => navigate('/security')} />
+          <Item label="Senha" icon={<LockKey size={18} weight="fill" />} onClick={() => navigate('/password')} />
+          <Item label="Verificação" icon={<ShieldCheck size={18} weight="fill" />} onClick={() => navigate('/kyc')} />
+          <Item label="Sobre" icon={<Info size={18} weight="fill" />} onClick={() => navigate('/about')} />
+          <Item label="Aplicações" icon={<ChartLineUp size={18} weight="fill" />} onClick={() => navigate('/applications')} />
+          <Item label="Download" icon={<DownloadSimple size={18} weight="fill" />} onClick={() => window.dispatchEvent(new Event('beforeinstallprompt'))} />
 
-  <Item
-    label="Aplicações"
-    icon={<ChartLineUp size={20} weight="fill" />}
-    onClick={() => navigate('/applications')}
-  />
+        </div>
 
-  <Item
-    label="Download APP"
-    icon={<DownloadSimple size={20} weight="fill" />}
-    onClick={() => window.dispatchEvent(new Event('beforeinstallprompt'))}
-    highlight
-  />
-
-</div>
       </div>
 
-      {/* LOGOUT */}
       <div className="px-6 mt-12 flex justify-center">
         <button
           onClick={handleLogout}
@@ -201,46 +190,75 @@ export default function Profile() {
   )
 }
 
-/* ============================= */
-/* COMPONENTES */
-/* ============================= */
+/* ================= COMPONENTES ================= */
 
-function ActionButton({
-  label,
-  icon,
-  color,
-  onClick,
+function StatusBadge({
+  isVerified,
+  onVerify
 }: {
-  label: string
-  icon: React.ReactNode
-  color: 'emerald' | 'red'
-  onClick: () => void
+  isVerified: boolean
+  kycStatus: string
+  onVerify: () => void
 }) {
 
-  const colors = {
-    emerald: 'bg-emerald-600 hover:bg-emerald-700',
-    red: 'bg-red-600 hover:bg-red-700',
+  if (isVerified) {
+    return (
+      <div className="border border-emerald-500/30 bg-emerald-500/10 rounded-xl px-4 py-3 text-emerald-400">
+        <p className="text-sm font-medium">Conta verificada</p>
+        <p className="text-xs opacity-70 mt-1">
+          Sua conta está totalmente ativa.
+        </p>
+      </div>
+    )
   }
 
   return (
+    <div className="border border-yellow-500/30 bg-yellow-500/10 rounded-xl px-4 py-3">
+
+      <p className="text-sm font-medium text-yellow-400">
+        Conta não verificada
+      </p>
+
+      <p className="text-xs text-yellow-300/70 mt-1">
+        Verifique sua conta para aumentar limites.
+      </p>
+
+      <button
+        onClick={onVerify}
+        className="mt-3 text-xs bg-yellow-500 text-black px-3 py-1 rounded-lg hover:opacity-90 transition"
+      >
+        Verificar Conta
+      </button>
+
+    </div>
+  )
+}
+
+function SmallAction({
+  label,
+  icon,
+  onClick
+}: {
+  label: string
+  icon: React.ReactNode
+  onClick: () => void
+}) {
+  return (
     <button
       onClick={onClick}
-      className={`
-        ${colors[color]}
-        rounded-2xl
-        p-6
-        flex flex-col
-        items-center
-        gap-3
-        shadow-xl
+      className="
+        bg-white/5
+        border border-white/10
+        hover:bg-white/10
+        px-4 py-2
+        rounded-xl
+        text-xs
+        flex items-center gap-2
         transition
-        active:scale-95
-      `}
+      "
     >
       {icon}
-      <span className="text-sm font-medium">
-        {label}
-      </span>
+      {label}
     </button>
   )
 }
@@ -248,38 +266,33 @@ function ActionButton({
 function Item({
   label,
   icon,
-  onClick,
-  highlight = false
+  onClick
 }: {
   label: string
   icon: React.ReactNode
   onClick: () => void
-  highlight?: boolean
 }) {
 
   return (
     <button
       onClick={onClick}
-      className={`
-        ${highlight ? 'bg-emerald-600/20 border-emerald-500/30' : 'bg-white/5 border-white/10'}
-        backdrop-blur-lg
-        border
-        rounded-2xl
-        p-5
+      className="
+        bg-white/5
+        border border-white/10
+        rounded-xl
+        p-4
         flex flex-col
         items-center
-        gap-3
+        gap-2
         hover:bg-white/10
         transition
-      `}
+      "
     >
-      <div className={`w-10 h-10 rounded-full flex items-center justify-center 
-        ${highlight ? 'bg-emerald-600 text-white' : 'bg-emerald-600/20 text-emerald-400'}
-      `}>
+      <div className="w-9 h-9 rounded-full bg-emerald-600/20 flex items-center justify-center text-emerald-400">
         {icon}
       </div>
 
-      <span className={`text-xs ${highlight ? 'text-emerald-300' : 'text-gray-300'}`}>
+      <span className="text-[11px] text-gray-300">
         {label}
       </span>
     </button>

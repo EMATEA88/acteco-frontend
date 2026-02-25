@@ -14,20 +14,22 @@ export default function AppLayout() {
   ========================= */
 
   const immersiveRoutes = [
-    '/otc',
-    '/services',
-    '/profile',
-    '/applications' // ✅ ADICIONADO
-  ]
+  '/otc',
+  '/services',
+  '/profile',
+  '/applications',
+  '/marketing' // ✅ ADICIONADO
+]
 
   const lightRoutes = [
     '/deposit'
   ]
 
   const hideFooterRoutes = [
-    '/deposit',
-    '/applications' // ✅ ADICIONADO
-  ]
+  '/deposit',
+  '/applications',
+  '/marketing' // ✅ ADICIONADO
+]
 
   const isImmersive = immersiveRoutes.some(route =>
     pathname.startsWith(route)

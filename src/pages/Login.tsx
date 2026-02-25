@@ -1,9 +1,9 @@
 import { useState, useEffect, useContext } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Eye, EyeSlash, Phone } from '@phosphor-icons/react'
+import { Eye, EyeSlash } from '@phosphor-icons/react'
 
 import AuthLayout from '../layouts/AuthLayout'
-import { api } from '../services/api'
+import { loginUser } from '../services/api'
 import Toast from '../components/ui/Toast'
 import { AuthContext } from '../contexts/AuthContext'
 
@@ -12,7 +12,7 @@ export default function Login() {
   const navigate = useNavigate()
   const { login } = useContext(AuthContext)
 
-  const [phone, setPhone] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -31,7 +31,7 @@ export default function Login() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    if (!phone || !password) {
+    if (!identifier || !password) {
       setToastType('error')
       setToastMessage('Preencha todos os campos')
       setToastVisible(true)
@@ -41,13 +41,9 @@ export default function Login() {
     try {
       setLoading(true)
 
-      const response = await api.post('/auth/login', {
-        phone: `+244${phone.replace(/\D/g, '')}`,
-        password,
-      })
+      const data = await loginUser(identifier, password)
 
-      const { token, user } = response.data
-      login(token, user)
+      login(data.token, data.user)
 
       setToastType('success')
       setToastMessage('Login realizado com sucesso')
@@ -56,14 +52,12 @@ export default function Login() {
       setTimeout(() => navigate('/'), 600)
 
     } catch (err: any) {
-
       setToastType('error')
       setToastMessage(
         err?.response?.data?.message ||
-        'Telefone ou password inválidos'
+        'Credenciais inválidas'
       )
       setToastVisible(true)
-
     } finally {
       setLoading(false)
     }
@@ -83,30 +77,28 @@ export default function Login() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
 
-        {/* PHONE */}
+        {/* IDENTIFIER */}
         <div>
           <label className="block text-sm text-gray-400 mb-1">
-            Número de telefone
+            Email ou Telefone
           </label>
 
-          <div className="
-            flex items-center gap-2
-            h-12 rounded-xl
-            bg-white/5
-            border border-white/10
-            px-3
-            focus-within:border-emerald-500
-            transition
-          ">
-            <Phone size={18} className="text-gray-400" />
-            <span className="text-gray-400 text-sm">+244</span>
-            <input
-              type="tel"
-              className="flex-1 bg-transparent outline-none text-sm text-white"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
-            />
-          </div>
+          <input
+            type="text"
+            className="
+              w-full h-12 rounded-xl
+              bg-[#111827]
+              border border-gray-700
+              px-3 text-sm text-white
+              placeholder-gray-500
+              outline-none
+              focus:border-emerald-500
+              transition
+            "
+            value={identifier}
+            onChange={e => setIdentifier(e.target.value)}
+            placeholder="ex: user@email.com ou 923000000"
+          />
         </div>
 
         {/* PASSWORD */}
@@ -120,10 +112,11 @@ export default function Login() {
               type={showPassword ? 'text' : 'password'}
               className="
                 w-full h-12 rounded-xl
-                bg-white/5
-                border border-white/10
+                bg-[#111827]
+                border border-gray-700
                 px-3 pr-12
                 text-sm text-white
+                placeholder-gray-500
                 outline-none
                 focus:border-emerald-500
                 transition
@@ -154,6 +147,15 @@ export default function Login() {
         >
           {loading ? 'Entrando…' : 'Entrar'}
         </button>
+
+        <div className="text-center mt-2">
+  <Link
+    to="/reset-password"
+    className="text-sm text-gray-400 hover:text-emerald-400 transition"
+  >
+    Esqueci a password
+  </Link>
+</div>
 
         <div className="text-center">
           <Link

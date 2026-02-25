@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams } from "react-router-dom"
-import { otcChatService } from "../../services/otcChat"
-import { Clock } from "lucide-react"
+import { otcChat } from "../../services/otcChat"
+import { connectSocket } from "../../services/socket"
+import { Clock, ImagePlus } from "lucide-react"
 
 export default function OtcChat() {
 
@@ -9,129 +10,186 @@ export default function OtcChat() {
   const id = Number(orderId)
 
   const [messages, setMessages] = useState<any[]>([])
-  const [text, setText] = useState("")
   const [status, setStatus] = useState("")
   const [expiresAt, setExpiresAt] = useState("")
-  const [timeLeft, setTimeLeft] = useState(0)
-  const [sending, setSending] = useState(false)
+  const [typing, setTyping] = useState(false)
+  const [online, setOnline] = useState(true)
+  const [lastSeen, setLastSeen] = useState<Date | null>(null)
+  const [text, setText] = useState("")
+  const [uploading, setUploading] = useState(false)
+  const [preview, setPreview] = useState<string | null>(null)
 
   const bottomRef = useRef<HTMLDivElement>(null)
-
-  const load = useCallback(async () => {
-    if (!id || isNaN(id)) return
-
-    try {
-      const data = await otcChatService.get(id)
-      setMessages(data.conversation?.messages || [])
-      setStatus(data.orderStatus)
-      setExpiresAt(data.expiresAt)
-    } catch (err) {
-      console.error("Erro ao carregar chat", err)
-    }
-  }, [id])
-
-  useEffect(() => {
-    load()
-    const interval = setInterval(load, 4000)
-    return () => clearInterval(interval)
-  }, [load])
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
-
-  useEffect(() => {
-    if (!expiresAt || status !== "PENDING") return
-
-    const timer = setInterval(() => {
-      const diff = new Date(expiresAt).getTime() - Date.now()
-      setTimeLeft(diff > 0 ? Math.floor(diff / 1000) : 0)
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [expiresAt, status])
-
-  const send = async () => {
-    if (!text.trim() || sending || status !== "PENDING") return
-
-    try {
-      setSending(true)
-      await otcChatService.send(id, text.trim())
-      setText("")
-      await load()
-    } catch (err) {
-      console.error("Erro ao enviar mensagem", err)
-    } finally {
-      setSending(false)
-    }
-  }
-
-  const sendImage = async (file: File) => {
-    if (!file || sending || status !== "PENDING") return
-
-    try {
-      setSending(true)
-      await otcChatService.uploadImage(id, file)
-      await load()
-    } catch (err) {
-      console.error("Erro ao enviar imagem", err)
-    } finally {
-      setSending(false)
-    }
-  }
+  const socketRef = useRef<any>(null)
 
   const isClosed =
     ["RELEASED", "CANCELLED", "EXPIRED"].includes(status)
 
+  /* ================= LOAD ================= */
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await otcChat.get(id)
+
+        setMessages(data.conversation?.messages ?? [])
+        setStatus(data.orderStatus ?? "")
+        setExpiresAt(data.expiresAt ?? "")
+      } catch (err) {
+        console.error("Erro ao carregar chat:", err)
+      }
+    }
+
+    if (id && !isNaN(id)) load()
+  }, [id])
+
+  /* ================= SOCKET ================= */
+  useEffect(() => {
+
+    if (!id || isNaN(id)) return
+
+    const token = localStorage.getItem("token")
+    if (!token) return
+
+    const socket = connectSocket(token)
+    socketRef.current = socket
+
+    socket.emit("otc:join", id)
+
+    socket.on("otc:new-message", (msg: any) => {
+      setMessages(prev => [...prev, msg])
+      socket.emit("otc:read", id)
+    })
+
+    socket.on("otc:status-update", (data: any) => {
+      if (data.orderId === id) {
+        setStatus(data.status)
+      }
+    })
+
+    socket.on("otc:typing", () => setTyping(true))
+    socket.on("otc:stop-typing", () => setTyping(false))
+
+    socket.on("presence:update", (data: any) => {
+      if (!data) return
+      setOnline(data.isOnline)
+      if (!data.isOnline) {
+        setLastSeen(new Date())
+      }
+    })
+
+    return () => {
+      socket.off("otc:new-message")
+      socket.off("otc:status-update")
+      socket.off("otc:typing")
+      socket.off("otc:stop-typing")
+      socket.off("presence:update")
+    }
+
+  }, [id])
+
+  /* ================= AUTO SCROLL ================= */
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
+
+  /* ================= TIMER ================= */
+  const timeLeft = expiresAt
+    ? Math.max(
+        0,
+        Math.floor(
+          (new Date(expiresAt).getTime() - Date.now()) / 1000
+        )
+      )
+    : 0
+
   const minutes = Math.floor(timeLeft / 60)
   const seconds = timeLeft % 60
+
+  /* ================= SEND ================= */
+  const send = () => {
+    if (!text.trim() || isClosed) return
+    if (!socketRef.current) return
+
+    socketRef.current.emit("otc:message", {
+      orderId: id,
+      message: text.trim()
+    })
+
+    setText("")
+  }
+
+  /* ================= IMAGE ================= */
+  const upload = async (file: File) => {
+    if (!file || isClosed) return
+
+    try {
+      setUploading(true)
+      setPreview(URL.createObjectURL(file))
+
+      await otcChat.uploadImage(id, file)
+
+    } catch (err) {
+      console.error("Erro upload:", err)
+    } finally {
+      setPreview(null)
+      setUploading(false)
+    }
+  }
+
+  /* ================= ONLINE LABEL ================= */
+  const onlineLabel = typing
+    ? "escrevendo..."
+    : online
+    ? "Online"
+    : lastSeen
+    ? `visto há ${Math.floor(
+        (Date.now() - lastSeen.getTime()) / 60000
+      )} min`
+    : "Offline"
+
+  const statusColor = {
+    PENDING: "bg-orange-500/20 text-orange-400",
+    PAID: "bg-blue-500/20 text-blue-400",
+    RELEASED: "bg-emerald-500/20 text-emerald-400",
+    CANCELLED: "bg-red-500/20 text-red-400",
+    EXPIRED: "bg-gray-500/20 text-gray-400"
+  }[status] || "bg-gray-500/20 text-gray-400"
 
   return (
     <div className="flex flex-col h-screen bg-[#0B1220] text-white">
 
-      {/* HEADER FIXO */}
-      <div className="
-        sticky top-0 z-50
-        bg-[#0F172A]
-        border-b border-white/10
-        px-5 py-4
-        flex justify-between items-center
-      ">
+      {/* HEADER */}
+      <div className="bg-[#0F172A] border-b border-white/10 px-6 py-4 flex justify-between items-center">
 
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full overflow-hidden border border-white/10">
-            <img
-              src="/logo.png"
-              alt="Admin"
-              className="w-full h-full object-cover"
-            />
-          </div>
-
+          <img src="/logo.png" className="w-10 h-10 rounded-full" />
           <div>
             <p className="text-sm font-semibold">
-              Ordem #{orderId}
+              EMATEA #{id}
             </p>
-            <p className="text-xs text-gray-400">
-              {status}
+            <p className="text-xs text-green-400">
+              {onlineLabel}
             </p>
           </div>
         </div>
 
-        {status === "PENDING" && (
-          <div className="
-            flex items-center gap-2
-            bg-white/5 border border-white/10
-            px-3 py-1 rounded-full text-xs
-          ">
-            <Clock size={14} />
-            {minutes}:{seconds.toString().padStart(2, "0")}
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          <span className={`px-3 py-1 rounded-full text-xs ${statusColor}`}>
+            {status}
+          </span>
+
+          {status === "PENDING" && (
+            <div className="flex items-center gap-2 text-orange-400 text-sm">
+              <Clock size={14} />
+              {minutes}:{seconds.toString().padStart(2, "0")}
+            </div>
+          )}
+        </div>
 
       </div>
 
       {/* CHAT */}
-      <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
 
         {messages.map((m) => (
           <div
@@ -139,92 +197,68 @@ export default function OtcChat() {
             className={`flex ${m.isAdmin ? "justify-start" : "justify-end"}`}
           >
             <div
-              className={`
-                max-w-[75%]
-                px-4 py-3
-                rounded-2xl
-                text-sm
-                shadow-md
-                ${m.isAdmin
-                  ? "bg-white/10 border border-white/10"
-                  : "bg-emerald-600"}
-              `}
+              className={`relative px-4 py-3 rounded-2xl max-w-[70%] text-sm shadow-md ${
+                m.isAdmin
+                  ? "bg-[#1E293B] border border-white/10"
+                  : "bg-gradient-to-br from-emerald-500 to-emerald-600"
+              }`}
             >
-              {m.type === "IMAGE" && m.content && (
-                <img
-                  src={m.content}
-                  alt="Imagem"
-                  className="rounded-xl mb-2 max-h-60 object-contain"
-                />
-              )}
-
-              {m.type === "TEXT" && m.content}
+              {m.type === "IMAGE"
+                ? <img src={m.content} className="rounded-xl max-w-full" />
+                : m.content}
             </div>
           </div>
         ))}
 
+        {preview && (
+          <div className="flex justify-end">
+            <img
+              src={preview}
+              className="rounded-xl max-w-[60%] opacity-50"
+            />
+          </div>
+        )}
+
         <div ref={bottomRef} />
       </div>
 
-      {/* INPUT FIXO */}
+      {/* INPUT */}
       {!isClosed && (
-        <div className="
-          sticky bottom-0
-          bg-[#0F172A]
-          border-t border-white/10
-          px-5 py-4
-        ">
-
+        <div className="bg-[#0F172A] border-t border-white/10 px-6 py-4">
           <div className="flex items-center gap-3">
 
-            {/* BOTÃO IMAGEM */}
-            <label className="
-              w-10 h-10
-              flex items-center justify-center
-              bg-white/5 border border-white/10
-              rounded-full cursor-pointer
-              hover:bg-white/10 transition
-            ">
-              📎
+            <label className="cursor-pointer">
+              <ImagePlus size={20} />
               <input
                 type="file"
+                hidden
                 accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) sendImage(file)
-                }}
+                onChange={(e) =>
+                  e.target.files && upload(e.target.files[0])
+                }
               />
             </label>
 
-            {/* INPUT TEXTO */}
             <input
-              disabled={sending}
               value={text}
-              onChange={e => setText(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && send()}
+              onChange={(e) => {
+                setText(e.target.value)
+                socketRef.current?.emit("otc:typing", id)
+              }}
+              onBlur={() =>
+                socketRef.current?.emit("otc:stop-typing", id)
+              }
+              onKeyDown={(e) =>
+                e.key === "Enter" && send()
+              }
               placeholder="Digite sua mensagem..."
-              className="
-                flex-1
-                bg-white/5 border border-white/10
-                px-4 py-3 rounded-full
-                text-sm outline-none
-                focus:border-emerald-500
-              "
+              className="flex-1 bg-white/5 px-4 py-3 rounded-full outline-none"
             />
 
-            {/* BOTÃO ENVIAR */}
             <button
-              disabled={sending}
               onClick={send}
-              className="
-                bg-emerald-600
-                px-6 py-3 rounded-full
-                font-medium
-                transition
-                hover:bg-emerald-700
-                disabled:opacity-50
-              "
+              disabled={uploading}
+              className="bg-emerald-600 px-5 py-2 rounded-full"
             >
               Enviar
             </button>

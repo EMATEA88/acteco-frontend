@@ -57,6 +57,7 @@ export default function About() {
         <ul className="text-sm text-gray-400 space-y-2">
           <li>• Compra e venda de USDT, BTC, BNB e outros ativos digitais</li>
           <li>• Recargas eletrónicas para todos serviços em Angola</li>
+          <li>• Aplicações de depósito a prazos</li>
         </ul>
       </section>
 
@@ -77,7 +78,9 @@ export default function About() {
           <li>• Criação de websites profissionais</li>
           <li>• Desenvolvimento de aplicações (APPs)</li>
           <li>• Design & identidade visual</li>
-          <li>• Logotipos 3D e tradicionais</li>
+          <li>• Logotipos 3D e tradicionais para empresas e particulares</li>
+          <li>• Criação de vídeos publicitários e pacotes de Prompt</li>
+          <li>• Criação de cartões VISA internacional, formato físico e virtual</li>
         </ul>
       </section>
 

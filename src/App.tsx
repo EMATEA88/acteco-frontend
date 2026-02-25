@@ -6,6 +6,9 @@ import { PrivateRoute } from './routes/PrivateRoute'
 import Login from './pages/Login'
 import Register from './pages/Register'
 
+/* ===== Reset Password ===== */
+import ResetPassword from './pages/ResetPassword'
+
 /* ===== CORE APP ===== */
 import Home from './pages/Home'
 import History from './pages/History'
@@ -30,6 +33,7 @@ import Services from './pages/services/Services'
 import PartnerPlans from './pages/PartnerPlans'
 import KYCPage from './pages/user/KYCPage'
 import Applications from './pages/user/Applications'
+import Marketing from "./pages/Marketing"
 
 /* ===== OTC USER ===== */
 import OtcPage from "./pages/otc/OtcPage"
@@ -68,6 +72,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
+        {/* ===== Reset Password ===== */}
+        <Route path="/reset-password" element={<ResetPassword />} />
+
         {/* =====================
             PRIVATE APP
         ===================== */}
@@ -96,6 +103,7 @@ function App() {
           <Route path="services" element={<Services />} />
           <Route path="services/:id" element={<PartnerPlans />} />
           <Route path="kyc" element={<KYCPage />} />
+          <Route path="/marketing" element={<Marketing />} />
 
           {/* OTC */}
           <Route path="otc" element={<OtcPage />} />

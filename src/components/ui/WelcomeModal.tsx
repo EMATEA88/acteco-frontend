@@ -20,6 +20,7 @@ export default function WelcomeModal() {
 
   return (
     <div
+      onClick={() => setOpen(false)}
       className="
         fixed inset-0 z-50
         flex items-center justify-center
@@ -27,7 +28,9 @@ export default function WelcomeModal() {
       "
     >
       <div
+        onClick={(e) => e.stopPropagation()}
         className="
+          relative
           w-[90%] max-w-sm
           bg-[#0F172A]
           border border-white/10
@@ -38,9 +41,14 @@ export default function WelcomeModal() {
         "
       >
 
+        {/* X AGORA RELATIVO AO CARD */}
         <button
           onClick={() => setOpen(false)}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white"
+          className="
+            absolute top-4 right-4
+            text-gray-400 hover:text-white
+            transition active:scale-90
+          "
         >
           <X size={20} />
         </button>
@@ -77,7 +85,7 @@ export default function WelcomeModal() {
               flex items-center justify-center gap-2
               transition
               hover:bg-emerald-700
-              hover:scale-105
+              active:scale-95
             "
           >
             <MessageCircle size={18} />
@@ -95,7 +103,9 @@ export default function WelcomeModal() {
                 w-full h-12 rounded-xl
                 bg-green-500 text-white font-semibold
                 flex items-center justify-center gap-2
-                hover:bg-green-600 transition hover:scale-105
+                hover:bg-green-600
+                active:scale-95
+                transition
               "
             >
               <MessageCircle size={18} />
@@ -109,7 +119,9 @@ export default function WelcomeModal() {
                 w-full h-12 rounded-xl
                 bg-emerald-600 text-white font-semibold
                 flex items-center justify-center gap-2
-                hover:bg-emerald-700 transition hover:scale-105
+                hover:bg-emerald-700
+                active:scale-95
+                transition
               "
             >
               <Users size={18} />
@@ -118,7 +130,7 @@ export default function WelcomeModal() {
 
             <button
               onClick={() => setShowOptions(false)}
-              className="text-xs text-gray-500"
+              className="text-xs text-gray-500 hover:text-gray-300 transition"
             >
               Voltar
             </button>
