@@ -74,76 +74,78 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-[#0B1220] text-white pb-24">
 
-      {/* CARD SUPERIOR INSTITUCIONAL */}
-      <div className="px-6 pt-16">
-        <div className="bg-[#111827] border border-white/10 rounded-3xl p-6 shadow-2xl">
+      {/* CARD SUPERIOR FULL WIDTH */}
+      <div className="pt-14">
 
-          {/* STATUS CONTA */}
+        <div className="bg-[#111827] border-y border-white/10 shadow-xl px-6 py-5">
+
           <StatusBadge
             isVerified={user.isVerified}
             kycStatus={kycStatus}
             onVerify={() => navigate('/kyc')}
           />
 
-          {/* INFO PRINCIPAL */}
-          <div className="flex items-center gap-4 mt-6">
+          {/* LINHA PRINCIPAL HORIZONTAL */}
+          <div className="flex items-center gap-4 mt-5">
 
-            <div className="w-16 h-16 rounded-full overflow-hidden border border-white/10">
+            <div className="w-14 h-14 rounded-full overflow-hidden border border-white/10">
               <img src="/logo.png" className="w-full h-full object-cover" />
             </div>
 
-            <div className="flex-1 space-y-1">
+            <div className="flex-1">
 
-              <p className="text-sm text-gray-400">
+              <p className="text-xs text-gray-400">
                 {user.email}
               </p>
 
-              <p className="text-lg font-medium tracking-wide">
+              <p className="text-base font-medium mt-1">
                 {user.phone}
               </p>
 
-              <div className="flex items-center gap-2 text-xs text-gray-500">
+              <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
                 <span>ID: {shortId}</span>
                 <button onClick={() => copyText(user.publicId)}>
                   {copiedId ? <Check size={14} /> : <Copy size={14} />}
                 </button>
               </div>
 
-              <p className="text-xs text-gray-500 mt-1">
-                Conta criada em {new Date(user.createdAt).toLocaleDateString('pt-AO')}
+              <p className="text-[11px] text-gray-500 mt-1">
+                Criada em {new Date(user.createdAt).toLocaleDateString('pt-AO')}
               </p>
 
             </div>
+
           </div>
 
-          {/* SALDO + INFO CONTA */}
-          <div className="mt-6 border-t border-white/10 pt-6 flex items-center justify-between">
+          {/* SALDO + AÇÕES */}
+          <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
 
             <div>
-              <p className="text-xs text-gray-400">
+              <p className="text-[11px] text-gray-400">
                 Saldo disponível
               </p>
-              <p className="text-2xl font-semibold mt-1">
+
+              <p className="text-xl font-semibold mt-1">
                 {user.balance?.toLocaleString()} Kz
               </p>
 
-              <div className="mt-2 text-xs text-gray-500 space-y-1">
-                <p>Nível da conta: <span className="text-white">{accountLevel}</span></p>
-                <p>Limite diário: <span className="text-white">{accountLimit}</span></p>
+              <div className="mt-2 text-[11px] text-gray-500 space-y-1">
+                <p>Nível: <span className="text-white">{accountLevel}</span></p>
+                <p>Limite: <span className="text-white">{accountLimit}</span></p>
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2">
 
               <SmallAction
                 label="Recarregar"
-                icon={<Wallet size={16} weight="fill" />}
+                icon={<Wallet size={14} weight="fill" />}
                 onClick={() => navigate('/deposit')}
               />
 
               <SmallAction
                 label="Retirar"
-                icon={<ArrowDown size={16} weight="fill" />}
+                icon={<ArrowDown size={14} weight="fill" />}
                 onClick={() => navigate('/withdraw')}
               />
 
@@ -190,7 +192,7 @@ export default function Profile() {
   )
 }
 
-/* ================= COMPONENTES ================= */
+/* COMPONENTES */
 
 function StatusBadge({
   isVerified,
@@ -203,7 +205,7 @@ function StatusBadge({
 
   if (isVerified) {
     return (
-      <div className="border border-emerald-500/30 bg-emerald-500/10 rounded-xl px-4 py-3 text-emerald-400">
+      <div className="border border-emerald-500/30 bg-emerald-500/10 rounded-lg px-4 py-3 text-emerald-400">
         <p className="text-sm font-medium">Conta verificada</p>
         <p className="text-xs opacity-70 mt-1">
           Sua conta está totalmente ativa.
@@ -213,19 +215,15 @@ function StatusBadge({
   }
 
   return (
-    <div className="border border-yellow-500/30 bg-yellow-500/10 rounded-xl px-4 py-3">
+    <div className="border border-yellow-500/30 bg-yellow-500/10 rounded-lg px-4 py-3">
 
       <p className="text-sm font-medium text-yellow-400">
         Conta não verificada
       </p>
 
-      <p className="text-xs text-yellow-300/70 mt-1">
-        Verifique sua conta para aumentar limites.
-      </p>
-
       <button
         onClick={onVerify}
-        className="mt-3 text-xs bg-yellow-500 text-black px-3 py-1 rounded-lg hover:opacity-90 transition"
+        className="mt-3 text-xs bg-yellow-500 text-black px-3 py-1 rounded-md hover:opacity-90 transition"
       >
         Verificar Conta
       </button>
@@ -250,10 +248,10 @@ function SmallAction({
         bg-white/5
         border border-white/10
         hover:bg-white/10
-        px-4 py-2
-        rounded-xl
-        text-xs
-        flex items-center gap-2
+        px-3 py-1.5
+        rounded-lg
+        text-[11px]
+        flex items-center gap-1.5
         transition
       "
     >

@@ -9,6 +9,16 @@ export default function Marketing() {
   const [index, setIndex] = useState(0)
   const [fade, setFade] = useState(true)
 
+  /* BLOQUEAR SCROLL GLOBAL */
+  useEffect(() => {
+    document.body.style.overflow = "hidden"
+
+    return () => {
+      document.body.style.overflow = "auto"
+    }
+  }, [])
+
+  /* AUTO SLIDER */
   useEffect(() => {
     const interval = setInterval(() => {
 
@@ -25,7 +35,7 @@ export default function Marketing() {
   }, [])
 
   return (
-    <div className="h-screen overflow-hidden bg-[#0B1220] text-white flex flex-col">
+    <div className="fixed inset-0 bg-[#0B1220] text-white flex flex-col">
 
       {/* HEADER FIXO */}
       <div className="
@@ -39,7 +49,7 @@ export default function Marketing() {
         </h1>
       </div>
 
-      {/* CONTEÚDO FIXO CENTRAL */}
+      {/* CONTEÚDO CENTRAL FIXO */}
       <div className="
         flex-1
         flex
@@ -52,7 +62,7 @@ export default function Marketing() {
           relative
           w-full
           max-w-6xl
-          h-[70vh]
+          h-[72vh]
           rounded-3xl
           overflow-hidden
           border border-white/10
@@ -76,7 +86,7 @@ export default function Marketing() {
 
       </div>
 
-      {/* INDICADORES PREMIUM */}
+      {/* INDICADORES */}
       <div className="
         shrink-0
         flex

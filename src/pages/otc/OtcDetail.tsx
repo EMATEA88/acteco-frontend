@@ -16,6 +16,7 @@ export default function OtcDetail() {
 
   const { assetId: paramAssetId, type: paramType } = useParams()
   const assetId = Number(paramAssetId)
+
   const type = paramType === "BUY" ? "BUY" : "SELL"
 
   const navigate = useNavigate()
@@ -42,7 +43,8 @@ export default function OtcDetail() {
     setTimeout(() => setToastVisible(false), 2500)
   }
 
-  // ================= LOAD ASSET =================
+  /* ================= LOAD ASSET ================= */
+
   const loadAsset = useCallback(async () => {
     if (!assetId || isNaN(assetId)) {
       navigate("/otc")
@@ -75,26 +77,36 @@ export default function OtcDetail() {
     loadAsset()
   }, [loadAsset])
 
-  // ================= VERIFICATION =================
+  /* ================= VERIFICATION ================= */
+
   const isVerified =
     user?.isVerified === true ||
     user?.verification?.status === "VERIFIED"
 
-  // ================= BALANCE =================
+  /* ================= BALANCE ================= */
+
   const userBalance = useMemo(() => {
     const balance = Number(user?.balance ?? 0)
     return isNaN(balance) ? 0 : balance
   }, [user])
 
-  // ================= PRICE =================
-  const price = useMemo(() => {
-    if (!asset) return 0
-    return type === "BUY"
-      ? Number(asset.sellPrice)
-      : Number(asset.buyPrice)
-  }, [asset, type])
+  /* ================= PRICE ================= */
 
-  // ================= QUANTITY =================
+const price = useMemo(() => {
+  if (!asset) return 0
+
+  // REGRA GLOBAL CORRETA:
+  // BUY  → empresa vende → sellPrice
+  // SELL → empresa compra → buyPrice
+
+  return type === "BUY"
+    ? Number(asset.sellPrice)
+    : Number(asset.buyPrice)
+
+}, [asset, type])
+
+  /* ================= QUANTITY ================= */
+
   const sanitizedQuantity = useMemo(() => {
     const numeric = Number(quantity)
     return isNaN(numeric) ? 0 : numeric
@@ -119,7 +131,8 @@ export default function OtcDetail() {
     setQuantity(sanitized)
   }
 
-  // ================= CREATE ORDER =================
+  /* ================= CREATE ORDER ================= */
+
   const createOrder = async () => {
 
     if (loading) return
@@ -158,22 +171,7 @@ export default function OtcDetail() {
         err?.response?.data?.message ||
         err?.response?.data?.error
 
-      switch (message) {
-        case "USER_NOT_VERIFIED":
-          triggerToast("Conta não verificada")
-          break
-        case "BANK_NOT_LINKED":
-          triggerToast("Conta bancária não vinculada")
-          break
-        case "ASSET_NOT_AVAILABLE":
-          triggerToast("Ativo indisponível")
-          break
-        case "INVALID_ORDER_DATA":
-          triggerToast("Dados inválidos")
-          break
-        default:
-          triggerToast(message || "Erro ao criar ordem")
-      }
+      triggerToast(message || "Erro ao criar ordem")
 
     } finally {
       setLoading(false)
@@ -221,12 +219,12 @@ export default function OtcDetail() {
             </div>
 
             <div className="flex justify-between text-xs text-gray-500">
-              <span>Compra</span>
+              <span>Preço Compra</span>
               <span>{formatMoney(asset.buyPrice)}</span>
             </div>
 
             <div className="flex justify-between text-xs text-gray-500">
-              <span>Venda</span>
+              <span>Preço Venda</span>
               <span>{formatMoney(asset.sellPrice)}</span>
             </div>
 

@@ -9,10 +9,10 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1220] text-white px-6 py-10 space-y-12">
+    <div className="min-h-screen bg-[#0B1220] text-white px-5 pt-16 pb-24">
 
-      {/* 4 CARDS SUPERIORES */}
-      <div className="grid grid-cols-2 gap-6">
+      {/* SEÇÃO PRINCIPAL */}
+      <div className="grid grid-cols-2 gap-4">
 
         <ImageCard
           image="/assets/home/fundos.png"
@@ -23,61 +23,61 @@ export default function Home() {
 
         <ImageCard
           image="/assets/home/cripto.png"
-          title=""
-          subtitle="USDT, BTC, BNB e outros ativos digitais"
+          title="Compra & Venda"
+          subtitle="USDT, BTC, BNB e ativos digitais"
           onClick={() => navigate("/otc")}
         />
 
         <ImageCard
           image="/assets/home/marketing.png"
-          title="Marketing & Publicidade"
-          subtitle="Criação de vídeos e campanhas publicitárias"
+          title="Marketing"
+          subtitle="Vídeos e campanhas"
           onClick={() => navigate("/marketing")}
         />
 
         <ImageCard
           image="/assets/home/tecnologia.png"
-          title="Tecnologia & Apps"
-          subtitle="Desenvolvimento web, apps e design"
+          title="Tecnologia"
+          subtitle="Web, apps e design"
           onClick={openWhatsapp}
         />
 
       </div>
 
       {/* NOSSOS SERVIÇOS */}
-      <div className="space-y-6">
+      <div className="mt-12">
 
-        <h2 className="text-2xl font-semibold">
-          Nossos Serviços
+        <h2 className="text-lg font-semibold tracking-wide text-gray-300 mb-6">
+          NOSSOS SERVIÇOS
         </h2>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-4">
 
           <ImageCard
             image="/assets/home/deposito.png"
             title="Depósito"
-            subtitle="Depósito"
+            subtitle="Adicionar saldo"
             onClick={() => navigate("/deposit")}
           />
 
           <ImageCard
             image="/assets/home/levantamento.png"
-            title=""
-            subtitle="Levantamento"
+            title="Levantamento"
+            subtitle="Retirar fundos"
             onClick={() => navigate("/withdraw")}
           />
 
           <ImageCard
             image="/assets/home/aplicacoes.png"
-            title="Sobre"
-            subtitle="EMATEA"
-            onClick={() => navigate("/about")}
+            title="Aplicações"
+            subtitle="Fundos por prazo"
+            onClick={() => navigate("/applications")}
           />
 
           <ImageCard
             image="/assets/home/design.png"
-            title=""
-            subtitle="Design & identidade"
+            title="Design"
+            subtitle="Identidade visual"
             onClick={() => navigate("/about")}
           />
 
@@ -89,48 +89,59 @@ export default function Home() {
   )
 }
 
-function ImageCard({ image, title, subtitle, onClick }: any) {
+/* ================= CARD PADRÃO ================= */
+
+function ImageCard({
+  image,
+  title,
+  subtitle,
+  onClick
+}: {
+  image: string
+  title: string
+  subtitle: string
+  onClick: () => void
+}) {
+
   return (
     <button
       onClick={onClick}
       className="
         relative
-        rounded-3xl
+        rounded-2xl
         overflow-hidden
         border border-white/10
         bg-[#111827]
-        h-[230px]
-        text-left
-        group
-        shadow-xl
+        h-[180px]
+        flex
+        shadow-lg
         transition
-        hover:scale-[1.03]
+        active:scale-[0.98]
       "
     >
 
-      {/* IMAGEM FUNDO */}
+      {/* IMAGEM */}
       <img
         src={image}
         alt={title}
         className="
-          absolute inset-0 w-full h-full object-cover
-          opacity-80
-          group-hover:scale-110
-          transition duration-500
+          absolute inset-0
+          w-full h-full
+          object-cover
         "
       />
 
-      {/* OVERLAY ESCURO */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/80" />
+      {/* OVERLAY PROFISSIONAL */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85" />
 
-      {/* TEXTO */}
-      <div className="relative z-10 p-5 h-full flex flex-col justify-end">
+      {/* CONTEÚDO */}
+      <div className="relative z-10 p-4 flex flex-col justify-end w-full">
 
-        <h3 className="text-lg font-semibold">
+        <h3 className="text-sm font-semibold leading-tight">
           {title}
         </h3>
 
-        <p className="text-sm text-gray-300 mt-2">
+        <p className="text-xs text-gray-300 mt-1 leading-tight">
           {subtitle}
         </p>
 
