@@ -12,21 +12,16 @@ export default function Password() {
 
   const navigate = useNavigate()
 
-  /* ================= STATE ================= */
-
   const [loginCurrent, setLoginCurrent] = useState('')
   const [loginNew, setLoginNew] = useState('')
-
   const [withdrawCurrent, setWithdrawCurrent] = useState('')
   const [withdrawNew, setWithdrawNew] = useState('')
-
   const [loading, setLoading] = useState(false)
+
   const [message, setMessage] = useState<{
     type: 'success' | 'error'
     text: string
   } | null>(null)
-
-  /* ================= HELPERS ================= */
 
   function showError(text: string) {
     setMessage({ type: 'error', text })
@@ -35,8 +30,6 @@ export default function Password() {
   function showSuccess(text: string) {
     setMessage({ type: 'success', text })
   }
-
-  /* ================= ACTIONS ================= */
 
   async function handleLoginPasswordChange() {
     setMessage(null)
@@ -109,17 +102,15 @@ export default function Password() {
     }
   }
 
-  /* ================= UI ================= */
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white">
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF]">
 
-      {/* HEADER FIXO */}
-      <div className="sticky top-0 z-50 bg-[#0F172A] border-b border-white/10 px-6 py-4 flex items-center gap-4">
+      {/* HEADER */}
+      <div className="sticky top-0 z-50 bg-[#1E2329] border-b border-[#2B3139] px-6 py-4 flex items-center gap-4">
 
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition"
+          className="p-2 rounded-lg bg-[#2B3139] hover:bg-[#3A424D] transition"
         >
           <ArrowLeft size={18} />
         </button>
@@ -136,10 +127,10 @@ export default function Password() {
         {message && (
           <div
             className={`
-              flex items-center gap-3 text-sm rounded-2xl p-4
+              flex items-center gap-3 text-sm rounded-2xl p-4 border
               ${message.type === 'success'
-                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
-                : 'bg-red-500/15 text-red-400 border border-red-500/20'}
+                ? 'bg-[#1E2329] text-[#FCD535] border-[#FCD535]/40'
+                : 'bg-[#1E2329] text-[#EF4444] border-[#EF4444]/40'}
             `}
           >
             {message.type === 'success'
@@ -151,20 +142,18 @@ export default function Password() {
           </div>
         )}
 
-        {/* LOGIN PASSWORD CARD */}
+        {/* LOGIN CARD */}
         <div className="
-          bg-white/5
-          backdrop-blur-xl
-          border border-white/10
+          bg-[#1E2329]
+          border border-[#2B3139]
           rounded-3xl
           p-8
-          shadow-2xl
           space-y-6
         ">
 
-          <div className="flex items-center gap-3 text-emerald-400">
+          <div className="flex items-center gap-3 text-[#FCD535]">
             <Lock size={20} />
-            <h2 className="font-semibold text-white">
+            <h2 className="font-semibold">
               Senha de login
             </h2>
           </div>
@@ -192,20 +181,18 @@ export default function Password() {
 
         </div>
 
-        {/* WITHDRAW PASSWORD CARD */}
+        {/* WITHDRAW CARD */}
         <div className="
-          bg-white/5
-          backdrop-blur-xl
-          border border-white/10
+          bg-[#1E2329]
+          border border-[#2B3139]
           rounded-3xl
           p-8
-          shadow-2xl
           space-y-6
         ">
 
-          <div className="flex items-center gap-3 text-emerald-400">
+          <div className="flex items-center gap-3 text-[#FCD535]">
             <Lock size={20} />
-            <h2 className="font-semibold text-white">
+            <h2 className="font-semibold">
               Senha de levantamento
             </h2>
           </div>
@@ -238,9 +225,7 @@ export default function Password() {
   )
 }
 
-/* ============================= */
-/* COMPONENTES REUTILIZÁVEIS */
-/* ============================= */
+/* ================= COMPONENTES ================= */
 
 function Input({
   type,
@@ -261,11 +246,11 @@ function Input({
       onChange={e => onChange(e.target.value)}
       className="
         w-full h-12 rounded-xl
-        bg-white/5
-        border border-white/10
-        px-4 text-sm text-white
-        focus:ring-2 focus:ring-emerald-500
-        focus:border-emerald-500
+        bg-[#1E2329]
+        border border-[#2B3139]
+        px-4 text-sm text-[#EAECEF]
+        placeholder-[#848E9C]
+        focus:border-[#FCD535]
         outline-none
         transition
       "
@@ -288,8 +273,8 @@ function PrimaryButton({
       disabled={loading}
       className="
         w-full h-12 rounded-xl font-semibold
-        bg-emerald-600 text-white
-        hover:bg-emerald-700 transition
+        bg-[#FCD535] text-black
+        hover:brightness-110 transition
         active:scale-95 disabled:opacity-50
       "
     >

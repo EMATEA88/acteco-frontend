@@ -74,7 +74,7 @@ export default function KYCPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white">
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF]">
 
       <Toast
         message={toastMessage}
@@ -82,9 +82,9 @@ export default function KYCPage() {
         type={toastType}
       />
 
-      {/* HEADER FIXO */}
-      <div className="sticky top-0 z-50 bg-[#0F172A] border-b border-white/10 px-6 py-4 flex items-center gap-3">
-        <ShieldCheck size={20} className="text-emerald-400" />
+      {/* HEADER */}
+      <div className="sticky top-0 z-50 bg-[#1E2329] border-b border-[#2B3139] px-6 py-4 flex items-center gap-3">
+        <ShieldCheck size={20} className="text-[#FCD535]" />
         <h1 className="text-lg font-semibold tracking-wide">
           Verificação de Conta
         </h1>
@@ -92,20 +92,16 @@ export default function KYCPage() {
 
       <div className="px-6 py-8 space-y-8 max-w-xl mx-auto pb-28">
 
-        {/* STATUS VISUAL */}
         {status !== "LOADING" && (
           <StatusBadge status={status} />
         )}
 
-        {/* FORM */}
         {status !== "VERIFIED" && (
           <div className="
-            bg-white/5
-            backdrop-blur-xl
-            border border-white/10
+            bg-[#1E2329]
+            border border-[#2B3139]
             rounded-3xl
             p-8
-            shadow-2xl
             space-y-8
           ">
 
@@ -132,8 +128,8 @@ export default function KYCPage() {
               disabled={loading}
               className="
                 w-full h-12 rounded-xl font-semibold
-                bg-emerald-600 text-white
-                hover:bg-emerald-700 transition
+                bg-[#FCD535] text-black
+                hover:brightness-110 transition
                 active:scale-95 disabled:opacity-50
               "
             >
@@ -148,9 +144,7 @@ export default function KYCPage() {
   )
 }
 
-/* ============================= */
-/* STATUS BADGE PROFISSIONAL */
-/* ============================= */
+/* ================= STATUS BADGE ================= */
 
 function StatusBadge({ status }: { status: string }) {
 
@@ -158,17 +152,17 @@ function StatusBadge({ status }: { status: string }) {
     VERIFIED: {
       icon: <CheckCircle size={18} />,
       text: "Conta verificada com sucesso",
-      style: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
+      style: "bg-[#1E2329] text-[#FCD535] border border-[#FCD535]/40"
     },
     PENDING: {
       icon: <Clock size={18} />,
       text: "Documentos em análise",
-      style: "bg-yellow-500/15 text-yellow-400 border border-yellow-500/20"
+      style: "bg-[#1E2329] text-[#FCD535] border border-[#FCD535]/40"
     },
     REJECTED: {
       icon: <XCircle size={18} />,
       text: "Documentos rejeitados. Envie novamente.",
-      style: "bg-red-500/15 text-red-400 border border-red-500/20"
+      style: "bg-[#1E2329] text-[#EF4444] border border-[#EF4444]/40"
     }
   }
 
@@ -186,9 +180,7 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-/* ============================= */
-/* UPLOAD CARD PROFISSIONAL */
-/* ============================= */
+/* ================= UPLOAD CARD ================= */
 
 function UploadCard({
   label,
@@ -205,19 +197,18 @@ function UploadCard({
   return (
     <div className="space-y-3">
 
-      <label className="text-sm text-gray-300 font-medium">
+      <label className="text-sm text-[#848E9C] font-medium">
         {label}
       </label>
 
       <div className="
-        border-2 border-dashed border-white/20
+        border-2 border-dashed border-[#2B3139]
         rounded-2xl
         p-6
         text-center
-        hover:border-emerald-500
         transition
         cursor-pointer
-        bg-white/5
+        bg-[#1E2329]
       ">
 
         {preview ? (
@@ -227,7 +218,7 @@ function UploadCard({
             className="mx-auto h-32 object-contain rounded-xl"
           />
         ) : (
-          <div className="flex flex-col items-center gap-2 text-gray-400">
+          <div className="flex flex-col items-center gap-2 text-[#848E9C]">
             <Upload size={24} />
             <p className="text-sm">
               Clique para selecionar imagem
@@ -249,7 +240,7 @@ function UploadCard({
 
         <label
           htmlFor={label}
-          className="block mt-4 text-emerald-400 font-medium cursor-pointer"
+          className="block mt-4 text-[#FCD535] font-medium cursor-pointer"
         >
           Selecionar Imagem
         </label>

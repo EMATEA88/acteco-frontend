@@ -12,7 +12,6 @@ export default function Marketing() {
   /* BLOQUEAR SCROLL GLOBAL */
   useEffect(() => {
     document.body.style.overflow = "hidden"
-
     return () => {
       document.body.style.overflow = "auto"
     }
@@ -35,16 +34,16 @@ export default function Marketing() {
   }, [])
 
   return (
-    <div className="fixed inset-0 bg-[#0B1220] text-white flex flex-col">
+    <div className="fixed inset-0 bg-[#0B0E11] text-[#EAECEF] flex flex-col">
 
       {/* HEADER FIXO */}
       <div className="
         shrink-0
-        bg-[#0F172A]
-        border-b border-white/10
+        bg-[#1E2329]
+        border-b border-[#2B3139]
         px-8 py-5
       ">
-        <h1 className="text-2xl font-semibold tracking-wide">
+        <h1 className="text-2xl font-semibold">
           Marketing & Publicidade
         </h1>
       </div>
@@ -65,8 +64,7 @@ export default function Marketing() {
           h-[72vh]
           rounded-3xl
           overflow-hidden
-          border border-white/10
-          shadow-[0_0_60px_rgba(16,185,129,0.08)]
+          border border-[#2B3139]
         ">
 
           <img
@@ -100,8 +98,8 @@ export default function Marketing() {
             className={`
               h-1.5 w-8 rounded-full transition-all
               ${index % 6 === i
-                ? "bg-emerald-500"
-                : "bg-white/20"}
+                ? "bg-[#FCD535]"
+                : "bg-[#2B3139]"}
             `}
           />
         ))}

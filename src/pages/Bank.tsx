@@ -57,10 +57,8 @@ export default function Bank() {
         JSON.stringify(form)
       )
 
-      // 🔔 Toast verde profissional
       toast.success('Dados bancários salvos com sucesso')
 
-      // 🔄 Pequeno delay para UX
       setTimeout(() => {
         navigate('/profile')
       }, 800)
@@ -76,12 +74,12 @@ export default function Bank() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white px-6 pt-16 pb-28">
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] px-6 pt-16 pb-28">
 
       {/* HEADER */}
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 rounded-full bg-emerald-600/20 flex items-center justify-center">
-          <Landmark size={20} className="text-emerald-400" />
+        <div className="w-10 h-10 rounded-full bg-[#1E2329] flex items-center justify-center border border-[#2B3139]">
+          <Landmark size={20} className="text-[#FCD535]" />
         </div>
 
         <h1 className="text-lg font-semibold tracking-wide">
@@ -91,13 +89,11 @@ export default function Bank() {
 
       {/* CARD */}
       <div className="
-        bg-white/5
-        backdrop-blur-xl
-        border border-white/10
+        bg-[#1E2329]
+        border border-[#2B3139]
         rounded-3xl
         p-8
         space-y-6
-        shadow-2xl
       ">
 
         <Input
@@ -129,8 +125,8 @@ export default function Bank() {
           disabled={saving}
           className="
             w-full h-12 rounded-xl font-semibold
-            bg-emerald-600 text-white
-            hover:bg-emerald-700 transition
+            bg-[#FCD535] text-black
+            hover:brightness-110 transition
             active:scale-95 disabled:opacity-50
           "
         >
@@ -144,7 +140,7 @@ export default function Bank() {
 }
 
 /* ============================= */
-/* INPUT PROFISSIONAL */
+/* INPUT BINANCE */
 /* ============================= */
 
 function Input({
@@ -158,7 +154,7 @@ function Input({
 }) {
   return (
     <div className="space-y-2">
-      <label className="text-xs text-gray-400 tracking-wide">
+      <label className="text-xs text-[#848E9C] tracking-wide">
         {label}
       </label>
 
@@ -167,11 +163,10 @@ function Input({
         onChange={e => onChange(e.target.value)}
         className="
           w-full h-12 rounded-xl
-          bg-white/5
-          border border-white/10
-          px-4 text-sm text-white
-          focus:ring-2 focus:ring-emerald-500
-          focus:border-emerald-500
+          bg-[#1E2329]
+          border border-[#2B3139]
+          px-4 text-sm text-[#EAECEF]
+          focus:border-[#FCD535]
           outline-none
           transition
         "

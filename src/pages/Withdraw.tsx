@@ -14,7 +14,7 @@ export default function Withdraw() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
-  const FEE_PERCENT = 0.003 // 0.3%
+  const FEE_PERCENT = 0.003
 
   useEffect(() => {
     UserService.me()
@@ -60,31 +60,31 @@ export default function Withdraw() {
   }
 
   return (
-    <div className="p-6 pb-24 max-w-xl mx-auto space-y-8 animate-fadeZoom">
+    <div className="p-6 pb-24 max-w-xl mx-auto space-y-8">
 
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-white">
+        <h1 className="text-2xl font-semibold text-[#EAECEF]">
           Retirada
         </h1>
 
         <button
           onClick={() => navigate('/withdraw-history')}
           className="
-            bg-white/5 border border-white/10
-            text-white px-4 py-2 rounded-xl
-            hover:bg-white/10 transition
+            bg-[#1E2329] border border-[#2B3139]
+            text-[#EAECEF] px-4 py-2 rounded-xl
+            hover:bg-[#2B3139] transition
           "
         >
           <FileText size={18} />
         </button>
       </div>
 
-      {/* SALDO */}
+      {/* SALDO (ÚNICO VERDE) */}
       <div className="
-        bg-white/5 border border-white/10
+        bg-[#1E2329] border border-[#2B3139]
         rounded-3xl p-6 text-center
       ">
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-[#848E9C]">
           Saldo disponível
         </p>
 
@@ -95,12 +95,12 @@ export default function Withdraw() {
 
       {/* FORM */}
       <div className="
-        bg-white/5 border border-white/10
+        bg-[#1E2329] border border-[#2B3139]
         rounded-3xl p-6 space-y-6
       ">
 
         <div>
-          <label className="text-sm text-gray-400">
+          <label className="text-sm text-[#848E9C]">
             Montante
           </label>
 
@@ -110,30 +110,30 @@ export default function Withdraw() {
             onChange={e => setAmount(e.target.value)}
             className="
               w-full h-12 mt-2 px-4
-              bg-[#0F172A]
-              border border-white/10
-              rounded-xl text-white
-              focus:border-emerald-500 outline-none
+              bg-[#0B0E11]
+              border border-[#2B3139]
+              rounded-xl text-[#EAECEF]
+              focus:border-[#FCD535] outline-none
             "
           />
         </div>
 
         {numericAmount > 0 && (
           <div className="
-            bg-[#0F172A]
-            border border-white/10
+            bg-[#0B0E11]
+            border border-[#2B3139]
             rounded-xl p-4 text-sm space-y-2
           ">
-            <div className="flex justify-between text-gray-400">
+            <div className="flex justify-between text-[#848E9C]">
               <span>Taxa (0.3%)</span>
               <span className="text-red-400 font-medium">
                 {fee.toFixed(2)} Kz
               </span>
             </div>
 
-            <div className="flex justify-between text-gray-400">
+            <div className="flex justify-between text-[#848E9C]">
               <span>Valor líquido</span>
-              <span className="text-emerald-400 font-semibold">
+              <span className="font-semibold text-[#EAECEF]">
                 {netAmount.toFixed(2)} Kz
               </span>
             </div>
@@ -145,9 +145,9 @@ export default function Withdraw() {
           disabled={loading}
           className="
             w-full h-12 rounded-xl
-            bg-emerald-600 hover:bg-emerald-700
-            text-white font-semibold
-            transition hover:scale-[1.02]
+            bg-[#FCD535] text-black font-semibold
+            hover:brightness-110 transition
+            active:scale-[0.98]
             disabled:opacity-50
           "
         >
@@ -157,10 +157,10 @@ export default function Withdraw() {
         {message && (
           <div className="
             text-center text-sm
-            bg-[#0F172A]
-            border border-white/10
+            bg-[#0B0E11]
+            border border-[#2B3139]
             rounded-xl py-3
-            text-gray-300
+            text-[#848E9C]
           ">
             {message}
           </div>

@@ -16,11 +16,9 @@ export default function AuthLayout({
     <div className="
       min-h-screen
       w-full
-      bg-gradient-to-b
-      from-[#0B1220]
-      to-[#0F172A]
+      bg-[#0B0E11]
+      text-[#EAECEF]
       flex flex-col
-      text-white
     ">
 
       {/* HEADER */}
@@ -37,10 +35,9 @@ export default function AuthLayout({
         <div className="
           h-20 w-20
           rounded-full
-          bg-white/10
-          backdrop-blur-lg
-          border border-white/10
-          shadow-xl
+          bg-[#1E2329]
+          border border-[#2B3139]
+          shadow-md
           overflow-hidden
           flex items-center justify-center
           mb-6
@@ -59,7 +56,7 @@ export default function AuthLayout({
 
         {/* SUBTITLE */}
         {subtitle && (
-          <p className="mt-2 text-sm text-gray-400 text-center">
+          <p className="mt-2 text-sm text-[#848E9C] text-center">
             {subtitle}
           </p>
         )}
@@ -69,9 +66,8 @@ export default function AuthLayout({
       {/* CARD */}
       <div className="
         flex-1
-        bg-white/5
-        backdrop-blur-2xl
-        border-t border-white/10
+        bg-[#1E2329]
+        border-t border-[#2B3139]
         rounded-t-3xl
         px-6
         py-10

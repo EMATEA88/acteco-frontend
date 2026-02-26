@@ -9,33 +9,21 @@ export default function AppLayout() {
   const location = useLocation()
   const pathname = location.pathname
 
-  /* =========================
-     ROTAS ESPECIAIS
-  ========================= */
-
   const immersiveRoutes = [
     '/otc',
     '/services',
     '/profile',
     '/applications',
-    '/marketing' // ✅ ADICIONADO
-  ]
-
-  const lightRoutes = [
-    '/deposit'
+    '/deposit',
+    '/marketing'
   ]
 
   const hideFooterRoutes = [
-    '/deposit',
     '/applications',
-    '/marketing' // ✅ ADICIONADO
+    '/marketing'
   ]
 
   const isImmersive = immersiveRoutes.some(route =>
-    pathname.startsWith(route)
-  )
-
-  const isLight = lightRoutes.some(route =>
     pathname.startsWith(route)
   )
 
@@ -46,83 +34,51 @@ export default function AppLayout() {
   const isHome = pathname === '/home'
 
   const handleBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1)
-    } else {
-      navigate('/home')
-    }
+    if (window.history.length > 1) navigate(-1)
+    else navigate('/home')
   }
 
   return (
-    <div
-      className={`
-        min-h-screen
-        ${isLight
-          ? 'bg-gray-50 text-gray-900'
-          : 'bg-[#0B1220] text-white'}
-      `}
-    >
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF]">
 
-      {/* 🔝 HEADER GLOBAL */}
       {!isImmersive && (
         <header
-          className={`
+          className="
             fixed top-0 left-0 right-0 z-50
             h-12
             flex items-center justify-between
             px-4
-            ${isLight
-              ? 'bg-white border-b border-gray-200'
-              : 'bg-[#0B1220] border-b border-white/10'}
-          `}
+            bg-[#0B0E11]
+            border-b border-[#2B3139]
+          "
         >
 
-          {isImmersive ? (
-            <button onClick={handleBack}>
-              <ArrowLeft size={22} />
-            </button>
-          ) : (
-            <div />
-          )}
-
-          <div className="flex items-center gap-3">
-
+          <div>
             {!isHome && (
-              <button
-                onClick={() => navigate('/home')}
-                className="
-                  p-1.5 rounded-md transition
-                  bg-white/5 hover:bg-white/10
-                  border border-white/10
-                "
-              >
-                <Home size={16} />
+              <button onClick={handleBack}>
+                <ArrowLeft size={20} />
               </button>
             )}
+          </div>
 
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate('/notifications')}
-              className="hover:opacity-80 transition"
+              onClick={() => navigate('/home')}
+              className="binance-button-dark p-1.5"
             >
-              <NotificationBell />
+              <Home size={16} />
             </button>
 
+            <NotificationBell />
           </div>
 
         </header>
       )}
 
-      {/* 📄 CONTEÚDO */}
-      <main
-        className={`
-          ${!isImmersive ? 'pt-12' : ''}
-          ${!isImmersive && !hideFooter ? 'pb-16' : ''}
-        `}
-      >
+      <main className={`${!isImmersive ? 'pt-12 pb-16' : ''}`}>
         <Outlet />
       </main>
 
-      {/* ⬇ RODAPÉ */}
       {!isImmersive && !hideFooter && <BottomNav />}
 
     </div>

@@ -9,7 +9,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1220] text-white px-5 pt-16 pb-24">
+    <div className="min-h-screen px-5 pt-16 pb-24">
 
       {/* SEÇÃO PRINCIPAL */}
       <div className="grid grid-cols-2 gap-4">
@@ -47,7 +47,7 @@ export default function Home() {
       {/* NOSSOS SERVIÇOS */}
       <div className="mt-12">
 
-        <h2 className="text-lg font-semibold tracking-wide text-gray-300 mb-6">
+        <h2 className="text-lg font-semibold tracking-wide text-[#848E9C] mb-6">
           NOSSOS SERVIÇOS
         </h2>
 
@@ -89,7 +89,7 @@ export default function Home() {
   )
 }
 
-/* ================= CARD PADRÃO ================= */
+/* ================= CARD PADRÃO BINANCE ================= */
 
 function ImageCard({
   image,
@@ -108,13 +108,13 @@ function ImageCard({
       onClick={onClick}
       className="
         relative
-        rounded-2xl
+        rounded-xl
         overflow-hidden
-        border border-white/10
-        bg-[#111827]
+        border border-[#2B3139]
+        bg-[#1E2329]
         h-[180px]
         flex
-        shadow-lg
+        shadow-md
         transition
         active:scale-[0.98]
       "
@@ -132,16 +132,16 @@ function ImageCard({
       />
 
       {/* OVERLAY PROFISSIONAL */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/85" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/90" />
 
       {/* CONTEÚDO */}
       <div className="relative z-10 p-4 flex flex-col justify-end w-full">
 
-        <h3 className="text-sm font-semibold leading-tight">
+        <h3 className="text-sm font-semibold leading-tight text-[#EAECEF]">
           {title}
         </h3>
 
-        <p className="text-xs text-gray-300 mt-1 leading-tight">
+        <p className="text-xs text-[#848E9C] mt-1 leading-tight">
           {subtitle}
         </p>
 

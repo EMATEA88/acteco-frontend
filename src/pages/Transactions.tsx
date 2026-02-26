@@ -24,87 +24,20 @@ const TYPE_META: Record<
     label: string
     icon: any
     color: string
-    bg: string
     sign: '+' | '-'
   }
 > = {
-  RECHARGE: {
-    label: 'Recarga',
-    icon: Wallet,
-    color: 'text-emerald-400',
-    bg: 'bg-emerald-500/15',
-    sign: '+',
-  },
-  WITHDRAW: {
-    label: 'Levantamento',
-    icon: ArrowDownCircle,
-    color: 'text-red-400',
-    bg: 'bg-red-500/15',
-    sign: '-',
-  },
-  BUY_DEBIT: {
-    label: 'Compra OTC',
-    icon: ArrowDownCircle,
-    color: 'text-red-400',
-    bg: 'bg-red-500/15',
-    sign: '-',
-  },
-  SELL_CREDIT: {
-    label: 'Venda OTC',
-    icon: ArrowUpCircle,
-    color: 'text-emerald-400',
-    bg: 'bg-emerald-500/15',
-    sign: '+',
-  },
-  SERVICE_DEBIT: {
-    label: 'Pagamento Serviço',
-    icon: ArrowDownCircle,
-    color: 'text-orange-400',
-    bg: 'bg-orange-500/15',
-    sign: '-',
-  },
-  REFUND: {
-    label: 'Reembolso',
-    icon: ArrowUpCircle,
-    color: 'text-blue-400',
-    bg: 'bg-blue-500/15',
-    sign: '+',
-  },
-  COMMISSION: {
-    label: 'Comissão',
-    icon: Coins,
-    color: 'text-indigo-400',
-    bg: 'bg-indigo-500/15',
-    sign: '+',
-  },
-  GIFT: {
-    label: 'Presente',
-    icon: Gift,
-    color: 'text-pink-400',
-    bg: 'bg-pink-500/15',
-    sign: '+',
-  },
-  INVESTMENT_DEBIT: {
-    label: 'Investimento',
-    icon: ArrowDownCircle,
-    color: 'text-purple-400',
-    bg: 'bg-purple-500/15',
-    sign: '-',
-  },
-  INVESTMENT_CREDIT: {
-    label: 'Lucro Investimento',
-    icon: ArrowUpCircle,
-    color: 'text-green-400',
-    bg: 'bg-green-500/15',
-    sign: '+',
-  },
-  INVESTMENT_CANCEL_REFUND: {
-    label: 'Cancelamento Invest.',
-    icon: ArrowUpCircle,
-    color: 'text-gray-400',
-    bg: 'bg-gray-500/15',
-    sign: '+',
-  },
+  RECHARGE: { label: 'Recarga', icon: Wallet, color: 'text-[#FCD535]', sign: '+' },
+  WITHDRAW: { label: 'Levantamento', icon: ArrowDownCircle, color: 'text-[#EF4444]', sign: '-' },
+  BUY_DEBIT: { label: 'Compra OTC', icon: ArrowDownCircle, color: 'text-[#EF4444]', sign: '-' },
+  SELL_CREDIT: { label: 'Venda OTC', icon: ArrowUpCircle, color: 'text-[#FCD535]', sign: '+' },
+  SERVICE_DEBIT: { label: 'Pagamento Serviço', icon: ArrowDownCircle, color: 'text-[#EF4444]', sign: '-' },
+  REFUND: { label: 'Reembolso', icon: ArrowUpCircle, color: 'text-[#FCD535]', sign: '+' },
+  COMMISSION: { label: 'Comissão', icon: Coins, color: 'text-[#FCD535]', sign: '+' },
+  GIFT: { label: 'Presente', icon: Gift, color: 'text-[#FCD535]', sign: '+' },
+  INVESTMENT_DEBIT: { label: 'Investimento', icon: ArrowDownCircle, color: 'text-[#EF4444]', sign: '-' },
+  INVESTMENT_CREDIT: { label: 'Lucro Investimento', icon: ArrowUpCircle, color: 'text-[#FCD535]', sign: '+' },
+  INVESTMENT_CANCEL_REFUND: { label: 'Cancelamento Invest.', icon: ArrowUpCircle, color: 'text-[#FCD535]', sign: '+' },
 }
 
 export default function Transactions() {
@@ -143,10 +76,10 @@ export default function Transactions() {
   }, [items])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white pb-28">
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] pb-28">
 
       {/* HEADER FIXO */}
-      <div className="sticky top-0 z-50 bg-[#0F172A] border-b border-white/10 px-6 py-4">
+      <div className="sticky top-0 z-50 bg-[#1E2329] border-b border-[#2B3139] px-6 py-4">
         <h1 className="text-lg font-semibold tracking-wide">
           Histórico de Transações
         </h1>
@@ -156,7 +89,8 @@ export default function Transactions() {
 
         {Object.entries(grouped).map(([date, txs]: any) => (
           <div key={date} className="space-y-4">
-            <p className="text-xs text-gray-400 uppercase tracking-wide">
+
+            <p className="text-xs text-[#848E9C] uppercase tracking-wide">
               {date}
             </p>
 
@@ -167,34 +101,39 @@ export default function Transactions() {
               return (
                 <div
                   key={tx.id}
-                  className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 flex items-center justify-between shadow-xl hover:bg-white/10 transition"
+                  className="bg-[#1E2329] border border-[#2B3139] rounded-2xl p-5 flex items-center justify-between hover:bg-[#2B3139] transition"
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-11 h-11 rounded-full flex items-center justify-center ${meta.bg} ${meta.color}`}>
-                      <Icon size={20} />
+
+                    <div className="w-11 h-11 rounded-full bg-[#0B0E11] border border-[#2B3139] flex items-center justify-center">
+                      <Icon size={20} className={meta.color} />
                     </div>
 
                     <div>
                       <p className="text-sm font-medium">
                         {meta.label}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-[#848E9C]">
                         {new Date(tx.createdAt).toLocaleTimeString()}
                       </p>
                     </div>
+
                   </div>
 
                   <p className={`text-sm font-semibold ${meta.color}`}>
                     {meta.sign}
                     {tx.amount.toLocaleString()} Kz
                   </p>
+
                 </div>
               )
             })}
+
           </div>
         ))}
 
       </div>
+
     </div>
   )
 }

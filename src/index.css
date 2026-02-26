@@ -2,75 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes forestFlow {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
+/* ===== BINANCE GLOBAL THEME ===== */
 
-.input-dark {
-  @apply w-full h-12 rounded-xl
-  bg-[#111827]
-  border border-gray-700
-  px-3 text-sm text-white
-  placeholder-gray-500
-  outline-none
-  focus:border-emerald-500
-  transition;
-}
-
-.bg-forest-animated {
-  background: linear-gradient(
-    120deg,
-    #bbf7d0,
-    #86efac,
-    #dcfce7,
-    #a7f3d0
-  );
-  background-size: 300% 300%;
-  animation: forestFlow 12s ease infinite;
-}
-
-@keyframes pulseSlow {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-.animate-pulse-slow {
-  animation: pulseSlow 3s ease-in-out infinite;
-}
-
-@keyframes fadeZoom {
-  from {
-    opacity: 0;
-    transform: scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-fadeZoom {
-  animation: fadeZoom 0.4s ease-out;
-}
-
-/* Remove arrows Chrome */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
+html,
+body,
+#root {
+  background-color: #0B0E11;
+  color-scheme: dark;
+  color: #EAECEF;
   margin: 0;
+  padding: 0;
+  min-height: 100%;
 }
 
-/* Remove arrows Firefox */
-input[type="number"] {
-  -moz-appearance: textfield;
-  appearance: textfield;
+/* ===== BINANCE COMPONENT SYSTEM ===== */
+
+.binance-card {
+  @apply bg-[#1E2329] border border-[#2B3139] rounded-xl;
+}
+
+.binance-input {
+  @apply w-full h-12 px-3 rounded-lg
+  bg-[#1E2329]
+  border border-[#2B3139]
+  text-[#EAECEF]
+  placeholder-[#848E9C]
+  focus:border-[#FCD535]
+  outline-none transition;
+}
+
+.binance-button-primary {
+  @apply bg-[#FCD535] text-black font-medium
+  hover:brightness-110 transition rounded-lg;
+}
+
+.binance-button-dark {
+  @apply bg-[#1E2329] border border-[#2B3139]
+  hover:bg-[#2B3139] transition rounded-lg;
 }

@@ -63,22 +63,21 @@ export default function Applications() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1220] text-white px-6 pt-6 pb-8 space-y-8">
+    <div className="min-h-screen px-6 pt-6 pb-8 space-y-8">
 
-      {/* HEADER */}
-      <h1 className="text-2xl font-semibold tracking-wide">
+      <h1 className="text-2xl font-semibold">
         Meus Investimentos
       </h1>
 
       {/* CARD DE CRIAÇÃO */}
-      <div className="bg-[#111827] border border-white/10 rounded-2xl p-6 space-y-5 shadow-xl">
+      <div className="bg-[#1E2329] border border-[#2B3139] rounded-2xl p-6 space-y-5">
 
         <div>
-          <label className="text-sm text-gray-400">Prazo</label>
+          <label className="text-sm text-[#848E9C]">Prazo</label>
           <select
             value={periodDays}
             onChange={e => setPeriodDays(Number(e.target.value))}
-            className="mt-2 w-full bg-[#1F2937] border border-white/10 rounded-xl px-4 py-3 text-sm"
+            className="mt-2 w-full bg-[#1E2329] border border-[#2B3139] rounded-lg px-4 py-3 text-sm text-[#EAECEF]"
           >
             <option value={15}>15 dias (1.5%)</option>
             <option value={90}>3 meses (1.8%)</option>
@@ -89,22 +88,22 @@ export default function Applications() {
         </div>
 
         <div>
-          <label className="text-sm text-gray-400">Valor (Kz)</label>
+          <label className="text-sm text-[#848E9C]">Valor (Kz)</label>
           <input
             type="number"
             placeholder="Digite o valor"
             value={amount}
             onChange={e => setAmount(e.target.value)}
-            className="mt-2 w-full bg-[#1F2937] border border-white/10 rounded-xl px-4 py-3 text-sm"
+            className="mt-2 w-full bg-[#1E2329] border border-[#2B3139] rounded-lg px-4 py-3 text-sm text-[#EAECEF] placeholder-[#848E9C]"
           />
         </div>
 
         {amount && (
-          <div className="bg-[#0F172A] border border-emerald-500/20 rounded-xl p-4">
-            <p className="text-xs text-gray-400">
+          <div className="bg-[#0B0E11] border border-[#2B3139] rounded-lg p-4">
+            <p className="text-xs text-[#848E9C]">
               Retorno estimado
             </p>
-            <p className="text-lg font-semibold text-emerald-400">
+            <p className="text-lg font-semibold text-[#FCD535]">
               {calculatePreview().toLocaleString()} Kz
             </p>
           </div>
@@ -113,7 +112,7 @@ export default function Applications() {
         <button
           disabled={creating}
           onClick={create}
-          className="w-full bg-emerald-600 hover:bg-emerald-700 transition rounded-xl py-3 font-medium disabled:opacity-50"
+          className="w-full bg-[#FCD535] text-black font-medium rounded-lg py-3 hover:brightness-110 transition disabled:opacity-50"
         >
           {creating ? 'A investir...' : 'Investir'}
         </button>
@@ -124,13 +123,13 @@ export default function Applications() {
       <div className="space-y-4">
 
         {loading && (
-          <div className="text-center text-gray-400">
+          <div className="text-center text-[#848E9C]">
             Carregando...
           </div>
         )}
 
         {!loading && items.length === 0 && (
-          <div className="bg-[#111827] border border-white/10 rounded-2xl p-6 text-center text-gray-400">
+          <div className="bg-[#1E2329] border border-[#2B3139] rounded-2xl p-6 text-center text-[#848E9C]">
             Nenhum investimento encontrado
           </div>
         )}
@@ -138,41 +137,35 @@ export default function Applications() {
         {items.map(app => (
           <div
             key={app.id}
-            className="bg-[#111827] border border-white/10 rounded-2xl p-5 space-y-3"
+            className="bg-[#1E2329] border border-[#2B3139] rounded-2xl p-5 space-y-3"
           >
             <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Valor</span>
+              <span className="text-[#848E9C]">Valor</span>
               <span>{Number(app.amount).toLocaleString()} Kz</span>
             </div>
 
             <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Retorno</span>
-              <span className="text-emerald-400">
+              <span className="text-[#848E9C]">Retorno</span>
+              <span className="text-[#FCD535]">
                 {Number(app.totalReturn).toLocaleString()} Kz
               </span>
             </div>
 
             <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Prazo</span>
+              <span className="text-[#848E9C]">Prazo</span>
               <span>{app.periodDays} dias</span>
             </div>
 
             <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Vencimento</span>
+              <span className="text-[#848E9C]">Vencimento</span>
               <span>
-                {new Date(app.maturityDate)
-                  .toLocaleDateString('pt-AO')}
+                {new Date(app.maturityDate).toLocaleDateString('pt-AO')}
               </span>
             </div>
 
             <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Status</span>
-              <span className={`
-                font-medium
-                ${app.status === 'ACTIVE' && 'text-emerald-400'}
-                ${app.status === 'MATURED' && 'text-blue-400'}
-                ${app.status === 'CANCELLED' && 'text-red-400'}
-              `}>
+              <span className="text-[#848E9C]">Status</span>
+              <span className="font-medium">
                 {app.status}
               </span>
             </div>

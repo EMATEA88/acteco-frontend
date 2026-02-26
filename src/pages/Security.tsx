@@ -6,14 +6,14 @@ export default function Security() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white">
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF]">
 
       {/* HEADER FIXO */}
-      <div className="sticky top-0 z-50 bg-[#0F172A] border-b border-white/10 px-6 py-4 flex items-center gap-4">
+      <div className="sticky top-0 z-50 bg-[#1E2329] border-b border-[#2B3139] px-6 py-4 flex items-center gap-4">
 
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition"
+          className="p-2 rounded-lg bg-[#2B3139] hover:bg-[#3A424D] transition"
         >
           <ArrowLeft size={18} />
         </button>
@@ -26,11 +26,11 @@ export default function Security() {
 
       <div className="px-6 py-8 space-y-8 max-w-xl mx-auto">
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl space-y-6">
+        <div className="bg-[#1E2329] border border-[#2B3139] rounded-3xl p-8 space-y-6">
 
-          <div className="flex items-center gap-3 text-emerald-400">
+          <div className="flex items-center gap-3 text-[#FCD535]">
             <ShieldCheck size={22} />
-            <h2 className="font-semibold text-white">
+            <h2 className="font-semibold">
               Boas práticas de segurança
             </h2>
           </div>
@@ -44,7 +44,7 @@ export default function Security() {
 
         </div>
 
-        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-5 text-sm text-red-300 leading-relaxed">
+        <div className="bg-[#2B3139] border border-[#EF4444] rounded-2xl p-5 text-sm text-[#EF4444] leading-relaxed">
           Em caso de atividade suspeita, altere sua senha imediatamente
           e contacte o suporte oficial.
         </div>
@@ -63,10 +63,10 @@ function SecurityItem({
 }) {
   return (
     <div className="flex items-start gap-4">
-      <div className="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+      <div className="w-9 h-9 rounded-full bg-[#0B0E11] border border-[#2B3139] text-[#FCD535] flex items-center justify-center shrink-0">
         {icon}
       </div>
-      <p className="text-sm text-gray-300 leading-relaxed">
+      <p className="text-sm text-[#848E9C] leading-relaxed">
         {text}
       </p>
     </div>

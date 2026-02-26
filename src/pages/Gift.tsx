@@ -48,7 +48,7 @@ export default function GiftPage() {
   }, [toastVisible])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0B1220] to-[#0F172A] text-white">
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF]">
 
       <Toast
         visible={toastVisible}
@@ -57,8 +57,8 @@ export default function GiftPage() {
       />
 
       {/* HEADER FIXO */}
-      <div className="sticky top-0 z-50 bg-[#0F172A] border-b border-white/10 px-6 py-4 flex items-center gap-3">
-        <Gift size={20} className="text-emerald-400" />
+      <div className="sticky top-0 z-50 bg-[#1E2329] border-b border-[#2B3139] px-6 py-4 flex items-center gap-3">
+        <Gift size={20} className="text-[#FCD535]" />
         <h1 className="text-lg font-semibold tracking-wide">
           Resgatar Presente
         </h1>
@@ -67,18 +67,16 @@ export default function GiftPage() {
       <div className="px-6 py-10 max-w-xl mx-auto pb-28">
 
         <div className="
-          bg-white/5
-          backdrop-blur-xl
-          border border-white/10
+          bg-[#1E2329]
+          border border-[#2B3139]
           rounded-3xl
           p-8
-          shadow-2xl
           space-y-6
         ">
 
-          <div className="flex items-center gap-3 text-emerald-400">
+          <div className="flex items-center gap-3 text-[#FCD535]">
             <Ticket size={20} />
-            <p className="text-sm text-gray-300">
+            <p className="text-sm text-[#848E9C]">
               Insira o código de presente para resgatar o valor disponível.
             </p>
           </div>
@@ -89,11 +87,11 @@ export default function GiftPage() {
             placeholder="Código de presente"
             className="
               w-full h-12 rounded-xl
-              bg-white/5
-              border border-white/10
-              px-4 text-sm text-white
-              focus:ring-2 focus:ring-emerald-500
-              focus:border-emerald-500
+              bg-[#1E2329]
+              border border-[#2B3139]
+              px-4 text-sm text-[#EAECEF]
+              placeholder-[#848E9C]
+              focus:border-[#FCD535]
               outline-none
               transition
             "
@@ -106,8 +104,8 @@ export default function GiftPage() {
               w-full h-12 rounded-xl font-semibold transition
               ${
                 !isCodeValid
-                  ? 'bg-white/10 text-gray-400 cursor-not-allowed'
-                  : 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95'
+                  ? 'bg-[#2B3139] text-[#848E9C] cursor-not-allowed'
+                  : 'bg-[#FCD535] text-black hover:brightness-110 active:scale-95'
               }
               ${loading ? 'opacity-60' : ''}
             `}
