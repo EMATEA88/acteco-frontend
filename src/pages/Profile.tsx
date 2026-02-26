@@ -19,6 +19,7 @@ import {
 import { Check } from 'lucide-react'
 
 type UserProfile = {
+  fullName?: string
   phone: string
   email: string
   publicId: string
@@ -31,7 +32,6 @@ export default function Profile() {
 
   const navigate = useNavigate()
   const [user, setUser] = useState<UserProfile | null>(null)
-
   const [copiedId, setCopiedId] = useState(false)
 
   useEffect(() => {
@@ -66,14 +66,9 @@ export default function Profile() {
 
       <div className="pt-14">
 
-        <div className="bg-[#1E2329] border-y border-[#2B3139] px-6 py-5">
+        <div className="bg-[#1E2329] border-y border-[#2B3139] px-6 py-6">
 
-          <StatusBadge
-            isVerified={user.isVerified}
-            onVerify={() => navigate('/kyc')}
-          />
-
-          <div className="flex items-center gap-4 mt-5">
+          <div className="flex items-center gap-4">
 
             <div className="w-14 h-14 rounded-full overflow-hidden border border-[#2B3139]">
               <img src="/logo.png" className="w-full h-full object-cover" />
@@ -81,12 +76,21 @@ export default function Profile() {
 
             <div className="flex-1">
 
-              <p className="text-xs text-[#848E9C]">
-                {user.email}
-              </p>
+              {/* Nome + selo */}
+              <div className="flex items-center gap-2">
+                <p className="text-lg font-semibold text-white">
+                  {user.fullName || user.phone}
+                </p>
 
-              <p className="text-base font-medium mt-1">
-                {user.phone}
+                {user.isVerified && (
+                  <span className="bg-emerald-600 w-5 h-5 rounded-full flex items-center justify-center">
+                    <Check size={12} className="text-white" />
+                  </span>
+                )}
+              </div>
+
+              <p className="text-xs text-[#848E9C] mt-1">
+                {user.email}
               </p>
 
               <div className="flex items-center gap-2 text-xs text-[#848E9C] mt-1">
@@ -104,7 +108,7 @@ export default function Profile() {
 
           </div>
 
-          <div className="mt-5 flex items-center justify-between border-t border-[#2B3139] pt-4">
+          <div className="mt-6 flex items-center justify-between border-t border-[#2B3139] pt-4">
 
             <div>
               <p className="text-[11px] text-[#848E9C]">
@@ -178,82 +182,6 @@ export default function Profile() {
 }
 
 /* COMPONENTES */
-
-function StatusBadge({
-  isVerified,
-  onVerify
-}: {
-  isVerified: boolean
-  onVerify: () => void
-}) {
-
-  if (isVerified) {
-    return (
-      <div className="
-        relative
-        bg-[#1E2329]
-        border border-[#2B3139]
-        rounded-2xl
-        px-5 py-4
-        flex items-center gap-4
-      ">
-
-        {/* Linha verde lateral */}
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-l-2xl" />
-
-        {/* Selo verde estilo Facebook */}
-        <div className="
-          w-10 h-10
-          rounded-full
-          bg-emerald-600
-          flex items-center justify-center
-          shadow-lg
-        ">
-          <Check size={18} className="text-white" />
-        </div>
-
-        <div>
-          <p className="text-sm font-semibold text-emerald-400">
-            Verification Successful
-          </p>
-          <p className="text-xs text-[#848E9C] mt-1">
-            Your identity has been successfully verified.
-          </p>
-        </div>
-
-      </div>
-    )
-  }
-
-  return (
-    <div className="
-      bg-[#1E2329]
-      border border-[#2B3139]
-      rounded-2xl
-      px-5 py-4
-    ">
-      <p className="text-sm font-medium text-[#FCD535]">
-        Account not verified
-      </p>
-
-      <button
-        onClick={onVerify}
-        className="
-          mt-3
-          text-xs
-          bg-[#FCD535]
-          text-black
-          px-4 py-1.5
-          rounded-md
-          hover:brightness-110
-          transition
-        "
-      >
-        Verify Account
-      </button>
-    </div>
-  )
-}
 
 function SmallAction({
   label,

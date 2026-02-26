@@ -15,6 +15,7 @@ interface UserVerification {
 
 interface User {
   id: number
+  fullName?: string
   phone?: string
   role?: string
   balance?: number

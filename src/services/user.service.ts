@@ -9,6 +9,7 @@ export type VerificationStatus =
 export interface UserResponse {
   id: number
   publicId: string
+  fullName?: string
   phone: string
   email: string
   role: string
