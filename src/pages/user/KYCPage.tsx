@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { KYCService } from "../../services/kyc"
 import Toast from "../../components/ui/Toast"
+import { useAuth } from "../../contexts/AuthContext"
 import {
   ShieldCheck,
   Upload,
@@ -12,6 +13,10 @@ import {
 export default function KYCPage() {
 
   const [status, setStatus] = useState("LOADING")
+
+  // ✅ ADICIONADO
+  const [fullName, setFullName] = useState("")
+  const { refreshUser } = useAuth()
 
   const [frontFile, setFrontFile] = useState<File | null>(null)
   const [backFile, setBackFile] = useState<File | null>(null)
@@ -33,13 +38,27 @@ export default function KYCPage() {
   async function loadStatus() {
     try {
       const res = await KYCService.status()
-      setStatus(res.data.status)
+      const newStatus = res.data.status
+
+      setStatus(newStatus)
+
+      // ✅ Atualiza usuário automaticamente após aprovação
+      if (newStatus === "VERIFIED") {
+        await refreshUser()
+      }
+
     } catch {
       showToast("Erro ao carregar status", "error")
     }
   }
 
   async function submit() {
+
+    // ✅ Validação adicionada
+    if (!fullName || fullName.trim().length < 5) {
+      showToast("Nome completo obrigatório", "error")
+      return
+    }
 
     if (!frontFile || !backFile || !selfieFile) {
       showToast("Selecione todas as imagens", "error")
@@ -50,6 +69,10 @@ export default function KYCPage() {
       setLoading(true)
 
       const formData = new FormData()
+
+      // ✅ Enviando nome completo
+      formData.append("fullName", fullName.trim())
+
       formData.append("frontImage", frontFile)
       formData.append("backImage", backFile)
       formData.append("selfieImage", selfieFile)
@@ -104,6 +127,25 @@ export default function KYCPage() {
             p-8
             space-y-8
           ">
+
+            {/* ✅ INPUT ADICIONADO */}
+            <div className="space-y-2">
+              <label className="text-sm text-[#848E9C] font-medium">
+                Nome Completo (igual ao documento)
+              </label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Ex: João Manuel Silva"
+                className="
+                  w-full h-12 px-4 rounded-xl
+                  bg-[#0B0E11]
+                  border border-[#2B3139]
+                  focus:outline-none focus:border-[#FCD535]
+                "
+              />
+            </div>
 
             <UploadCard
               label="B.I Frontal"
