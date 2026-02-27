@@ -1,8 +1,14 @@
 import { useNavigate } from "react-router-dom"
+import { useState } from "react"
+import { MessageCircle, Users, X } from "lucide-react"
+
+const WHATSAPP_MANAGER = "https://wa.me/244928270636"
+const WHATSAPP_GROUP = "https://chat.whatsapp.com/CaiU4nncaaa7vUnzO6HTzB?mode=gi_t"
 
 export default function Home() {
 
   const navigate = useNavigate()
+  const [supportOpen, setSupportOpen] = useState(false)
 
   function openWhatsapp() {
     window.open("https://wa.me/244928270636", "_blank")
@@ -11,7 +17,38 @@ export default function Home() {
   return (
     <div className="min-h-screen px-5 pt-16 pb-24">
 
-      {/* SEÇÃO PRINCIPAL */}
+      {/* ================= SUPORTE CARD ================= */}
+      <button
+        onClick={() => setSupportOpen(true)}
+        className="
+          w-full
+          mb-8
+          rounded-3xl
+          bg-[#1E2329]
+          border border-[#2B3139]
+          p-5
+          shadow-md
+          flex
+          items-center
+          justify-between
+          hover:border-emerald-500/40
+          hover:bg-[#222831]
+          transition
+        "
+      >
+        <div>
+          <p className="text-xs uppercase tracking-wide text-emerald-500 font-semibold">
+            Centro de Apoio
+          </p>
+          <p className="text-sm text-[#EAECEF] font-medium mt-1">
+            Fale com a operadora ou entre no grupo oficial
+          </p>
+        </div>
+
+        <MessageCircle size={24} className="text-emerald-500" />
+      </button>
+
+      {/* ================= SEÇÃO PRINCIPAL ================= */}
       <div className="grid grid-cols-2 gap-4">
 
         <ImageCard
@@ -44,7 +81,7 @@ export default function Home() {
 
       </div>
 
-      {/* NOSSOS SERVIÇOS */}
+      {/* ================= NOSSOS SERVIÇOS ================= */}
       <div className="mt-12">
 
         <h2 className="text-lg font-semibold tracking-wide text-[#848E9C] mb-6">
@@ -85,11 +122,84 @@ export default function Home() {
 
       </div>
 
+      {/* ================= MODAL SUPORTE ================= */}
+      {supportOpen && (
+        <div
+          onClick={() => setSupportOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="
+              relative
+              w-[90%] max-w-sm
+              bg-[#0F172A]
+              border border-white/10
+              rounded-3xl
+              p-6
+              text-center
+              shadow-xl
+            "
+          >
+
+            <button
+              onClick={() => setSupportOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+            >
+              <X size={20} />
+            </button>
+
+            <h2 className="text-lg font-semibold text-white mb-6">
+              Centro de Apoio EMATEA
+            </h2>
+
+            <div className="space-y-4">
+
+              <a
+                href={WHATSAPP_MANAGER}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="
+                  w-full h-12 rounded-xl
+                  bg-green-500 text-white font-semibold
+                  flex items-center justify-center gap-2
+                  hover:bg-green-600
+                  transition
+                  active:scale-95
+                "
+              >
+                <MessageCircle size={18} />
+                Falar com Operadora
+              </a>
+
+              <a
+                href={WHATSAPP_GROUP}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="
+                  w-full h-12 rounded-xl
+                  bg-emerald-600 text-white font-semibold
+                  flex items-center justify-center gap-2
+                  hover:bg-emerald-700
+                  transition
+                  active:scale-95
+                "
+              >
+                <Users size={18} />
+                Entrar no Grupo
+              </a>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
 
-/* ================= CARD PADRÃO BINANCE ================= */
+/* ================= CARD PADRÃO ================= */
 
 function ImageCard({
   image,
@@ -120,21 +230,14 @@ function ImageCard({
       "
     >
 
-      {/* IMAGEM */}
       <img
         src={image}
         alt={title}
-        className="
-          absolute inset-0
-          w-full h-full
-          object-cover
-        "
+        className="absolute inset-0 w-full h-full object-cover"
       />
 
-      {/* OVERLAY PROFISSIONAL */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/90" />
 
-      {/* CONTEÚDO */}
       <div className="relative z-10 p-4 flex flex-col justify-end w-full">
 
         <h3 className="text-sm font-semibold leading-tight text-[#EAECEF]">
