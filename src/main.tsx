@@ -5,6 +5,7 @@ import App from "./App"
 import { Toaster } from "sonner"
 import "./index.css"
 import { registerSW } from "virtual:pwa-register"
+import { NotificationProvider } from "./contexts/NotificationContext"
 
 registerSW({
   immediate: true,
@@ -21,12 +22,14 @@ ReactDOM.createRoot(
 ).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
-      <Toaster
-        position="top-right"
-        richColors
-        theme="dark"
-      />
+      <NotificationProvider>
+        <App />
+        <Toaster
+          position="top-right"
+          richColors
+          theme="dark"
+        />
+      </NotificationProvider>
     </BrowserRouter>
   </React.StrictMode>
 )

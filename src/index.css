@@ -15,6 +15,18 @@ body,
   min-height: 100%;
 }
 
+/* ===== FLOAT ANIMATION ===== */
+
+@keyframes floatSoft {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+
+.float-soft {
+  animation: floatSoft 3.5s ease-in-out infinite;
+}
+
 /* ===== BINANCE COMPONENT SYSTEM ===== */
 
 .binance-card {

@@ -64,88 +64,113 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] pb-24">
 
-      <div className="pt-14">
+      {/* ================= TOP MARQUEE ================= */}
+      <div className="w-full overflow-hidden bg-[#0F1419] border-b border-[#1E2329]">
+        <div className="whitespace-nowrap animate-marquee py-2 text-emerald-400 text-[12px] tracking-wide font-medium">
 
-        <div className="bg-[#1E2329] border-y border-[#2B3139] px-6 py-6">
+          <span className="mx-8">
+            A empresa EMATEA tem a missão de oferecer soluções tecnológicas, financeiras e comerciais inovadoras, promovendo crescimento sustentável e confiança no mercado.
+          </span>
 
-          <div className="flex items-center gap-4">
-
-            <div className="w-14 h-14 rounded-full overflow-hidden border border-[#2B3139]">
-              <img src="/logo.png" className="w-full h-full object-cover" />
-            </div>
-
-            <div className="flex-1">
-
-              {/* Nome + selo */}
-              <div className="flex items-center gap-2">
-                <p className="text-lg font-semibold text-white">
-                  {user.fullName || user.phone}
-                </p>
-
-                {user.isVerified && (
-                  <span className="bg-emerald-600 w-5 h-5 rounded-full flex items-center justify-center">
-                    <Check size={12} className="text-white" />
-                  </span>
-                )}
-              </div>
-
-              <p className="text-xs text-[#848E9C] mt-1">
-                {user.email}
-              </p>
-
-              <div className="flex items-center gap-2 text-xs text-[#848E9C] mt-1">
-                <span>ID: {shortId}</span>
-                <button onClick={() => copyText(user.publicId)}>
-                  {copiedId ? <Check size={14} /> : <Copy size={14} />}
-                </button>
-              </div>
-
-              <p className="text-[11px] text-[#848E9C] mt-1">
-                Criada em {new Date(user.createdAt).toLocaleDateString('pt-AO')}
-              </p>
-
-            </div>
-
-          </div>
-
-          <div className="mt-6 flex items-center justify-between border-t border-[#2B3139] pt-4">
-
-            <div>
-              <p className="text-[11px] text-[#848E9C]">
-                Saldo disponível
-              </p>
-
-              <p className="text-xl font-semibold mt-1">
-                {user.balance?.toLocaleString()} Kz
-              </p>
-
-              <div className="mt-2 text-[11px] text-[#848E9C] space-y-1">
-                <p>Nível: <span className="text-white">{accountLevel}</span></p>
-                <p>Limite: <span className="text-white">{accountLimit}</span></p>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-
-              <SmallAction
-                label="Recarregar"
-                icon={<Wallet size={14} weight="fill" />}
-                onClick={() => navigate('/deposit')}
-              />
-
-              <SmallAction
-                label="Retirar"
-                icon={<ArrowDown size={14} weight="fill" />}
-                onClick={() => navigate('/withdraw')}
-              />
-
-            </div>
-
-          </div>
+          <span className="mx-8">
+            A empresa EMATEA tem a missão de oferecer soluções tecnológicas, financeiras e comerciais inovadoras, promovendo crescimento sustentável e confiança no mercado.
+          </span>
 
         </div>
       </div>
 
+      {/* ================= PROFILE CARD ================= */}
+      <div
+        className="
+          bg-[#1E2329]
+          px-6
+          py-6
+          rounded-3xl
+          mt-3
+          shadow-[0_15px_40px_rgba(0,0,0,0.45)]
+        "
+      >
+
+        <div className="flex items-center gap-4">
+
+          <div className="w-14 h-14 rounded-full overflow-hidden border border-[#2B3139]">
+            <img src="/logo.png" className="w-full h-full object-cover" />
+          </div>
+
+          <div className="flex-1 min-w-0">
+
+            {/* Nome nunca quebra linha */}
+            <div className="flex items-center gap-2 min-w-0">
+
+              <p className="text-lg font-semibold text-white whitespace-nowrap overflow-hidden text-ellipsis">
+                {user.fullName || user.phone}
+              </p>
+
+              {user.isVerified && (
+                <span className="bg-emerald-600 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Check size={12} className="text-white" />
+                </span>
+              )}
+
+            </div>
+
+            <p className="text-xs text-[#848E9C] mt-1 truncate">
+              {user.email}
+            </p>
+
+            <div className="flex items-center gap-2 text-xs text-[#848E9C] mt-1">
+              <span>ID: {shortId}</span>
+              <button onClick={() => copyText(user.publicId)}>
+                {copiedId ? <Check size={14} /> : <Copy size={14} />}
+              </button>
+            </div>
+
+            <p className="text-[11px] text-[#848E9C] mt-1">
+              Criada em {new Date(user.createdAt).toLocaleDateString('pt-AO')}
+            </p>
+
+          </div>
+
+        </div>
+
+        <div className="mt-6 flex items-center justify-between border-t border-[#2B3139] pt-4">
+
+          <div>
+            <p className="text-[11px] text-[#848E9C]">
+              Saldo disponível
+            </p>
+
+            <p className="text-2xl font-semibold mt-1">
+              {user.balance?.toLocaleString()} Kz
+            </p>
+
+            <div className="mt-2 text-[11px] text-[#848E9C] space-y-1">
+              <p>Nível: <span className="text-white">{accountLevel}</span></p>
+              <p>Limite: <span className="text-white">{accountLimit}</span></p>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+
+            <SmallAction
+              label="Recarregar"
+              icon={<Wallet size={14} weight="fill" />}
+              onClick={() => navigate('/deposit')}
+            />
+
+            <SmallAction
+              label="Retirar"
+              icon={<ArrowDown size={14} weight="fill" />}
+              onClick={() => navigate('/withdraw')}
+            />
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ================= SESSÕES ================= */}
       <div className="px-6 mt-10">
 
         <p className="text-sm text-[#848E9C] mb-6 tracking-wide">
@@ -177,11 +202,24 @@ export default function Profile() {
         </button>
       </div>
 
+      {/* ================= MARQUEE ANIMATION ================= */}
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+
+        .animate-marquee {
+          display: inline-block;
+          animation: marquee 22s linear infinite;
+        }
+      `}</style>
+
     </div>
   )
 }
 
-/* COMPONENTES */
+/* ================= COMPONENTES ================= */
 
 function SmallAction({
   label,
