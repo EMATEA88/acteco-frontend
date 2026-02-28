@@ -28,20 +28,46 @@ export default function Login() {
     return () => clearTimeout(t)
   }, [toastVisible])
 
+  // Detecta se é número puro
+  const isPhone = /^\d+$/.test(identifier.replace(/\s/g, ''))
+
+  function formatPhone(value: string) {
+    const digits = value.replace(/\D/g, '').slice(0, 9)
+
+    const part1 = digits.slice(0, 3)
+    const part2 = digits.slice(3, 6)
+    const part3 = digits.slice(6, 9)
+
+    return [part1, part2, part3]
+      .filter(Boolean)
+      .join(' ')
+  }
+
+  function handleIdentifierChange(value: string) {
+    if (/^\d*$/.test(value.replace(/\s/g, ''))) {
+      setIdentifier(formatPhone(value))
+    } else {
+      setIdentifier(value)
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-
-    if (!identifier || !password) {
-      setToastType('error')
-      setToastMessage('Preencha todos os campos')
-      setToastVisible(true)
-      return
-    }
 
     try {
       setLoading(true)
 
-      const data = await loginUser(identifier, password)
+      let finalIdentifier = identifier.trim()
+
+      if (isPhone) {
+        const clean = identifier.replace(/\s/g, '')
+        if (clean.length !== 9) {
+          throw new Error('Número inválido')
+        }
+        finalIdentifier = `+244${clean}`
+      }
+
+      const data = await loginUser(finalIdentifier, password)
 
       login(data.token, data.user)
 
@@ -55,6 +81,7 @@ export default function Login() {
       setToastType('error')
       setToastMessage(
         err?.response?.data?.message ||
+        err.message ||
         'Credenciais inválidas'
       )
       setToastVisible(true)
@@ -78,46 +105,45 @@ export default function Login() {
       <form onSubmit={handleSubmit} className="space-y-5">
 
         {/* IDENTIFIER */}
-<div>
-  <label className="block text-sm text-gray-400 mb-1">
-    Email ou Telefone
-  </label>
+        <div>
+          <label className="block text-sm text-gray-400 mb-1">
+            Email ou Telefone
+          </label>
 
-  <div className="flex items-center">
-    
-    {/* Prefixo fixo */}
-    <div className="
-      h-12
-      px-3
-      flex items-center
-      bg-[#111827]
-      border border-r-0 border-gray-700
-      rounded-l-xl
-      text-gray-400 text-sm
-    ">
-      +244
-    </div>
+          <div className="flex items-center">
 
-    {/* Input real */}
-    <input
-      type="text"
-      className="
-        w-full h-12 rounded-r-xl
-        bg-[#111827]
-        border border-gray-700
-        px-3 text-sm text-white
-        placeholder-gray-500
-        outline-none
-        focus:border-emerald-500
-        transition
-      "
-      value={identifier}
-      onChange={(e) => setIdentifier(e.target.value)}
-      placeholder="923000000"
-    />
+            {isPhone && (
+              <div className="
+                h-12 px-3 flex items-center
+                bg-[#111827]
+                border border-r-0 border-gray-700
+                rounded-l-xl
+                text-gray-400 text-sm
+              ">
+                +244
+              </div>
+            )}
 
-  </div>
-</div>
+            <input
+              type="text"
+              inputMode={isPhone ? "numeric" : "text"}
+              className={`
+                w-full h-12
+                ${isPhone ? "rounded-r-xl" : "rounded-xl"}
+                bg-[#111827]
+                border border-gray-700
+                px-3 text-sm text-white
+                placeholder-gray-500
+                outline-none
+                focus:border-emerald-500
+                transition
+              `}
+              value={identifier}
+              onChange={(e) => handleIdentifierChange(e.target.value)}
+              placeholder="923 000 000 ou email"
+            />
+          </div>
+        </div>
 
         {/* PASSWORD */}
         <div>
@@ -148,7 +174,9 @@ export default function Login() {
               onClick={() => setShowPassword(v => !v)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition"
             >
-              {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
+              {showPassword
+                ? <EyeSlash size={20} />
+                : <Eye size={20} />}
             </button>
           </div>
         </div>
@@ -167,13 +195,13 @@ export default function Login() {
         </button>
 
         <div className="text-center mt-2">
-  <Link
-    to="/reset-password"
-    className="text-sm text-gray-400 hover:text-emerald-400 transition"
-  >
-    Esqueci a password
-  </Link>
-</div>
+          <Link
+            to="/reset-password"
+            className="text-sm text-gray-400 hover:text-emerald-400 transition"
+          >
+            Esqueci a password
+          </Link>
+        </div>
 
         <div className="text-center">
           <Link
