@@ -26,7 +26,34 @@ export default function Withdraw() {
   const fee = numericAmount * FEE_PERCENT
   const netAmount = numericAmount - fee
 
+  function handleError(error: any) {
+
+    const errorCode = error?.response?.data?.error
+
+    switch (errorCode) {
+
+      case 'LIMIT_PER_TRANSACTION_EXCEEDED':
+        return 'Valor excede o limite máximo por retirada.'
+
+      case 'DAILY_LIMIT_EXCEEDED':
+        return 'Limite diário de retiradas atingido.'
+
+      case 'MONTHLY_LIMIT_EXCEEDED':
+        return 'Limite mensal de retiradas atingido.'
+
+      case 'INSUFFICIENT_BALANCE':
+        return 'Saldo insuficiente.'
+
+      case 'USER_BLOCKED':
+        return 'Conta bloqueada. Entre em contato com suporte.'
+
+      default:
+        return 'Erro ao solicitar retirada.'
+    }
+  }
+
   async function handleWithdraw() {
+
     setMessage(null)
 
     if (!numericAmount || numericAmount <= 0) {
@@ -40,6 +67,7 @@ export default function Withdraw() {
     }
 
     try {
+
       setLoading(true)
 
       await api.post('/withdrawals', {
@@ -52,8 +80,11 @@ export default function Withdraw() {
       const me = await UserService.me()
       setBalance(me.data.balance)
 
-    } catch {
-      setMessage('Erro ao solicitar retirada')
+    } catch (error: any) {
+
+      const formattedMessage = handleError(error)
+      setMessage(formattedMessage)
+
     } finally {
       setLoading(false)
     }
@@ -79,7 +110,6 @@ export default function Withdraw() {
         </button>
       </div>
 
-      {/* SALDO (ÚNICO VERDE) */}
       <div className="
         bg-[#1E2329] border border-[#2B3139]
         rounded-3xl p-6 text-center
@@ -93,7 +123,6 @@ export default function Withdraw() {
         </p>
       </div>
 
-      {/* FORM */}
       <div className="
         bg-[#1E2329] border border-[#2B3139]
         rounded-3xl p-6 space-y-6

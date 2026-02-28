@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UserService } from '../services/user.service'
 import { ChartLineUp } from '@phosphor-icons/react'
+import { formatCurrencyAOA } from "../utils/formatCurrency"
 
 import {
   Wallet,
@@ -141,7 +142,7 @@ export default function Profile() {
             </p>
 
             <p className="text-2xl font-semibold mt-1">
-              {user.balance?.toLocaleString()} Kz
+              {formatCurrencyAOA(user.balance)}
             </p>
 
             <div className="mt-2 text-[11px] text-[#848E9C] space-y-1">
