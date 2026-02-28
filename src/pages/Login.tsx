@@ -78,28 +78,46 @@ export default function Login() {
       <form onSubmit={handleSubmit} className="space-y-5">
 
         {/* IDENTIFIER */}
-        <div>
-          <label className="block text-sm text-gray-400 mb-1">
-            Email ou Telefone
-          </label>
+<div>
+  <label className="block text-sm text-gray-400 mb-1">
+    Email ou Telefone
+  </label>
 
-          <input
-            type="text"
-            className="
-              w-full h-12 rounded-xl
-              bg-[#111827]
-              border border-gray-700
-              px-3 text-sm text-white
-              placeholder-gray-500
-              outline-none
-              focus:border-emerald-500
-              transition
-            "
-            value={identifier}
-            onChange={e => setIdentifier(e.target.value)}
-            placeholder="ex: user@email.com ou 923000000"
-          />
-        </div>
+  <div className="flex items-center">
+    
+    {/* Prefixo fixo */}
+    <div className="
+      h-12
+      px-3
+      flex items-center
+      bg-[#111827]
+      border border-r-0 border-gray-700
+      rounded-l-xl
+      text-gray-400 text-sm
+    ">
+      +244
+    </div>
+
+    {/* Input real */}
+    <input
+      type="text"
+      className="
+        w-full h-12 rounded-r-xl
+        bg-[#111827]
+        border border-gray-700
+        px-3 text-sm text-white
+        placeholder-gray-500
+        outline-none
+        focus:border-emerald-500
+        transition
+      "
+      value={identifier}
+      onChange={(e) => setIdentifier(e.target.value)}
+      placeholder="923000000"
+    />
+
+  </div>
+</div>
 
         {/* PASSWORD */}
         <div>
