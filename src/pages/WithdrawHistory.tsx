@@ -1,4 +1,3 @@
-// src/pages/WithdrawHistory.tsx
 import { useEffect, useState } from 'react'
 import { api } from '../services/api'
 import { ArrowLeft } from 'lucide-react'
@@ -23,46 +22,93 @@ export default function WithdrawHistory() {
       .finally(() => setLoading(false))
   }, [])
 
+  function getStatusColor(status: string) {
+    switch (status) {
+      case 'SUCCESS':
+        return 'text-emerald-400'
+      case 'PENDING':
+        return 'text-yellow-400'
+      case 'REJECTED':
+        return 'text-red-400'
+      default:
+        return 'text-[#EAECEF]'
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-[#0B0E11] p-6 pb-24">
+
       {/* HEADER */}
-      <div className="flex items-center gap-3 mb-4">
-        <button onClick={() => navigate(-1)}>
-          <ArrowLeft />
+      <div className="flex items-center gap-4 mb-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-[#EAECEF] hover:text-[#FCD535] transition"
+        >
+          <ArrowLeft size={22} />
         </button>
-        <h1 className="text-lg font-semibold">Histórico de retiradas</h1>
+
+        <h1 className="text-2xl font-semibold text-[#EAECEF]">
+          Histórico de retiradas
+        </h1>
       </div>
 
-      {loading && <p className="text-sm opacity-60">Carregando…</p>}
-
-      {!loading && items.length === 0 && (
-        <p className="text-sm opacity-60">
-          Nenhuma retirada encontrada
+      {loading && (
+        <p className="text-sm text-[#848E9C]">
+          Carregando…
         </p>
       )}
 
-      <div className="space-y-3">
+      {!loading && items.length === 0 && (
+        <div className="
+          bg-[#1E2329] border border-[#2B3139]
+          rounded-2xl p-6 text-center
+          text-[#848E9C]
+        ">
+          Nenhuma retirada encontrada
+        </div>
+      )}
+
+      <div className="space-y-4">
+
         {items.map(w => (
           <div
             key={w.id}
-            className="bg-white rounded-xl p-4 shadow-sm text-sm"
+            className="
+              bg-[#1E2329]
+              border border-[#2B3139]
+              rounded-2xl
+              p-5
+              text-sm
+            "
           >
-            <p>
-              <b>Valor:</b> {w.amount.toLocaleString()} Kz
-            </p>
-            <p>
-              <b>Taxa:</b> {w.fee.toLocaleString()} Kz
-            </p>
-            <p>
-              <b>Status:</b> {w.status}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <div className="flex justify-between mb-2">
+              <span className="text-[#848E9C]">Valor</span>
+              <span className="font-semibold text-[#EAECEF]">
+                {Number(w.amount).toLocaleString()} Kz
+              </span>
+            </div>
+
+            <div className="flex justify-between mb-2">
+              <span className="text-[#848E9C]">Taxa</span>
+              <span className="text-red-400">
+                {Number(w.fee).toLocaleString()} Kz
+              </span>
+            </div>
+
+            <div className="flex justify-between mb-2">
+              <span className="text-[#848E9C]">Status</span>
+              <span className={`font-medium ${getStatusColor(w.status)}`}>
+                {w.status}
+              </span>
+            </div>
+
+            <div className="text-xs text-[#6B7280] mt-3">
               {new Date(w.createdAt).toLocaleString()}
-            </p>
+            </div>
           </div>
         ))}
+
       </div>
     </div>
   )
 }
-

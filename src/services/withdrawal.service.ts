@@ -17,26 +17,19 @@ export const WithdrawalService = {
 
   async create(amount: number): Promise<WithdrawalResponse> {
 
-    try {
+  try {
 
-      const response = await api.post('/withdrawals', {
-        amount
-      })
+    const response = await api.post('/withdrawals', {
+      amount
+    })
 
-      return response.data
+    return response.data
 
-    } catch (error: any) {
+  } catch (error: any) {
 
-      const errorCode = error?.response?.data?.error
-      const errorMessage = error?.response?.data?.message
+    throw error.response?.data
 
-      const normalizedError: WithdrawalError = {
-        error: errorCode || 'UNKNOWN_ERROR',
-        message: errorMessage || 'Erro ao solicitar retirada'
-      }
-
-      throw normalizedError
-    }
   }
+}
 
 }

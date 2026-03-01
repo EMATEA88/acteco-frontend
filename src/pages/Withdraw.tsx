@@ -28,7 +28,7 @@ export default function Withdraw() {
 
   function handleError(error: any) {
 
-    const errorCode = error?.response?.data?.error
+    const errorCode = error?.error
 
     switch (errorCode) {
 
