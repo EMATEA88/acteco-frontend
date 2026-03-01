@@ -141,8 +141,8 @@ export default function Profile() {
               Saldo disponível
             </p>
 
-            <p className="text-2xl font-semibold mt-1">
-              {formatCurrencyAOA(user.balance)}
+            <p className="text-2xl font-semibold mt-1 whitespace-nowrap">
+             {formatCurrencyAOA(user.balance)}
             </p>
 
             <div className="mt-2 text-[11px] text-[#848E9C] space-y-1">
