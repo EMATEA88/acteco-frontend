@@ -69,75 +69,55 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] pb-24">
 
-      {/* ================= TOP MARQUEE ================= */}
-      <div className="w-full overflow-hidden bg-[#0F1419] border-b border-[#1E2329]">
-        <div className="whitespace-nowrap animate-marquee py-2 text-emerald-400 text-[12px] tracking-wide font-medium">
-          <span className="mx-8">
-            A empresa EMATEA tem a missão de oferecer soluções tecnológicas, financeiras e comerciais inovadoras, promovendo crescimento sustentável e confiança no mercado.
-          </span>
-          <span className="mx-8">
-            A empresa EMATEA tem a missão de oferecer soluções tecnológicas, financeiras e comerciais inovadoras, promovendo crescimento sustentável e confiança no mercado.
-          </span>
-        </div>
-      </div>
-
       {/* ================= PROFILE CARD ================= */}
-      <div className="bg-[#1E2329] px-6 py-6 rounded-3xl mt-3 shadow-[0_15px_40px_rgba(0,0,0,0.45)]">
+      <div className="mx-6 bg-[#1E2329] px-5 py-5 rounded-2xl mt-4 shadow-[0_12px_35px_rgba(0,0,0,0.40)]">
 
+        {/* HEADER */}
         <div className="flex items-center gap-4">
 
-          {/* LOGO + LINK KYC */}
-          <div className="flex flex-col items-center">
-
-            <div className="w-14 h-14 rounded-full overflow-hidden border border-[#2B3139]">
+          <div className="flex flex-col items-center flex-shrink-0">
+            <div className="w-12 h-12 rounded-full overflow-hidden border border-[#2B3139]">
               <img src="/logo.png" className="w-full h-full object-cover" />
             </div>
 
             {showVerifyLink && (
-              <>
-                {user.kycStatus === 'PENDING' ? (
-                  <span className="text-[11px] text-[#FCD535] mt-1">
-                    Em análise
-                  </span>
-                ) : (
-                  <button
+              user.kycStatus === 'PENDING'
+                ? <span className="text-[10px] text-[#FCD535] mt-1">Em análise</span>
+                : <button
                     onClick={() => navigate('/kyc')}
-                    className="text-[11px] text-[#FCD535] mt-1 hover:underline"
+                    className="text-[10px] text-[#FCD535] mt-1 hover:underline"
                   >
                     Verificar
                   </button>
-                )}
-              </>
             )}
-
           </div>
 
           <div className="flex-1 min-w-0">
 
-            <div className="flex items-center gap-2 min-w-0">
-              <p className="text-lg font-semibold text-white whitespace-nowrap overflow-hidden text-ellipsis">
+            <div className="flex items-center gap-2">
+              <p className="text-base font-semibold text-white truncate">
                 {user.fullName || user.phone}
               </p>
 
               {user.isVerified && (
-                <span className="bg-emerald-600 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Check size={12} className="text-white" />
+                <span className="bg-emerald-600 w-4 h-4 rounded-full flex items-center justify-center">
+                  <Check size={10} className="text-white" />
                 </span>
               )}
             </div>
 
-            <p className="text-xs text-[#848E9C] mt-1 truncate">
+            <p className="text-[11px] text-[#848E9C] truncate">
               {user.email}
             </p>
 
-            <div className="flex items-center gap-2 text-xs text-[#848E9C] mt-1">
+            <div className="flex items-center gap-2 text-[11px] text-[#848E9C]">
               <span>ID: {shortId}</span>
               <button onClick={() => copyText(user.publicId)}>
-                {copiedId ? <Check size={14} /> : <Copy size={14} />}
+                {copiedId ? <Check size={12} /> : <Copy size={12} />}
               </button>
             </div>
 
-            <p className="text-[11px] text-[#848E9C] mt-1">
+            <p className="text-[10px] text-[#848E9C] mt-1">
               Criada em {new Date(user.createdAt).toLocaleDateString('pt-AO')}
             </p>
 
@@ -145,40 +125,43 @@ export default function Profile() {
 
         </div>
 
-        {/* SALDO + BOTÕES REORDENADOS */}
-        <div className="mt-6 border-t border-[#2B3139] pt-4 flex flex-col gap-4">
+        {/* SALDO + BOTÕES HORIZONTAIS EQUILIBRADOS */}
+        <div className="mt-5 border-t border-[#2B3139] pt-4">
 
-          <div>
-            <p className="text-[11px] text-[#848E9C]">
-              Saldo disponível
-            </p>
+          <div className="flex items-center justify-between gap-4">
 
-            <p className="text-2xl font-semibold mt-1 whitespace-nowrap">
-              {formatCurrencyAOA(user.balance)}
-            </p>
-          </div>
+            {/* LADO ESQUERDO */}
+            <div>
+              <p className="text-[11px] text-[#848E9C]">
+                Saldo disponível
+              </p>
 
-          {/* BOTÕES AGORA VÊM ANTES DO NÍVEL/LIMITE */}
-          <div className="flex gap-2 flex-wrap">
+              <p className="text-xl font-semibold mt-1 whitespace-nowrap">
+                {formatCurrencyAOA(user.balance)}
+              </p>
 
-            <SmallAction
-              label="Recarregar"
-              icon={<Wallet size={14} weight="fill" />}
-              onClick={() => navigate('/deposit')}
-            />
+              <div className="text-[11px] text-[#848E9C] mt-1">
+                <span>{accountLevel}</span> • <span>{accountLimit}</span>
+              </div>
+            </div>
 
-            <SmallAction
-              label="Retirar"
-              icon={<ArrowDown size={14} weight="fill" />}
-              onClick={() => navigate('/withdraw')}
-            />
+            {/* LADO DIREITO — SEM ESPAÇO MORTO */}
+            <div className="flex gap-2">
 
-          </div>
+              <SmallAction
+                label="Recarregar"
+                icon={<Wallet size={14} weight="fill" />}
+                onClick={() => navigate('/deposit')}
+              />
 
-          {/* NÍVEL E LIMITE AGORA ABAIXO DOS BOTÕES */}
-          <div className="text-[11px] text-[#848E9C] space-y-1">
-            <p>Nível: <span className="text-white">{accountLevel}</span></p>
-            <p>Limite: <span className="text-white">{accountLimit}</span></p>
+              <SmallAction
+                label="Retirar"
+                icon={<ArrowDown size={14} weight="fill" />}
+                onClick={() => navigate('/withdraw')}
+              />
+
+            </div>
+
           </div>
 
         </div>
@@ -217,18 +200,6 @@ export default function Profile() {
         </button>
       </div>
 
-      <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0%); }
-          100% { transform: translateX(-50%); }
-        }
-
-        .animate-marquee {
-          display: inline-block;
-          animation: marquee 22s linear infinite;
-        }
-      `}</style>
-
     </div>
   )
 }
@@ -247,7 +218,7 @@ function SmallAction({
   return (
     <button
       onClick={onClick}
-      className="bg-[#1E2329] border border-[#2B3139] hover:bg-[#2B3139] px-3 py-1.5 rounded-lg text-[11px] flex items-center gap-1.5 transition"
+      className="bg-[#0F1419] border border-[#2B3139] hover:bg-[#2B3139] px-3 py-1.5 rounded-lg text-[11px] flex items-center gap-1.5 transition whitespace-nowrap"
     >
       {icon}
       {label}
