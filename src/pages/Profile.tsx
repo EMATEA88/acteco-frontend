@@ -175,13 +175,13 @@ export default function Profile() {
         </div>
 
         {/* ================= SESSÕES PREMIUM ================= */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex flex flex-col">
 
           <p className="text-sm text-[#848E9C] mb-4 tracking-wide">
             MINHAS SESSÕES
           </p>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 mb-2">
 
             <SessionItem label="Banco" sub="Conta & Dados" icon={<Bank size={18} weight="fill" />} onClick={() => navigate('/bank')} />
             <SessionItem label="Transações" sub="Histórico geral" icon={<ArrowsLeftRight size={18} weight="fill" />} onClick={() => navigate('/transactions')} />

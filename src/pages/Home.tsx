@@ -15,41 +15,36 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen px-5 pt-16 pb-24">
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] px-5 pt-8 pb-24">
 
-      {/* ================= SUPORTE CARD ================= */}
+      {/* ================= CARD SUPORTE PREMIUM ================= */}
       <button
         onClick={() => setSupportOpen(true)}
         className="
-          w-full
-          mb-8
-          rounded-3xl
-          bg-[#1E2329]
+          w-full mb-8 p-5 rounded-3xl
+          bg-gradient-to-br from-[#1E2329] to-[#14181D]
           border border-[#2B3139]
-          p-5
-          shadow-md
-          flex
-          items-center
-          justify-between
-          hover:border-emerald-500/40
-          hover:bg-[#222831]
-          transition
+          shadow-[0_10px_25px_rgba(0,0,0,0.6)]
+          flex justify-between items-center
+          hover:-translate-y-1 transition-all
         "
       >
         <div>
-          <p className="text-xs uppercase tracking-wide text-emerald-500 font-semibold">
+          <p className="text-[11px] uppercase tracking-widest text-emerald-400 font-semibold">
             Centro de Apoio
           </p>
-          <p className="text-sm text-[#EAECEF] font-medium mt-1">
+          <p className="text-sm mt-1 text-[#EAECEF]">
             Fale com a operadora ou entre no grupo oficial
           </p>
         </div>
 
-        <MessageCircle size={24} className="text-emerald-500" />
+        <MessageCircle size={24} className="text-emerald-400" />
       </button>
 
-      {/* ================= SEÇÃO PRINCIPAL ================= */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* ================= PRINCIPAL ================= */}
+      <SectionTitle title="PRINCIPAL" />
+
+      <div className="grid grid-cols-2 gap-5 mb-12">
 
         <ImageCard
           image="/assets/home/fundos.png"
@@ -81,83 +76,70 @@ export default function Home() {
 
       </div>
 
-      {/* ================= NOSSOS SERVIÇOS ================= */}
-      <div className="mt-12">
+      {/* ================= SERVIÇOS ================= */}
+      <SectionTitle title="NOSSOS SERVIÇOS" />
 
-        <h2 className="text-lg font-semibold tracking-wide text-[#848E9C] mb-6">
-          NOSSOS SERVIÇOS
-        </h2>
+      <div className="grid grid-cols-2 gap-5 mb-12">
 
-        <div className="grid grid-cols-2 gap-4">
+        <ImageCard
+          image="/assets/home/deposito.png"
+          title="Depósito"
+          subtitle="Adicionar saldo"
+          onClick={() => navigate("/deposit")}
+        />
 
-          <ImageCard
-            image="/assets/home/deposito.png"
-            title="Depósito"
-            subtitle="Adicionar saldo"
-            onClick={() => navigate("/deposit")}
-          />
+        <ImageCard
+          image="/assets/home/levantamento.png"
+          title="Levantamento"
+          subtitle="Retirar fundos"
+          onClick={() => navigate("/withdraw")}
+        />
 
-          <ImageCard
-            image="/assets/home/levantamento.png"
-            title="Levantamento"
-            subtitle="Retirar fundos"
-            onClick={() => navigate("/withdraw")}
-          />
+        <ImageCard
+          image="/assets/home/aplicacoes.png"
+          title="Aplicações"
+          subtitle="Fundos por prazo"
+          onClick={() => navigate("/applications")}
+        />
 
-          <ImageCard
-            image="/assets/home/aplicacoes.png"
-            title="Aplicações"
-            subtitle="Fundos por prazo"
-            onClick={() => navigate("/applications")}
-          />
-
-          <ImageCard
-            image="/assets/home/design.png"
-            title="Design"
-            subtitle="Identidade visual"
-            onClick={() => navigate("/about")}
-          />
-
-        </div>
+        <ImageCard
+          image="/assets/home/design.png"
+          title="Design"
+          subtitle="Identidade visual"
+          onClick={() => navigate("/about")}
+        />
 
       </div>
 
-      {/* ================= BLOCO INSTITUCIONAL (COMPLIANCE) ================= */}
-      <div className="mt-16 border-t border-[#2B3139] pt-8">
+      {/* ================= COMPLIANCE ================= */}
+      <div className="
+        rounded-3xl p-6
+        bg-gradient-to-br from-[#1E2329] to-[#14181D]
+        border border-[#2B3139]
+        shadow-[0_10px_25px_rgba(0,0,0,0.6)]
+      ">
 
-        <div className="bg-[#0F172A] border border-[#1E2329] rounded-2xl p-5 space-y-4">
+        <h3 className="text-sm font-semibold tracking-wide mb-6 text-[#EAECEF]">
+          Transparência & Segurança
+        </h3>
 
-          <h3 className="text-sm font-semibold text-[#EAECEF]">
-            Transparência & Segurança
-          </h3>
+        <div className="space-y-4">
 
-          <div className="space-y-3">
+          <button
+            onClick={() => navigate("/privacy-policy")}
+            className="flex items-center gap-3 text-sm text-[#848E9C] hover:text-white transition"
+          >
+            <ShieldCheck size={18} />
+            Política de Privacidade
+          </button>
 
-            <button
-              onClick={() => navigate("/privacy-policy")}
-              className="
-                w-full flex items-center gap-3
-                text-sm text-[#848E9C]
-                hover:text-white transition
-              "
-            >
-              <ShieldCheck size={18} />
-              Política de Privacidade
-            </button>
-
-            <button
-              onClick={() => navigate("/delete-account")}
-              className="
-                w-full flex items-center gap-3
-                text-sm text-red-400
-                hover:text-red-500 transition
-              "
-            >
-              <Trash2 size={18} />
-              Solicitar Eliminação de Conta
-            </button>
-
-          </div>
+          <button
+            onClick={() => navigate("/delete-account")}
+            className="flex items-center gap-3 text-sm text-red-400 hover:text-red-500 transition"
+          >
+            <Trash2 size={18} />
+            Solicitar Eliminação de Conta
+          </button>
 
         </div>
 
@@ -172,25 +154,21 @@ export default function Home() {
           <div
             onClick={(e) => e.stopPropagation()}
             className="
+              w-[90%] max-w-sm p-6 rounded-3xl
+              bg-gradient-to-br from-[#1E2329] to-[#14181D]
+              border border-[#2B3139]
+              shadow-[0_20px_40px_rgba(0,0,0,0.8)]
               relative
-              w-[90%] max-w-sm
-              bg-[#0F172A]
-              border border-white/10
-              rounded-3xl
-              p-6
-              text-center
-              shadow-xl
             "
           >
-
             <button
               onClick={() => setSupportOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
             >
               <X size={20} />
             </button>
 
-            <h2 className="text-lg font-semibold text-white mb-6">
+            <h2 className="text-lg font-semibold text-white mb-6 text-center">
               Centro de Apoio EMATEA
             </h2>
 
@@ -204,8 +182,7 @@ export default function Home() {
                   w-full h-12 rounded-xl
                   bg-green-500 text-white font-semibold
                   flex items-center justify-center gap-2
-                  hover:bg-green-600
-                  transition
+                  hover:bg-green-600 transition
                 "
               >
                 <MessageCircle size={18} />
@@ -220,8 +197,7 @@ export default function Home() {
                   w-full h-12 rounded-xl
                   bg-emerald-600 text-white font-semibold
                   flex items-center justify-center gap-2
-                  hover:bg-emerald-700
-                  transition
+                  hover:bg-emerald-700 transition
                 "
               >
                 <Users size={18} />
@@ -229,7 +205,6 @@ export default function Home() {
               </a>
 
             </div>
-
           </div>
         </div>
       )}
@@ -238,7 +213,15 @@ export default function Home() {
   )
 }
 
-/* ================= CARD PADRÃO ================= */
+/* ================= COMPONENTES ================= */
+
+function SectionTitle({ title }: { title: string }) {
+  return (
+    <h2 className="text-sm tracking-widest text-[#848E9C] mb-6">
+      {title}
+    </h2>
+  )
+}
 
 function ImageCard({
   image,
@@ -257,15 +240,13 @@ function ImageCard({
       onClick={onClick}
       className="
         relative
-        rounded-xl
+        h-[185px]
+        rounded-2xl
         overflow-hidden
         border border-[#2B3139]
-        bg-[#1E2329]
-        h-[180px]
-        flex
-        shadow-md
-        transition
-        active:scale-[0.98]
+        shadow-[0_8px_20px_rgba(0,0,0,0.6)]
+        hover:-translate-y-1
+        transition-all
       "
     >
 
@@ -275,15 +256,15 @@ function ImageCard({
         className="absolute inset-0 w-full h-full object-cover"
       />
 
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black/90" />
 
-      <div className="relative z-10 p-4 flex flex-col justify-end w-full">
+      <div className="relative z-10 p-4 flex flex-col justify-end h-full">
 
-        <h3 className="text-sm font-semibold leading-tight text-[#EAECEF]">
+        <h3 className="text-sm font-semibold text-[#EAECEF]">
           {title}
         </h3>
 
-        <p className="text-xs text-[#848E9C] mt-1 leading-tight">
+        <p className="text-xs text-[#848E9C] mt-1">
           {subtitle}
         </p>
 
