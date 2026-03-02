@@ -52,9 +52,6 @@ export default function Profile() {
   const accountLevel = user.isVerified ? 'Premium' : 'Basic'
   const accountLimit = user.isVerified ? 'Ilimitado' : '50.000 Kz / dia'
 
-  const showVerifyLink =
-    !user.isVerified && user.kycStatus !== 'APPROVED'
-
   async function copyText(value: string) {
     await navigator.clipboard.writeText(value)
     setCopiedId(true)
@@ -67,86 +64,68 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] pb-24">
+    <div className="h-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] flex flex-col">
 
-      {/* ================= PROFILE CARD ================= */}
-      <div className="mx-6 bg-[#1E2329] px-5 py-5 rounded-2xl mt-4 shadow-[0_12px_35px_rgba(0,0,0,0.40)]">
+      {/* CONTAINER PRINCIPAL FIXO */}
+      <div className="flex-1 flex flex-col px-4 pt-4 gap-4">
 
-        {/* HEADER */}
-        <div className="flex items-center gap-4">
+        {/* PROFILE CARD */}
+        <div className="bg-[#1E2329] rounded-2xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.4)]">
 
-          <div className="flex flex-col items-center flex-shrink-0">
-            <div className="w-12 h-12 rounded-full overflow-hidden border border-[#2B3139]">
+          {/* HEADER HORIZONTAL */}
+          <div className="flex items-center gap-3">
+
+            <div className="w-12 h-12 rounded-full overflow-hidden border border-[#2B3139] flex-shrink-0">
               <img src="/logo.png" className="w-full h-full object-cover" />
             </div>
 
-            {showVerifyLink && (
-              user.kycStatus === 'PENDING'
-                ? <span className="text-[10px] text-[#FCD535] mt-1">Em análise</span>
-                : <button
-                    onClick={() => navigate('/kyc')}
-                    className="text-[10px] text-[#FCD535] mt-1 hover:underline"
-                  >
-                    Verificar
-                  </button>
-            )}
-          </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="text-base font-semibold truncate">
+                  {user.fullName || user.phone}
+                </p>
 
-          <div className="flex-1 min-w-0">
+                {user.isVerified && (
+                  <span className="bg-emerald-600 w-4 h-4 rounded-full flex items-center justify-center">
+                    <Check size={10} className="text-white" />
+                  </span>
+                )}
+              </div>
 
-            <div className="flex items-center gap-2">
-              <p className="text-base font-semibold text-white truncate">
-                {user.fullName || user.phone}
+              <p className="text-[11px] text-[#848E9C] truncate">
+                {user.email}
               </p>
 
-              {user.isVerified && (
-                <span className="bg-emerald-600 w-4 h-4 rounded-full flex items-center justify-center">
-                  <Check size={10} className="text-white" />
-                </span>
-              )}
+              <div className="flex items-center gap-2 text-[11px] text-[#848E9C]">
+                <span>ID: {shortId}</span>
+                <button onClick={() => copyText(user.publicId)}>
+                  {copiedId ? <Check size={12} /> : <Copy size={12} />}
+                </button>
+              </div>
             </div>
-
-            <p className="text-[11px] text-[#848E9C] truncate">
-              {user.email}
-            </p>
-
-            <div className="flex items-center gap-2 text-[11px] text-[#848E9C]">
-              <span>ID: {shortId}</span>
-              <button onClick={() => copyText(user.publicId)}>
-                {copiedId ? <Check size={12} /> : <Copy size={12} />}
-              </button>
-            </div>
-
-            <p className="text-[10px] text-[#848E9C] mt-1">
-              Criada em {new Date(user.createdAt).toLocaleDateString('pt-AO')}
-            </p>
 
           </div>
 
-        </div>
+          {/* SALDO + BOTÕES */}
+          <div className="mt-4 border-t border-[#2B3139] pt-4 flex items-center justify-between gap-4">
 
-        {/* SALDO + BOTÕES HORIZONTAIS EQUILIBRADOS */}
-        <div className="mt-5 border-t border-[#2B3139] pt-4">
-
-          <div className="flex items-center justify-between gap-4">
-
-            {/* LADO ESQUERDO */}
+            {/* SALDO */}
             <div>
               <p className="text-[11px] text-[#848E9C]">
                 Saldo disponível
               </p>
 
-              <p className="text-xl font-semibold mt-1 whitespace-nowrap">
+              <p className="text-lg font-semibold mt-1 whitespace-nowrap">
                 {formatCurrencyAOA(user.balance)}
               </p>
 
-              <div className="text-[11px] text-[#848E9C] mt-1">
-                <span>{accountLevel}</span> • <span>{accountLimit}</span>
-              </div>
+              <p className="text-[11px] text-[#848E9C] mt-1">
+                {accountLevel} • {accountLimit}
+              </p>
             </div>
 
-            {/* LADO DIREITO — SEM ESPAÇO MORTO */}
-            <div className="flex gap-2">
+            {/* BOTÕES EMPILHADOS (SOLUÇÃO ESTÁVEL) */}
+            <div className="flex flex-col gap-2 w-[110px]">
 
               <SmallAction
                 label="Recarregar"
@@ -166,45 +145,46 @@ export default function Profile() {
 
         </div>
 
-      </div>
+        {/* SESSÕES */}
+        <div className="flex-1 flex flex-col">
 
-      {/* ================= SESSÕES ================= */}
-      <div className="px-6 mt-10">
+          <p className="text-sm text-[#848E9C] mb-4">
+            MINHAS SESSÕES
+          </p>
 
-        <p className="text-sm text-[#848E9C] mb-6 tracking-wide">
-          MINHAS SESSÕES
-        </p>
+          <div className="grid grid-cols-3 gap-3 flex-1">
 
-        <div className="grid grid-cols-3 gap-4">
+            <Item label="Banco" icon={<Bank size={18} weight="fill" />} onClick={() => navigate('/bank')} />
+            <Item label="Transações" icon={<ArrowsLeftRight size={18} weight="fill" />} onClick={() => navigate('/transactions')} />
+            <Item label="Presente" icon={<Gift size={18} weight="fill" />} onClick={() => navigate('/gift')} />
+            <Item label="Segurança" icon={<ShieldCheck size={18} weight="fill" />} onClick={() => navigate('/security')} />
+            <Item label="Senha" icon={<LockKey size={18} weight="fill" />} onClick={() => navigate('/password')} />
+            <Item label="Verificação" icon={<ShieldCheck size={18} weight="fill" />} onClick={() => navigate('/kyc')} />
+            <Item label="Sobre" icon={<Info size={18} weight="fill" />} onClick={() => navigate('/about')} />
+            <Item label="Aplicações" icon={<ChartLineUp size={18} weight="fill" />} onClick={() => navigate('/applications')} />
+            <Item label="Download" icon={<DownloadSimple size={18} weight="fill" />} onClick={() => window.dispatchEvent(new Event('beforeinstallprompt'))} />
 
-          <Item label="Banco" icon={<Bank size={18} weight="fill" />} onClick={() => navigate('/bank')} />
-          <Item label="Transações" icon={<ArrowsLeftRight size={18} weight="fill" />} onClick={() => navigate('/transactions')} />
-          <Item label="Presente" icon={<Gift size={18} weight="fill" />} onClick={() => navigate('/gift')} />
-          <Item label="Segurança" icon={<ShieldCheck size={18} weight="fill" />} onClick={() => navigate('/security')} />
-          <Item label="Senha" icon={<LockKey size={18} weight="fill" />} onClick={() => navigate('/password')} />
-          <Item label="Verificação" icon={<ShieldCheck size={18} weight="fill" />} onClick={() => navigate('/kyc')} />
-          <Item label="Sobre" icon={<Info size={18} weight="fill" />} onClick={() => navigate('/about')} />
-          <Item label="Aplicações" icon={<ChartLineUp size={18} weight="fill" />} onClick={() => navigate('/applications')} />
-          <Item label="Download" icon={<DownloadSimple size={18} weight="fill" />} onClick={() => window.dispatchEvent(new Event('beforeinstallprompt'))} />
+          </div>
 
         </div>
 
-      </div>
+        {/* LOGOUT FIXO */}
+        <div className="flex justify-center pb-2">
+          <button
+            onClick={handleLogout}
+            className="text-xs text-[#848E9C] hover:text-white transition"
+          >
+            Encerrar sessão
+          </button>
+        </div>
 
-      <div className="px-6 mt-12 flex justify-center">
-        <button
-          onClick={handleLogout}
-          className="text-xs text-[#848E9C] hover:text-white transition"
-        >
-          Encerrar sessão
-        </button>
       </div>
 
     </div>
   )
 }
 
-/* ================= COMPONENTES ================= */
+/* COMPONENTES */
 
 function SmallAction({
   label,
@@ -218,7 +198,7 @@ function SmallAction({
   return (
     <button
       onClick={onClick}
-      className="bg-[#0F1419] border border-[#2B3139] hover:bg-[#2B3139] px-3 py-1.5 rounded-lg text-[11px] flex items-center gap-1.5 transition whitespace-nowrap"
+      className="w-full bg-[#0F1419] border border-[#2B3139] hover:bg-[#2B3139] px-2 py-1.5 rounded-lg text-[11px] flex items-center justify-center gap-1 transition"
     >
       {icon}
       {label}
@@ -238,13 +218,13 @@ function Item({
   return (
     <button
       onClick={onClick}
-      className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4 flex flex-col items-center gap-2 hover:bg-[#2B3139] transition"
+      className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-3 flex flex-col items-center justify-center gap-2 hover:bg-[#2B3139] transition"
     >
-      <div className="w-9 h-9 rounded-full bg-[#0B0E11] flex items-center justify-center text-[#FCD535]">
+      <div className="w-8 h-8 rounded-full bg-[#0B0E11] flex items-center justify-center text-[#FCD535]">
         {icon}
       </div>
 
-      <span className="text-[11px] text-[#EAECEF]">
+      <span className="text-[11px] text-[#EAECEF] text-center">
         {label}
       </span>
     </button>
