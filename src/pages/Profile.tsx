@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UserService } from '../services/user.service'
-import { ChartLineUp } from '@phosphor-icons/react'
 import { formatCurrencyAOA } from "../utils/formatCurrency"
 
 import {
@@ -15,7 +14,8 @@ import {
   Info,
   Copy,
   DownloadSimple,
-  SignOut
+  SignOut,
+  CaretRight
 } from '@phosphor-icons/react'
 
 import { Check } from 'lucide-react'
@@ -53,6 +53,9 @@ export default function Profile() {
   const accountLevel = user.isVerified ? 'Premium' : 'Basic'
   const accountLimit = user.isVerified ? 'Ilimitado' : '50.000 Kz / dia'
 
+  const showVerifyLink =
+    !user.isVerified && user.kycStatus !== 'APPROVED'
+
   async function copyText(value: string) {
     await navigator.clipboard.writeText(value)
     setCopiedId(true)
@@ -67,18 +70,52 @@ export default function Profile() {
   return (
     <div className="h-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] flex flex-col">
 
-      <div className="flex-1 flex flex-col px-4 pt-4 gap-4">
+      <div className="flex-1 px-5 pt-4 flex flex-col gap-5">
 
-        {/* PROFILE CARD */}
-        <div className="bg-[#1E2329] rounded-2xl p-4 shadow-lg">
+        {/* ================= PROFILE CARD (ANTIGO INTEGRADO) ================= */}
+        <div className="
+          rounded-3xl
+          p-5
+          bg-gradient-to-br from-[#1E2329] to-[#14181D]
+          border border-[#2B3139]
+          shadow-[0_12px_30px_rgba(0,0,0,0.6)]
+        ">
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
 
-            <div className="w-12 h-12 rounded-full overflow-hidden border border-[#2B3139] flex-shrink-0">
-              <img src="/logo.png" className="w-full h-full object-cover" />
+            <div className="flex flex-col items-center">
+
+              <div className="
+                w-14 h-14
+                rounded-full
+                overflow-hidden
+                border border-[#2B3139]
+                transition duration-300
+                hover:scale-105
+                hover:shadow-[0_0_10px_rgba(252,213,53,0.35)]
+              ">
+                <img src="/logo.png" className="w-full h-full object-cover" />
+              </div>
+
+              {showVerifyLink && (
+                user.kycStatus === 'PENDING' ? (
+                  <span className="text-[11px] text-[#FCD535] mt-1">
+                    Em análise
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => navigate('/kyc')}
+                    className="text-[11px] text-[#FCD535] mt-1 hover:underline"
+                  >
+                    Verificar
+                  </button>
+                )
+              )}
+
             </div>
 
             <div className="flex-1 min-w-0">
+
               <div className="flex items-center gap-2">
                 <p className="text-base font-semibold truncate">
                   {user.fullName || user.phone}
@@ -101,16 +138,19 @@ export default function Profile() {
                   {copiedId ? <Check size={12} /> : <Copy size={12} />}
                 </button>
               </div>
+
             </div>
 
           </div>
 
-          {/* SALDO + BOTÕES */}
-          <div className="mt-4 border-t border-[#2B3139] pt-4 flex justify-between items-center gap-4">
+          {/* SALDO + BOTÕES (ORIGINAL) */}
+          <div className="mt-5 border-t border-[#2B3139] pt-4 flex justify-between items-center gap-4">
 
             <div>
-              <p className="text-[11px] text-[#848E9C]">Saldo disponível</p>
-              <p className="text-lg font-semibold mt-1 whitespace-nowrap">
+              <p className="text-[11px] text-[#848E9C] uppercase tracking-widest">
+                Saldo disponível
+              </p>
+              <p className="text-xl font-semibold mt-1 whitespace-nowrap">
                 {formatCurrencyAOA(user.balance)}
               </p>
               <p className="text-[11px] text-[#848E9C] mt-1">
@@ -118,7 +158,7 @@ export default function Profile() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 w-[110px]">
+            <div className="flex flex-col gap-2 w-[120px]">
               <SmallAction
                 label="Recarregar"
                 icon={<Wallet size={14} weight="fill" />}
@@ -135,53 +175,45 @@ export default function Profile() {
 
         </div>
 
-        {/* SESSÕES */}
+        {/* ================= SESSÕES PREMIUM ================= */}
         <div className="flex-1 flex flex-col">
 
-          <p className="text-sm text-[#848E9C] mb-3">
+          <p className="text-sm text-[#848E9C] mb-4 tracking-wide">
             MINHAS SESSÕES
           </p>
 
-          <div className="grid grid-cols-3 gap-3 flex-1">
+          <div className="grid grid-cols-2 gap-4">
 
-            <Item label="Banco" icon={<Bank size={18} weight="fill" />} onClick={() => navigate('/bank')} />
-            <Item label="Transações" icon={<ArrowsLeftRight size={18} weight="fill" />} onClick={() => navigate('/transactions')} />
-            <Item label="Presente" icon={<Gift size={18} weight="fill" />} onClick={() => navigate('/gift')} />
-            <Item label="Segurança" icon={<ShieldCheck size={18} weight="fill" />} onClick={() => navigate('/security')} />
-            <Item label="Senha" icon={<LockKey size={18} weight="fill" />} onClick={() => navigate('/password')} />
-            <Item label="Verificação" icon={<ShieldCheck size={18} weight="fill" />} onClick={() => navigate('/kyc')} />
-            <Item label="Sobre" icon={<Info size={18} weight="fill" />} onClick={() => navigate('/about')} />
-            <Item label="Aplicações" icon={<ChartLineUp size={18} weight="fill" />} onClick={() => navigate('/applications')} />
-            <Item label="Download" icon={<DownloadSimple size={18} weight="fill" />} onClick={() => window.dispatchEvent(new Event('beforeinstallprompt'))} />
+            <SessionItem label="Banco" sub="Conta & Dados" icon={<Bank size={18} weight="fill" />} onClick={() => navigate('/bank')} />
+            <SessionItem label="Transações" sub="Histórico geral" icon={<ArrowsLeftRight size={18} weight="fill" />} onClick={() => navigate('/transactions')} />
+            <SessionItem label="Presente" sub="Bônus & Prêmios" icon={<Gift size={18} weight="fill" />} onClick={() => navigate('/gift')} />
+            <SessionItem label="Segurança" sub="Proteção da conta" icon={<ShieldCheck size={18} weight="fill" />} onClick={() => navigate('/security')} />
+            <SessionItem label="Senha" sub="Alterar acesso" icon={<LockKey size={18} weight="fill" />} onClick={() => navigate('/password')} />
+            <SessionItem label="Aplicações" sub="Ferramentas" icon={<DownloadSimple size={18} weight="fill" />} onClick={() => navigate('/applications')} />
 
           </div>
 
         </div>
 
-        {/* LOGOUT PROFISSIONAL */}
-        <div className="flex justify-center pb-2">
+        {/* LOGOUT */}
+        <div className="flex justify-center pb-3">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 text-xs text-[#848E9C] hover:text-white transition"
+            className="flex items-center gap-2 text-xs text-red-400 hover:text-red-500 transition"
           >
             <SignOut size={14} weight="bold" />
-            Encerrar sessão
+            Sair da conta
           </button>
         </div>
 
       </div>
-
     </div>
   )
 }
 
 /* COMPONENTES */
 
-function SmallAction({ label, icon, onClick }:{
-  label:string
-  icon:React.ReactNode
-  onClick:()=>void
-}) {
+function SmallAction({ label, icon, onClick }: any) {
   return (
     <button
       onClick={onClick}
@@ -193,23 +225,31 @@ function SmallAction({ label, icon, onClick }:{
   )
 }
 
-function Item({ label, icon, onClick }:{
-  label:string
-  icon:React.ReactNode
-  onClick:()=>void
-}) {
+function SessionItem({ label, sub, icon, onClick }: any) {
   return (
     <button
       onClick={onClick}
-      className="bg-[#1E2329] border border-[#2B3139] rounded-xl px-3 py-2 flex items-center gap-2 hover:bg-[#2B3139] transition"
+      className="
+        flex items-center gap-3
+        p-4
+        rounded-2xl
+        bg-gradient-to-br from-[#1E2329] to-[#14181D]
+        border border-[#2B3139]
+        shadow-[0_6px_18px_rgba(0,0,0,0.6)]
+        hover:-translate-y-1
+        transition-all
+      "
     >
-      <div className="w-7 h-7 rounded-full bg-[#0B0E11] flex items-center justify-center text-[#FCD535]">
+      <div className="w-10 h-10 rounded-xl bg-[#0B0E11] flex items-center justify-center text-[#FCD535]">
         {icon}
       </div>
 
-      <span className="text-[11px] text-[#EAECEF] truncate">
-        {label}
-      </span>
+      <div className="flex-1 text-left">
+        <p className="text-sm font-medium">{label}</p>
+        <p className="text-[11px] text-[#848E9C]">{sub}</p>
+      </div>
+
+      <CaretRight size={16} className="text-[#848E9C]" />
     </button>
   )
 }
