@@ -15,6 +15,7 @@ import {
   Info,
   Copy,
   DownloadSimple,
+  SignOut
 } from '@phosphor-icons/react'
 
 import { Check } from 'lucide-react'
@@ -66,13 +67,11 @@ export default function Profile() {
   return (
     <div className="h-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] flex flex-col">
 
-      {/* CONTAINER PRINCIPAL FIXO */}
       <div className="flex-1 flex flex-col px-4 pt-4 gap-4">
 
         {/* PROFILE CARD */}
-        <div className="bg-[#1E2329] rounded-2xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.4)]">
+        <div className="bg-[#1E2329] rounded-2xl p-4 shadow-lg">
 
-          {/* HEADER HORIZONTAL */}
           <div className="flex items-center gap-3">
 
             <div className="w-12 h-12 rounded-full overflow-hidden border border-[#2B3139] flex-shrink-0">
@@ -107,38 +106,29 @@ export default function Profile() {
           </div>
 
           {/* SALDO + BOTÕES */}
-          <div className="mt-4 border-t border-[#2B3139] pt-4 flex items-center justify-between gap-4">
+          <div className="mt-4 border-t border-[#2B3139] pt-4 flex justify-between items-center gap-4">
 
-            {/* SALDO */}
             <div>
-              <p className="text-[11px] text-[#848E9C]">
-                Saldo disponível
-              </p>
-
+              <p className="text-[11px] text-[#848E9C]">Saldo disponível</p>
               <p className="text-lg font-semibold mt-1 whitespace-nowrap">
                 {formatCurrencyAOA(user.balance)}
               </p>
-
               <p className="text-[11px] text-[#848E9C] mt-1">
                 {accountLevel} • {accountLimit}
               </p>
             </div>
 
-            {/* BOTÕES EMPILHADOS (SOLUÇÃO ESTÁVEL) */}
             <div className="flex flex-col gap-2 w-[110px]">
-
               <SmallAction
                 label="Recarregar"
                 icon={<Wallet size={14} weight="fill" />}
                 onClick={() => navigate('/deposit')}
               />
-
               <SmallAction
                 label="Retirar"
                 icon={<ArrowDown size={14} weight="fill" />}
                 onClick={() => navigate('/withdraw')}
               />
-
             </div>
 
           </div>
@@ -148,7 +138,7 @@ export default function Profile() {
         {/* SESSÕES */}
         <div className="flex-1 flex flex-col">
 
-          <p className="text-sm text-[#848E9C] mb-4">
+          <p className="text-sm text-[#848E9C] mb-3">
             MINHAS SESSÕES
           </p>
 
@@ -168,12 +158,13 @@ export default function Profile() {
 
         </div>
 
-        {/* LOGOUT FIXO */}
+        {/* LOGOUT PROFISSIONAL */}
         <div className="flex justify-center pb-2">
           <button
             onClick={handleLogout}
-            className="text-xs text-[#848E9C] hover:text-white transition"
+            className="flex items-center gap-2 text-xs text-[#848E9C] hover:text-white transition"
           >
+            <SignOut size={14} weight="bold" />
             Encerrar sessão
           </button>
         </div>
@@ -186,14 +177,10 @@ export default function Profile() {
 
 /* COMPONENTES */
 
-function SmallAction({
-  label,
-  icon,
-  onClick
-}: {
-  label: string
-  icon: React.ReactNode
-  onClick: () => void
+function SmallAction({ label, icon, onClick }:{
+  label:string
+  icon:React.ReactNode
+  onClick:()=>void
 }) {
   return (
     <button
@@ -206,25 +193,21 @@ function SmallAction({
   )
 }
 
-function Item({
-  label,
-  icon,
-  onClick
-}: {
-  label: string
-  icon: React.ReactNode
-  onClick: () => void
+function Item({ label, icon, onClick }:{
+  label:string
+  icon:React.ReactNode
+  onClick:()=>void
 }) {
   return (
     <button
       onClick={onClick}
-      className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-3 flex flex-col items-center justify-center gap-2 hover:bg-[#2B3139] transition"
+      className="bg-[#1E2329] border border-[#2B3139] rounded-xl px-3 py-2 flex items-center gap-2 hover:bg-[#2B3139] transition"
     >
-      <div className="w-8 h-8 rounded-full bg-[#0B0E11] flex items-center justify-center text-[#FCD535]">
+      <div className="w-7 h-7 rounded-full bg-[#0B0E11] flex items-center justify-center text-[#FCD535]">
         {icon}
       </div>
 
-      <span className="text-[11px] text-[#EAECEF] text-center">
+      <span className="text-[11px] text-[#EAECEF] truncate">
         {label}
       </span>
     </button>
