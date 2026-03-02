@@ -11,7 +11,6 @@ import {
   Gift,
   ShieldCheck,
   LockKey,
-  Info,
   Copy,
   DownloadSimple,
   SignOut,
