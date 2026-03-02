@@ -34,6 +34,8 @@ import PartnerPlans from './pages/PartnerPlans'
 import KYCPage from './pages/user/KYCPage'
 import Applications from './pages/user/Applications'
 import Marketing from "./pages/Marketing"
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import DeleteAccount from "./pages/DeleteAccount";
 
 /* ===== OTC USER ===== */
 import OtcPage from "./pages/otc/OtcPage"
@@ -104,6 +106,8 @@ function App() {
           <Route path="services/:id" element={<PartnerPlans />} />
           <Route path="kyc" element={<KYCPage />} />
           <Route path="/marketing" element={<Marketing />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/delete-account" element={<DeleteAccount />} />
 
           {/* OTC */}
           <Route path="otc" element={<OtcPage />} />

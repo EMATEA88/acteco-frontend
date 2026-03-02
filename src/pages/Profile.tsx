@@ -26,6 +26,7 @@ type UserProfile = {
   publicId: string
   balance: number
   isVerified: boolean
+  kycStatus?: 'NOT_SUBMITTED' | 'PENDING' | 'APPROVED'
   createdAt: string
 }
 
@@ -51,6 +52,9 @@ export default function Profile() {
   const accountLevel = user.isVerified ? 'Premium' : 'Basic'
   const accountLimit = user.isVerified ? 'Ilimitado' : '50.000 Kz / dia'
 
+  const showVerifyLink =
+    !user.isVerified && user.kycStatus !== 'APPROVED'
+
   async function copyText(value: string) {
     await navigator.clipboard.writeText(value)
     setCopiedId(true)
@@ -68,41 +72,49 @@ export default function Profile() {
       {/* ================= TOP MARQUEE ================= */}
       <div className="w-full overflow-hidden bg-[#0F1419] border-b border-[#1E2329]">
         <div className="whitespace-nowrap animate-marquee py-2 text-emerald-400 text-[12px] tracking-wide font-medium">
-
           <span className="mx-8">
             A empresa EMATEA tem a missão de oferecer soluções tecnológicas, financeiras e comerciais inovadoras, promovendo crescimento sustentável e confiança no mercado.
           </span>
-
           <span className="mx-8">
             A empresa EMATEA tem a missão de oferecer soluções tecnológicas, financeiras e comerciais inovadoras, promovendo crescimento sustentável e confiança no mercado.
           </span>
-
         </div>
       </div>
 
       {/* ================= PROFILE CARD ================= */}
-      <div
-        className="
-          bg-[#1E2329]
-          px-6
-          py-6
-          rounded-3xl
-          mt-3
-          shadow-[0_15px_40px_rgba(0,0,0,0.45)]
-        "
-      >
+      <div className="bg-[#1E2329] px-6 py-6 rounded-3xl mt-3 shadow-[0_15px_40px_rgba(0,0,0,0.45)]">
 
         <div className="flex items-center gap-4">
 
-          <div className="w-14 h-14 rounded-full overflow-hidden border border-[#2B3139]">
-            <img src="/logo.png" className="w-full h-full object-cover" />
+          {/* LOGO + LINK KYC */}
+          <div className="flex flex-col items-center">
+
+            <div className="w-14 h-14 rounded-full overflow-hidden border border-[#2B3139]">
+              <img src="/logo.png" className="w-full h-full object-cover" />
+            </div>
+
+            {showVerifyLink && (
+              <>
+                {user.kycStatus === 'PENDING' ? (
+                  <span className="text-[11px] text-[#FCD535] mt-1">
+                    Em análise
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => navigate('/kyc')}
+                    className="text-[11px] text-[#FCD535] mt-1 hover:underline"
+                  >
+                    Verificar
+                  </button>
+                )}
+              </>
+            )}
+
           </div>
 
           <div className="flex-1 min-w-0">
 
-            {/* Nome nunca quebra linha */}
             <div className="flex items-center gap-2 min-w-0">
-
               <p className="text-lg font-semibold text-white whitespace-nowrap overflow-hidden text-ellipsis">
                 {user.fullName || user.phone}
               </p>
@@ -112,7 +124,6 @@ export default function Profile() {
                   <Check size={12} className="text-white" />
                 </span>
               )}
-
             </div>
 
             <p className="text-xs text-[#848E9C] mt-1 truncate">
@@ -134,7 +145,8 @@ export default function Profile() {
 
         </div>
 
-        <div className="mt-6 flex items-center justify-between border-t border-[#2B3139] pt-4">
+        {/* SALDO + BOTÕES AJUSTADOS */}
+        <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between border-t border-[#2B3139] pt-4 gap-4">
 
           <div>
             <p className="text-[11px] text-[#848E9C]">
@@ -142,7 +154,7 @@ export default function Profile() {
             </p>
 
             <p className="text-2xl font-semibold mt-1 whitespace-nowrap">
-             {formatCurrencyAOA(user.balance)}
+              {formatCurrencyAOA(user.balance)}
             </p>
 
             <div className="mt-2 text-[11px] text-[#848E9C] space-y-1">
@@ -151,7 +163,7 @@ export default function Profile() {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap sm:flex-nowrap">
 
             <SmallAction
               label="Recarregar"
@@ -203,7 +215,6 @@ export default function Profile() {
         </button>
       </div>
 
-      {/* ================= MARQUEE ANIMATION ================= */}
       <style>{`
         @keyframes marquee {
           0% { transform: translateX(0%); }
@@ -234,16 +245,7 @@ function SmallAction({
   return (
     <button
       onClick={onClick}
-      className="
-        bg-[#1E2329]
-        border border-[#2B3139]
-        hover:bg-[#2B3139]
-        px-3 py-1.5
-        rounded-lg
-        text-[11px]
-        flex items-center gap-1.5
-        transition
-      "
+      className="bg-[#1E2329] border border-[#2B3139] hover:bg-[#2B3139] px-3 py-1.5 rounded-lg text-[11px] flex items-center gap-1.5 transition"
     >
       {icon}
       {label}
@@ -260,21 +262,10 @@ function Item({
   icon: React.ReactNode
   onClick: () => void
 }) {
-
   return (
     <button
       onClick={onClick}
-      className="
-        bg-[#1E2329]
-        border border-[#2B3139]
-        rounded-xl
-        p-4
-        flex flex-col
-        items-center
-        gap-2
-        hover:bg-[#2B3139]
-        transition
-      "
+      className="bg-[#1E2329] border border-[#2B3139] rounded-xl p-4 flex flex-col items-center gap-2 hover:bg-[#2B3139] transition"
     >
       <div className="w-9 h-9 rounded-full bg-[#0B0E11] flex items-center justify-center text-[#FCD535]">
         {icon}

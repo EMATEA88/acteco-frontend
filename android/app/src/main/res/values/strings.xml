@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">EMATEA</string>
-    <string name="title_activity_main">EMATEA</string>
-    <string name="package_name">com.ematea.app</string>
-    <string name="custom_url_scheme">com.ematea.app</string>
-</resources>

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { MessageCircle, Users, X } from "lucide-react"
+import { MessageCircle, Users, X, ShieldCheck, Trash2 } from "lucide-react"
 
 const WHATSAPP_MANAGER = "https://wa.me/244928270636"
 const WHATSAPP_GROUP = "https://chat.whatsapp.com/CaiU4nncaaa7vUnzO6HTzB?mode=gi_t"
@@ -11,7 +11,7 @@ export default function Home() {
   const [supportOpen, setSupportOpen] = useState(false)
 
   function openWhatsapp() {
-    window.open("https://wa.me/244928270636", "_blank")
+    window.open(WHATSAPP_MANAGER, "_blank")
   }
 
   return (
@@ -122,6 +122,47 @@ export default function Home() {
 
       </div>
 
+      {/* ================= BLOCO INSTITUCIONAL (COMPLIANCE) ================= */}
+      <div className="mt-16 border-t border-[#2B3139] pt-8">
+
+        <div className="bg-[#0F172A] border border-[#1E2329] rounded-2xl p-5 space-y-4">
+
+          <h3 className="text-sm font-semibold text-[#EAECEF]">
+            Transparência & Segurança
+          </h3>
+
+          <div className="space-y-3">
+
+            <button
+              onClick={() => navigate("/privacy-policy")}
+              className="
+                w-full flex items-center gap-3
+                text-sm text-[#848E9C]
+                hover:text-white transition
+              "
+            >
+              <ShieldCheck size={18} />
+              Política de Privacidade
+            </button>
+
+            <button
+              onClick={() => navigate("/delete-account")}
+              className="
+                w-full flex items-center gap-3
+                text-sm text-red-400
+                hover:text-red-500 transition
+              "
+            >
+              <Trash2 size={18} />
+              Solicitar Eliminação de Conta
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
       {/* ================= MODAL SUPORTE ================= */}
       {supportOpen && (
         <div
@@ -165,7 +206,6 @@ export default function Home() {
                   flex items-center justify-center gap-2
                   hover:bg-green-600
                   transition
-                  active:scale-95
                 "
               >
                 <MessageCircle size={18} />
@@ -182,7 +222,6 @@ export default function Home() {
                   flex items-center justify-center gap-2
                   hover:bg-emerald-700
                   transition
-                  active:scale-95
                 "
               >
                 <Users size={18} />
