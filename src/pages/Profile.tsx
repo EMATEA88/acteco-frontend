@@ -145,8 +145,8 @@ export default function Profile() {
 
         </div>
 
-        {/* SALDO + BOTÕES AJUSTADOS */}
-        <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between border-t border-[#2B3139] pt-4 gap-4">
+        {/* SALDO + BOTÕES REORDENADOS */}
+        <div className="mt-6 border-t border-[#2B3139] pt-4 flex flex-col gap-4">
 
           <div>
             <p className="text-[11px] text-[#848E9C]">
@@ -156,14 +156,10 @@ export default function Profile() {
             <p className="text-2xl font-semibold mt-1 whitespace-nowrap">
               {formatCurrencyAOA(user.balance)}
             </p>
-
-            <div className="mt-2 text-[11px] text-[#848E9C] space-y-1">
-              <p>Nível: <span className="text-white">{accountLevel}</span></p>
-              <p>Limite: <span className="text-white">{accountLimit}</span></p>
-            </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+          {/* BOTÕES AGORA VÊM ANTES DO NÍVEL/LIMITE */}
+          <div className="flex gap-2 flex-wrap">
 
             <SmallAction
               label="Recarregar"
@@ -177,6 +173,12 @@ export default function Profile() {
               onClick={() => navigate('/withdraw')}
             />
 
+          </div>
+
+          {/* NÍVEL E LIMITE AGORA ABAIXO DOS BOTÕES */}
+          <div className="text-[11px] text-[#848E9C] space-y-1">
+            <p>Nível: <span className="text-white">{accountLevel}</span></p>
+            <p>Limite: <span className="text-white">{accountLimit}</span></p>
           </div>
 
         </div>
