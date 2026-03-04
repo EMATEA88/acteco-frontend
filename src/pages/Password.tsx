@@ -14,8 +14,12 @@ export default function Password() {
 
   const [loginCurrent, setLoginCurrent] = useState('')
   const [loginNew, setLoginNew] = useState('')
+  const [loginOtp, setLoginOtp] = useState('')
+
   const [withdrawCurrent, setWithdrawCurrent] = useState('')
   const [withdrawNew, setWithdrawNew] = useState('')
+  const [withdrawOtp, setWithdrawOtp] = useState('')
+
   const [loading, setLoading] = useState(false)
 
   const [message, setMessage] = useState<{
@@ -34,8 +38,8 @@ export default function Password() {
   async function handleLoginPasswordChange() {
     setMessage(null)
 
-    if (!loginCurrent || !loginNew) {
-      showError('Preencha todos os campos da senha de login')
+    if (!loginCurrent || !loginNew || !loginOtp) {
+      showError('Preencha todos os campos da senha de login e o código OTP')
       return
     }
 
@@ -50,27 +54,33 @@ export default function Password() {
       await PasswordService.changeLoginPassword({
         currentPassword: loginCurrent,
         newPassword: loginNew,
+        otp: loginOtp
       })
 
       showSuccess('Senha de login alterada com sucesso')
+
       setLoginCurrent('')
       setLoginNew('')
+      setLoginOtp('')
 
     } catch (err: any) {
+
       showError(
         err?.response?.data?.error ??
         'Erro ao alterar senha de login'
       )
+
     } finally {
       setLoading(false)
     }
   }
 
   async function handleWithdrawPasswordChange() {
+
     setMessage(null)
 
-    if (!withdrawNew) {
-      showError('Informe a nova senha de levantamento')
+    if (!withdrawNew || !withdrawOtp) {
+      showError('Informe a nova senha de levantamento e o código OTP')
       return
     }
 
@@ -80,23 +90,29 @@ export default function Password() {
     }
 
     try {
+
       setLoading(true)
 
       await PasswordService.changeWithdrawPassword({
         currentWithdrawPassword:
           withdrawCurrent || undefined,
         newWithdrawPassword: withdrawNew,
+        otp: withdrawOtp
       })
 
       showSuccess('Senha de levantamento definida com sucesso')
+
       setWithdrawCurrent('')
       setWithdrawNew('')
+      setWithdrawOtp('')
 
     } catch (err: any) {
+
       showError(
         err?.response?.data?.error ??
         'Erro ao definir senha de levantamento'
       )
+
     } finally {
       setLoading(false)
     }
@@ -172,6 +188,13 @@ export default function Password() {
             onChange={setLoginNew}
           />
 
+          <Input
+            type="text"
+            placeholder="Código OTP enviado ao email"
+            value={loginOtp}
+            onChange={setLoginOtp}
+          />
+
           <PrimaryButton
             onClick={handleLoginPasswordChange}
             loading={loading}
@@ -209,6 +232,13 @@ export default function Password() {
             placeholder="Nova senha de levantamento"
             value={withdrawNew}
             onChange={setWithdrawNew}
+          />
+
+          <Input
+            type="text"
+            placeholder="Código OTP"
+            value={withdrawOtp}
+            onChange={setWithdrawOtp}
           />
 
           <PrimaryButton

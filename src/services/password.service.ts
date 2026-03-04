@@ -1,20 +1,19 @@
-// src/services/password.service.ts
 import { api } from './api'
 
 type ChangeLoginPasswordPayload = {
   currentPassword: string
   newPassword: string
+  otp: string
 }
 
 type ChangeWithdrawPasswordPayload = {
   currentWithdrawPassword?: string
   newWithdrawPassword: string
+  otp: string
 }
 
 export class PasswordService {
-  /**
-   * 🔐 Alterar senha de login
-   */
+
   static async changeLoginPassword(
     data: ChangeLoginPasswordPayload
   ) {
@@ -25,9 +24,6 @@ export class PasswordService {
     return res.data
   }
 
-  /**
-   * 💰 Definir ou alterar senha de levantamento
-   */
   static async changeWithdrawPassword(
     data: ChangeWithdrawPasswordPayload
   ) {
@@ -37,4 +33,5 @@ export class PasswordService {
     )
     return res.data
   }
+
 }

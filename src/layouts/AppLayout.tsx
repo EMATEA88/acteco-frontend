@@ -11,7 +11,6 @@ export default function AppLayout() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Normaliza pathname (importante para HashRouter)
   const pathname = location.pathname || ""
 
   /* ================= SOCKET ================= */
@@ -24,7 +23,6 @@ export default function AppLayout() {
 
   /* ================= ROUTE CONFIG ================= */
 
-  // Apenas chat OTC fullscreen
   const isChatPage = pathname.startsWith("/otc/chat")
 
   /* ================= UI ================= */
@@ -80,6 +78,7 @@ export default function AppLayout() {
             hover:scale-105
             shadow-[0_0_20px_rgba(16,185,129,0.25)]
             backdrop-blur-lg
+            animate-float
           "
         >
           <Bell size={18} strokeWidth={2} />

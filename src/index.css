@@ -61,3 +61,19 @@ body {
   @apply bg-[#1E2329] border border-[#2B3139]
   hover:bg-[#2B3139] transition rounded-lg;
 }
+
+@keyframes floatBell {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: floatBell 2.5s ease-in-out infinite;
+}
