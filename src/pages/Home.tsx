@@ -15,34 +15,42 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] px-5 pt-8 pb-24">
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] px-5 pt-6 pb-24">
 
-      {/* ================= CARD SUPORTE PREMIUM ================= */}
-      <button
-        onClick={() => setSupportOpen(true)}
-        className="
-          w-full mb-8 p-5 rounded-3xl
-          bg-gradient-to-br from-[#1E2329] to-[#14181D]
-          border border-[#2B3139]
-          shadow-[0_10px_25px_rgba(0,0,0,0.6)]
-          flex justify-between items-center
-          hover:-translate-y-1 transition-all
-        "
-      >
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-6">
+
         <div>
-          <p className="text-[11px] uppercase tracking-widest text-emerald-400 font-semibold">
-            Centro de Apoio
+          <p className="text-xs text-[#848E9C]">
+            Bem-vindo à
           </p>
-          <p className="text-sm mt-1 text-[#EAECEF]">
-            Fale com a operadora ou entre no grupo oficial
-          </p>
+
+          <h1 className="text-lg font-semibold tracking-wide">
+            EMATEA
+          </h1>
         </div>
 
-        <MessageCircle size={24} className="text-emerald-400" />
-      </button>
+        <button
+          onClick={() => setSupportOpen(true)}
+          className="
+          h-10 px-4 rounded-xl
+          bg-emerald-500/10
+          border border-emerald-500/30
+          text-emerald-400
+          flex items-center gap-2
+          text-sm
+          hover:bg-emerald-500/20
+          transition
+        "
+        >
+          <MessageCircle size={16}/>
+          Suporte
+        </button>
 
-      {/* ================= PRINCIPAL ================= */}
-      <SectionTitle title="PRINCIPAL" />
+      </div>
+
+      {/* SESSÃO */}
+      <SectionTitle title="SESSÃO" />
 
       <div className="grid grid-cols-2 gap-5 mb-12">
 
@@ -76,7 +84,7 @@ export default function Home() {
 
       </div>
 
-      {/* ================= SERVIÇOS ================= */}
+      {/* SERVIÇOS */}
       <SectionTitle title="NOSSOS SERVIÇOS" />
 
       <div className="grid grid-cols-2 gap-5 mb-12">
@@ -111,12 +119,12 @@ export default function Home() {
 
       </div>
 
-      {/* ================= COMPLIANCE ================= */}
+      {/* COMPLIANCE */}
       <div className="
         rounded-3xl p-6
         bg-gradient-to-br from-[#1E2329] to-[#14181D]
         border border-[#2B3139]
-        shadow-[0_10px_25px_rgba(0,0,0,0.6)]
+        shadow-[0_15px_40px_rgba(0,0,0,0.7)]
       ">
 
         <h3 className="text-sm font-semibold tracking-wide mb-6 text-[#EAECEF]">
@@ -129,7 +137,7 @@ export default function Home() {
             onClick={() => navigate("/privacy-policy")}
             className="flex items-center gap-3 text-sm text-[#848E9C] hover:text-white transition"
           >
-            <ShieldCheck size={18} />
+            <ShieldCheck size={18}/>
             Política de Privacidade
           </button>
 
@@ -137,7 +145,7 @@ export default function Home() {
             onClick={() => navigate("/delete-account")}
             className="flex items-center gap-3 text-sm text-red-400 hover:text-red-500 transition"
           >
-            <Trash2 size={18} />
+            <Trash2 size={18}/>
             Solicitar Eliminação de Conta
           </button>
 
@@ -145,12 +153,13 @@ export default function Home() {
 
       </div>
 
-      {/* ================= MODAL SUPORTE ================= */}
+      {/* MODAL SUPORTE */}
       {supportOpen && (
         <div
           onClick={() => setSupportOpen(false)}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
         >
+
           <div
             onClick={(e) => e.stopPropagation()}
             className="
@@ -161,11 +170,12 @@ export default function Home() {
               relative
             "
           >
+
             <button
               onClick={() => setSupportOpen(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-white"
             >
-              <X size={20} />
+              <X size={20}/>
             </button>
 
             <h2 className="text-lg font-semibold text-white mb-6 text-center">
@@ -185,7 +195,7 @@ export default function Home() {
                   hover:bg-green-600 transition
                 "
               >
-                <MessageCircle size={18} />
+                <MessageCircle size={18}/>
                 Falar com Operadora
               </a>
 
@@ -200,12 +210,14 @@ export default function Home() {
                   hover:bg-emerald-700 transition
                 "
               >
-                <Users size={18} />
+                <Users size={18}/>
                 Entrar no Grupo
               </a>
 
             </div>
+
           </div>
+
         </div>
       )}
 
@@ -213,7 +225,7 @@ export default function Home() {
   )
 }
 
-/* ================= COMPONENTES ================= */
+/* COMPONENTES */
 
 function SectionTitle({ title }: { title: string }) {
   return (
