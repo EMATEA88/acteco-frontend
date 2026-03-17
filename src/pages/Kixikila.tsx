@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { KixikilaService } from "../services/kixikila.service"
 import { formatCurrencyAOA } from "../utils/formatCurrency"
 import { type KixikilaDashboard } from "../types/kixikila"
+import KixikilaTermsModal from "../components/KixikilaTermsModal"
 import { api } from "../services/api"
 
 export default function Kixikila() {
@@ -353,37 +354,10 @@ export default function Kixikila() {
       {/* MODAL TERMOS */}
 
       {showTerms && (
-
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-
-          <div className="bg-[#14181D] border border-[#2B3139] rounded-xl p-6 w-[90%] max-w-[400px]">
-
-            <h2 className="font-semibold mb-3">
-              Termos da Kixikila
-            </h2>
-
-            <p className="text-sm text-[#848E9C]">
-
-            • Cada membro contribui mensalmente.<br/>
-            • A cada ciclo um membro recebe o valor total.<br/>
-            • A ordem é definida pela posição.<br/>
-            • Após receber o membro continua contribuindo até terminar o ciclo.
-
-            </p>
-
-            <button
-              onClick={()=>setShowTerms(false)}
-              className="mt-4 bg-[#FCD535] text-black px-4 py-1 rounded"
-            >
-              Fechar
-            </button>
-
-          </div>
-
-        </div>
-
-      )}
-
+  <KixikilaTermsModal
+    onAccept={()=>setShowTerms(false)}
+  />
+)}
     </div>
 
   )
