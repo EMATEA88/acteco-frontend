@@ -2,7 +2,7 @@ export default function KixikilaTermsModal({ onAccept }: any){
 
   return(
 
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999]">
 
       <div className="
         bg-[#14181D]
@@ -12,19 +12,19 @@ export default function KixikilaTermsModal({ onAccept }: any){
         max-h-[90vh]
         flex flex-col
         shadow-[0_10px_40px_rgba(0,0,0,0.6)]
+        pb-4
       ">
 
         {/* HEADER */}
-        <div className="p-4 border-b border-[#2B3139] flex items-center justify-between">
+        <div className="p-4 border-b border-[#2B3139]">
 
-          <div>
-            <p className="font-semibold text-lg text-white">
-              KIXIKILA
-            </p>
-            <p className="text-xs text-[#848E9C]">
-              Termos e Condições
-            </p>
-          </div>
+          <p className="font-semibold text-lg text-white">
+            KIXIKILA
+          </p>
+
+          <p className="text-xs text-[#848E9C]">
+            Termos e Condições
+          </p>
 
         </div>
 
@@ -49,15 +49,15 @@ export default function KixikilaTermsModal({ onAccept }: any){
 
             <Sub title="2.1 Atraso de Contribuição">
               <ul className="list-disc pl-4 space-y-1">
-                <li>Taxa de penalização de <b>5%</b> sobre a contribuição mensal</li>
-                <li>Pagamento obrigatório para permanência no grupo</li>
+                <li>Taxa de penalização de <b>5%</b></li>
+                <li>Pagamento obrigatório para permanência</li>
               </ul>
             </Sub>
 
             <Sub title="2.2 Taxa de Segurança de Fundos">
               <ul className="list-disc pl-4 space-y-1">
-                <li>Desconto automático de <b>3%</b> após recebimento</li>
-                <li>Saldo disponível para saque a qualquer momento</li>
+                <li>Desconto automático de <b>3%</b></li>
+                <li>Saldo disponível para saque</li>
               </ul>
             </Sub>
 
@@ -66,40 +66,40 @@ export default function KixikilaTermsModal({ onAccept }: any){
           <Section title="3. Regras de Participação">
             <ul className="list-disc pl-4 space-y-1">
               <li>Apenas 1 participação por ciclo</li>
-              <li>A participação implica aceitação integral destes termos</li>
+              <li>Aceitação obrigatória dos termos</li>
             </ul>
           </Section>
 
           <Section title="4. Desistência">
 
-            <Sub title="4.1 Antes de Receber">
+            <Sub title="Antes de Receber">
               <ul className="list-disc pl-4 space-y-1">
-                <li>Deve permanecer até o fim do ciclo</li>
+                <li>Deve aguardar o fim do ciclo</li>
                 <li>Sem reembolso antecipado</li>
               </ul>
             </Sub>
 
-            <Sub title="4.2 Após Receber">
+            <Sub title="Após Receber">
               <ul className="list-disc pl-4 space-y-1">
-                <li>Obrigatório reembolsar valores pendentes</li>
+                <li>Reembolso obrigatório</li>
                 <li>Pode resultar em medidas legais</li>
               </ul>
             </Sub>
 
           </Section>
 
-          <Section title="5. Responsabilidade do Usuário">
+          <Section title="5. Responsabilidade">
             <ul className="list-disc pl-4 space-y-1">
-              <li>Cumprir todos os pagamentos dentro dos prazos</li>
-              <li>O não cumprimento pode gerar sanções</li>
+              <li>Cumprir pagamentos dentro do prazo</li>
+              <li>Sujeito a sanções</li>
             </ul>
           </Section>
 
-          <Section title="6. Aceitação dos Termos">
+          <Section title="6. Aceitação">
             <ul className="list-disc pl-4 space-y-1">
-              <li>Leu e compreendeu todas as regras</li>
-              <li>Aceita cumprir integralmente</li>
-              <li>Assume total responsabilidade</li>
+              <li>Leu e compreendeu</li>
+              <li>Aceita integralmente</li>
+              <li>Assume responsabilidade</li>
             </ul>
           </Section>
 
