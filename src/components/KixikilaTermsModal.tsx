@@ -5,15 +5,14 @@ export default function KixikilaTermsModal({ onAccept }: any){
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999]">
 
       <div className="
-        bg-[#14181D]
-        border border-[#2B3139]
-        rounded-2xl
-        w-[95%] max-w-[420px]
-        max-h-[90vh]
-        flex flex-col
-        shadow-[0_10px_40px_rgba(0,0,0,0.6)]
-        pb-4
-      ">
+  bg-[#14181D]
+  border border-[#2B3139]
+  rounded-2xl
+  w-[95%] max-w-[420px]
+  max-h-[calc(100vh-80px)]
+  flex flex-col
+  shadow-[0_10px_40px_rgba(0,0,0,0.6)]
+">
 
         {/* HEADER */}
         <div className="p-4 border-b border-[#2B3139]">
@@ -30,12 +29,13 @@ export default function KixikilaTermsModal({ onAccept }: any){
 
         {/* CONTENT */}
         <div className="
-          p-4
-          overflow-y-auto
-          text-sm
-          text-[#B7BDC6]
-          space-y-5
-        ">
+  p-4
+  overflow-y-auto
+  pb-6
+  text-sm
+  text-[#B7BDC6]
+  space-y-5
+">
 
           <Section title="1. Natureza do Serviço">
             <p>
