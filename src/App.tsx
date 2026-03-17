@@ -36,6 +36,7 @@ import Applications from './pages/user/Applications'
 import Marketing from "./pages/Marketing"
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DeleteAccount from "./pages/DeleteAccount";
+import Kixikila from "./pages/Kixikila"
 
 /* ===== OTC USER ===== */
 import OtcPage from "./pages/otc/OtcPage"
@@ -108,6 +109,7 @@ function App() {
           <Route path="/marketing" element={<Marketing />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/delete-account" element={<DeleteAccount />} />
+          <Route path="/kixikila" element={<Kixikila />} />
 
           {/* OTC */}
           <Route path="otc" element={<OtcPage />} />

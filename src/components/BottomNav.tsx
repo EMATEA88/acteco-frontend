@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom"
 import {
   Home,
   User,
-  ShoppingBag,
+  Users,
   Repeat,
   Megaphone,
   Wallet
@@ -10,7 +10,7 @@ import {
 
 const links = [
   { to: "/home", label: "Home", icon: Home },
-  { to: "/services", label: "Serviços", icon: ShoppingBag },
+  { to: "/kixikila", label: "Kixikila", icon: Users },
   { to: "/otc", label: "OTC", icon: Repeat },
   { to: "/marketing", label: "Marketing", icon: Megaphone },
   { to: "/applications", label: "Aplicações", icon: Wallet },
