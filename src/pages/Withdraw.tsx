@@ -14,7 +14,7 @@ export default function Withdraw() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
-  const FEE_PERCENT = 0.003
+  const FEE_PERCENT = 0.03
 
   useEffect(() => {
     UserService.me()
