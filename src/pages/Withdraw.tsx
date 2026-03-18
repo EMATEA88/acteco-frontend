@@ -154,7 +154,7 @@ export default function Withdraw() {
             rounded-xl p-4 text-sm space-y-2
           ">
             <div className="flex justify-between text-[#848E9C]">
-              <span>Taxa (0.3%)</span>
+              <span>Taxa (3%)</span>
               <span className="text-red-400 font-medium">
                 {fee.toFixed(2)} Kz
               </span>
