@@ -14,7 +14,7 @@ export default function Withdraw() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
-  const FEE_PERCENT = 0.03
+  const FEE_PERCENT = 0.02
 
   useEffect(() => {
     UserService.me()
@@ -154,7 +154,7 @@ export default function Withdraw() {
             rounded-xl p-4 text-sm space-y-2
           ">
             <div className="flex justify-between text-[#848E9C]">
-              <span>Taxa (3%)</span>
+              <span>Taxa (2%)</span>
               <span className="text-red-400 font-medium">
                 {fee.toFixed(2)} Kz
               </span>
