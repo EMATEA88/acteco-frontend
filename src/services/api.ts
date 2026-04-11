@@ -4,7 +4,10 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3333',
 })
 
-// 🔐 Injeta token automaticamente
+/* =========================
+   INTERCEPTOR TOKEN
+========================= */
+
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
 
@@ -21,7 +24,7 @@ api.interceptors.request.use(config => {
 
 // 📧 Solicitar OTP de registro
 export const requestRegisterOtp = async (email: string) => {
-  const { data } = await api.post('/auth/request-register-otp', { email })
+  const { data } = await api.post('/auth/register/otp', { email })
   return data
 }
 
@@ -43,7 +46,7 @@ export const registerUser = async (
 
 // 🔁 Solicitar OTP reset
 export const requestResetOtp = async (email: string) => {
-  const { data } = await api.post('/auth/request-reset-otp', { email })
+  const { data } = await api.post('/auth/reset-password/otp', { email })
   return data
 }
 
@@ -61,7 +64,7 @@ export const resetPassword = async (
   return data
 }
 
-// 🔓 Login (email ou phone)
+// 🔓 Login (email ou telefone)
 export const loginUser = async (
   identifier: string,
   password: string
