@@ -70,6 +70,8 @@ export default function Tasks() {
   const [image, setImage] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
+
   useEffect(() => {
     loadTasks()
   }, [])
@@ -80,9 +82,6 @@ export default function Tasks() {
     setLoading(false)
   }
 
-  /* =========================
-     START TASK
-  ========================= */
   async function startTask(task: Task) {
     try {
       await api.post(`/tasks/start/${task.id}`, {
@@ -101,9 +100,6 @@ export default function Tasks() {
     }
   }
 
-  /* =========================
-     TIMER
-  ========================= */
   useEffect(() => {
     if (!activeTask || timeLeft <= 0) return
 
@@ -114,21 +110,14 @@ export default function Tasks() {
     return () => clearInterval(interval)
   }, [activeTask, timeLeft])
 
-  /* =========================
-     IMAGE (AGORA COM COMPRESSÃO)
-  ========================= */
   async function handleImage(e: any) {
     const file = e.target.files[0]
-
     if (!file) return
 
     const compressed = await compressImage(file)
     setImage(compressed)
   }
 
-  /* =========================
-     SUBMIT
-  ========================= */
   async function submit() {
     if (!activeTask) return
 
@@ -149,7 +138,7 @@ export default function Tasks() {
 
       await api.post(`/tasks/complete/${activeTask.id}`, {
         proof: finalProof,
-        fingerprint: getFingerprint() // 🔥 CORREÇÃO CRÍTICA
+        fingerprint: getFingerprint()
       })
 
       alert('Enviado para revisão')
@@ -174,13 +163,23 @@ export default function Tasks() {
 
       <h1 className="text-xl mb-4">Marketing</h1>
 
+      {/* ================= EMPTY STATE ================= */}
+      {tasks.length === 0 && (
+        <div className="text-center text-gray-400 mt-10">
+          <p className="text-lg">Nenhuma tarefa disponível</p>
+          <p className="text-sm mt-2">Volte mais tarde</p>
+        </div>
+      )}
+
       {tasks.map(task => (
         <div key={task.id} className="bg-[#1E2329] border border-[#2B3139] p-4 rounded-xl mb-3">
 
+          {/* ✅ IMAGEM CORRIGIDA */}
           {task.imageUrl && (
             <img
               src={task.imageUrl}
-              className="w-full h-40 object-cover rounded mb-2"
+              className="w-full max-h-60 object-contain rounded mb-3 cursor-pointer bg-black"
+              onClick={() => setPreviewImage(task.imageUrl!)}
             />
           )}
 
@@ -206,6 +205,7 @@ export default function Tasks() {
         </div>
       ))}
 
+      {/* ================= MODAL TASK ================= */}
       {activeTask && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
 
@@ -237,7 +237,7 @@ export default function Tasks() {
             {image && (
               <img
                 src={image}
-                className="mt-2 h-32 rounded"
+                className="mt-2 max-h-40 object-contain rounded"
               />
             )}
 
@@ -259,6 +259,19 @@ export default function Tasks() {
             </div>
 
           </div>
+        </div>
+      )}
+
+      {/* ================= PREVIEW FULLSCREEN ================= */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
+          onClick={() => setPreviewImage(null)}
+        >
+          <img
+            src={previewImage}
+            className="max-w-[95%] max-h-[95%] object-contain rounded-xl"
+          />
         </div>
       )}
 
