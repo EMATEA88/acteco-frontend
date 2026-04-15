@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { api } from '../services/api'
-import Toast from '../components/ui/Toast'
 
 interface Task {
   id: number
@@ -42,7 +41,7 @@ async function compressImage(file: File): Promise<string> {
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
 
-        const MAX_WIDTH = 400
+        const MAX_WIDTH = 800
         const scale = MAX_WIDTH / img.width
 
         canvas.width = MAX_WIDTH
@@ -50,7 +49,9 @@ async function compressImage(file: File): Promise<string> {
 
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height)
 
-        resolve(canvas.toDataURL('image/jpeg', 0.4))
+        const compressed = canvas.toDataURL('image/jpeg', 0.6)
+
+        resolve(compressed)
       }
     }
 
@@ -69,59 +70,40 @@ export default function Tasks() {
   const [image, setImage] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
-
-  // ✅ TOAST
-  const [toast, setToast] = useState({
-    visible: false,
-    message: '',
-    type: 'success' as 'success' | 'error'
-  })
-
-  function showToast(message: string, type: 'success' | 'error' = 'error') {
-    setToast({ visible: true, message, type })
-    setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 2500)
-  }
-
   useEffect(() => {
     loadTasks()
   }, [])
 
   async function loadTasks() {
-    try {
-      const res = await api.get('/tasks')
-      setTasks(res.data)
-    } catch {
-      showToast('Erro ao carregar tarefas')
-    } finally {
-      setLoading(false)
-    }
+    const res = await api.get('/tasks')
+    setTasks(res.data)
+    setLoading(false)
   }
 
+  /* =========================
+     START TASK
+  ========================= */
   async function startTask(task: Task) {
-  try {
-    await api.post(`/tasks/start/${task.id}`, {
-      fingerprint: getFingerprint()
-    })
+    try {
+      await api.post(`/tasks/start/${task.id}`, {
+        fingerprint: getFingerprint()
+      })
 
-    setActiveTask(task)
-    setTimeLeft(task.minSeconds)
+      setActiveTask(task)
+      setTimeLeft(task.minSeconds)
 
-    if (task.url) {
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-
-      if (isMobile) {
+      if (task.url) {
         window.open(task.url, '_blank')
-      } else {
-        window.location.href = task.url
       }
+
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Erro')
     }
-
-  } catch (err: any) {
-    showToast(err.response?.data?.error || 'Erro')
   }
-}
 
+  /* =========================
+     TIMER
+  ========================= */
   useEffect(() => {
     if (!activeTask || timeLeft <= 0) return
 
@@ -132,25 +114,34 @@ export default function Tasks() {
     return () => clearInterval(interval)
   }, [activeTask, timeLeft])
 
+  /* =========================
+     IMAGE (AGORA COM COMPRESSÃO)
+  ========================= */
   async function handleImage(e: any) {
     const file = e.target.files[0]
+
     if (!file) return
 
     const compressed = await compressImage(file)
     setImage(compressed)
   }
 
+  /* =========================
+     SUBMIT
+  ========================= */
   async function submit() {
     if (!activeTask) return
 
     if (timeLeft > 0) {
-      return showToast('Aguarde o tempo terminar')
+      alert('Aguarde o tempo terminar')
+      return
     }
 
     const finalProof = image || proof
 
     if (!finalProof) {
-      return showToast('Envie prova')
+      alert('Envie prova')
+      return
     }
 
     try {
@@ -158,10 +149,10 @@ export default function Tasks() {
 
       await api.post(`/tasks/complete/${activeTask.id}`, {
         proof: finalProof,
-        fingerprint: getFingerprint()
+        fingerprint: getFingerprint() // 🔥 CORREÇÃO CRÍTICA
       })
 
-      showToast('Enviado para revisão', 'success')
+      alert('Enviado para revisão')
 
       setActiveTask(null)
       setProof('')
@@ -170,7 +161,7 @@ export default function Tasks() {
       loadTasks()
 
     } catch (err: any) {
-      showToast(err.response?.data?.error || 'Erro')
+      alert(err.response?.data?.error || 'Erro')
     } finally {
       setSubmitting(false)
     }
@@ -179,65 +170,60 @@ export default function Tasks() {
   if (loading) return <div className="p-4 text-white">Carregando...</div>
 
   return (
-    <div className="text-white bg-[#0B0E11] min-h-screen">
+    <div className="p-4 text-white bg-[#0B0E11] min-h-screen">
 
-      <h1 className="text-xl p-4">Marketing</h1>
-
-      {/* EMPTY STATE */}
-      {tasks.length === 0 && (
-        <div className="text-center text-gray-400 mt-10">
-          Nenhuma tarefa disponível
-        </div>
-      )}
+      <h1 className="text-xl mb-4">Marketing</h1>
 
       {tasks.map(task => (
-        <div key={task.id} className="mb-4">
+        <div key={task.id} className="bg-[#1E2329] border border-[#2B3139] p-4 rounded-xl mb-3">
 
-          {/* ✅ IMAGEM FULL (SEM ESPAÇO LATERAL) */}
           {task.imageUrl && (
             <img
               src={task.imageUrl}
-              className="w-full h-auto object-contain bg-black cursor-pointer"
-              onClick={() => setPreviewImage(task.imageUrl!)}
+              className="w-full h-40 object-cover rounded mb-2"
             />
           )}
 
-          <div className="p-4 bg-[#1E2329] border-t border-[#2B3139]">
+          <h2 className="font-bold">{task.title}</h2>
+          <p className="text-sm text-gray-400">{task.description}</p>
 
-            <h2 className="font-bold">{task.title}</h2>
-            <p className="text-sm text-gray-400">{task.description}</p>
-
-            {task.instructions && (
-              <p className="text-xs mt-2 text-gray-500">
-                {task.instructions}
-              </p>
-            )}
-
-            <p className="text-[#02C076] font-bold mt-2">
-              {task.reward} Kz
+          {task.instructions && (
+            <p className="text-xs mt-2 text-gray-500">
+              {task.instructions}
             </p>
+          )}
 
-            <button
-              onClick={() => startTask(task)}
-              className="mt-3 bg-[#FCD535] text-black px-4 py-2 rounded font-bold w-full"
-            >
-              Fazer
-            </button>
+          <p className="text-[#02C076] font-bold mt-2">
+            {task.reward} Kz
+          </p>
 
-          </div>
+          <button
+            onClick={() => startTask(task)}
+            className="mt-3 bg-[#FCD535] text-black px-4 py-2 rounded font-bold"
+          >
+            Fazer
+          </button>
         </div>
       ))}
 
-      {/* MODAL TASK */}
       {activeTask && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+
           <div className="bg-[#1E2329] p-6 rounded-xl w-full max-w-md">
 
-            <h2 className="font-bold mb-2">{activeTask.title}</h2>
+            <h2 className="font-bold mb-2">
+              {activeTask.title}
+            </h2>
 
-            <p className="mb-4 text-yellow-400">
-              {timeLeft > 0 ? `Aguarde: ${timeLeft}s` : 'Pode enviar prova'}
-            </p>
+            {timeLeft > 0 ? (
+              <p className="text-yellow-400 mb-4">
+                Aguarde: {timeLeft}s
+              </p>
+            ) : (
+              <p className="text-green-400 mb-4">
+                Pode enviar prova
+              </p>
+            )}
 
             <input
               value={proof}
@@ -249,7 +235,10 @@ export default function Tasks() {
             <input type="file" onChange={handleImage} />
 
             {image && (
-              <img src={image} className="mt-2 max-h-40 object-contain rounded" />
+              <img
+                src={image}
+                className="mt-2 h-32 rounded"
+              />
             )}
 
             <div className="flex gap-2 mt-4">
@@ -272,27 +261,6 @@ export default function Tasks() {
           </div>
         </div>
       )}
-
-      {/* PREVIEW */}
-      {previewImage && (
-        <div
-          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
-          onClick={() => setPreviewImage(null)}
-        >
-          <img
-            src={previewImage}
-            className="max-w-[95%] max-h-[95%] object-contain"
-          />
-        </div>
-      )}
-
-      {/* TOAST */}
-      <Toast
-        visible={toast.visible}
-        message={toast.message}
-        type={toast.type}
-        onClose={() => setToast(prev => ({ ...prev, visible: false }))}
-      />
 
     </div>
   )
