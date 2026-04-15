@@ -1,11 +1,30 @@
 import axios from 'axios'
 
+/* =========================
+   DEVICE ID (ANTI-FRAUDE)
+========================= */
+
+function getDeviceId() {
+  let id = localStorage.getItem('device_id')
+
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem('device_id', id)
+  }
+
+  return id
+}
+
+/* =========================
+   AXIOS INSTANCE
+========================= */
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3333',
 })
 
 /* =========================
-   INTERCEPTOR TOKEN
+   INTERCEPTOR TOKEN + DEVICE
 ========================= */
 
 api.interceptors.request.use(config => {
@@ -14,6 +33,9 @@ api.interceptors.request.use(config => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+
+  // 🔐 DEVICE ID obrigatório
+  config.headers['x-device-id'] = getDeviceId()
 
   return config
 })
