@@ -12,6 +12,54 @@ interface Task {
   minSeconds: number
 }
 
+/* =========================
+   DEVICE FINGERPRINT
+========================= */
+function getFingerprint() {
+  let fp = localStorage.getItem('device_fp')
+
+  if (!fp) {
+    fp = crypto.randomUUID()
+    localStorage.setItem('device_fp', fp)
+  }
+
+  return fp
+}
+
+/* =========================
+   COMPRESS IMAGE
+========================= */
+async function compressImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = (event) => {
+      const img = new Image()
+      img.src = event.target?.result as string
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+
+        const MAX_WIDTH = 800
+        const scale = MAX_WIDTH / img.width
+
+        canvas.width = MAX_WIDTH
+        canvas.height = img.height * scale
+
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+        const compressed = canvas.toDataURL('image/jpeg', 0.6)
+
+        resolve(compressed)
+      }
+    }
+
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
@@ -32,17 +80,18 @@ export default function Tasks() {
     setLoading(false)
   }
 
-  // ==========================================
-  // INICIAR TASK
-  // ==========================================
+  /* =========================
+     START TASK
+  ========================= */
   async function startTask(task: Task) {
     try {
-      await api.post(`/tasks/start/${task.id}`)
+      await api.post(`/tasks/start/${task.id}`, {
+        fingerprint: getFingerprint()
+      })
 
       setActiveTask(task)
       setTimeLeft(task.minSeconds)
 
-      // 🔥 abre automaticamente
       if (task.url) {
         window.open(task.url, '_blank')
       }
@@ -52,9 +101,9 @@ export default function Tasks() {
     }
   }
 
-  // ==========================================
-  // TIMER
-  // ==========================================
+  /* =========================
+     TIMER
+  ========================= */
   useEffect(() => {
     if (!activeTask || timeLeft <= 0) return
 
@@ -65,23 +114,21 @@ export default function Tasks() {
     return () => clearInterval(interval)
   }, [activeTask, timeLeft])
 
-  // ==========================================
-  // IMAGEM
-  // ==========================================
-  function handleImage(e: any) {
+  /* =========================
+     IMAGE (AGORA COM COMPRESSÃO)
+  ========================= */
+  async function handleImage(e: any) {
     const file = e.target.files[0]
-    const reader = new FileReader()
 
-    reader.onloadend = () => {
-      setImage(reader.result as string)
-    }
+    if (!file) return
 
-    if (file) reader.readAsDataURL(file)
+    const compressed = await compressImage(file)
+    setImage(compressed)
   }
 
-  // ==========================================
-  // ENVIAR PROVA
-  // ==========================================
+  /* =========================
+     SUBMIT
+  ========================= */
   async function submit() {
     if (!activeTask) return
 
@@ -101,7 +148,8 @@ export default function Tasks() {
       setSubmitting(true)
 
       await api.post(`/tasks/complete/${activeTask.id}`, {
-        proof: finalProof
+        proof: finalProof,
+        fingerprint: getFingerprint() // 🔥 CORREÇÃO CRÍTICA
       })
 
       alert('Enviado para revisão')
@@ -126,9 +174,6 @@ export default function Tasks() {
 
       <h1 className="text-xl mb-4">Marketing</h1>
 
-      {/* ===================== */}
-      {/* LISTA */}
-      {/* ===================== */}
       {tasks.map(task => (
         <div key={task.id} className="bg-[#1E2329] border border-[#2B3139] p-4 rounded-xl mb-3">
 
@@ -161,9 +206,6 @@ export default function Tasks() {
         </div>
       ))}
 
-      {/* ===================== */}
-      {/* MODAL */}
-      {/* ===================== */}
       {activeTask && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
 
@@ -173,7 +215,6 @@ export default function Tasks() {
               {activeTask.title}
             </h2>
 
-            {/* TIMER */}
             {timeLeft > 0 ? (
               <p className="text-yellow-400 mb-4">
                 Aguarde: {timeLeft}s
