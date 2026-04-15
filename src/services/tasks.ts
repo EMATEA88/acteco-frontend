@@ -10,17 +10,29 @@ export interface Task {
   reward: number
   type: string
   url?: string
-  minSeconds?: number // Adicionado: para o timer saber quanto tempo esperar
-  instructions?: string // Adicionado: para mostrar o passo a passo
+
+  minSeconds?: number
+  instructions?: string
+
+  // 🔥 NOVO (PROGRESSO)
+  totalLimit?: number
+  completed?: number
 }
 
 // =============================
-// GET TASKS (MANTIDO)
+// GET TASKS
 // =============================
 export async function getTasks(): Promise<Task[]> {
   try {
     const { data } = await api.get('/tasks')
-    return data
+
+    // 🔥 NORMALIZAÇÃO (EVITA BUG UI)
+    return data.map((task: Task) => ({
+      ...task,
+      totalLimit: task.totalLimit ?? 0,
+      completed: task.completed ?? 0
+    }))
+
   } catch (error: any) {
     throw new Error(
       error?.response?.data?.error || 'Erro ao buscar tasks'
@@ -29,9 +41,8 @@ export async function getTasks(): Promise<Task[]> {
 }
 
 // =============================
-// START TASK (NOVO GATILHO)
+// START TASK
 // =============================
-// Esta função deve ser chamada assim que o usuário clicar no botão "Fazer"
 export async function startTask(taskId: number, fingerprint: string) {
   try {
     const { data } = await api.post(`/tasks/start/${taskId}`, {
@@ -46,12 +57,12 @@ export async function startTask(taskId: number, fingerprint: string) {
 }
 
 // =============================
-// COMPLETE TASK (ATUALIZADO)
+// COMPLETE TASK
 // =============================
 export async function completeTask(
   taskId: number,
   proof: string,
-  fingerprint: string // Agora o fingerprint é obrigatório aqui também
+  fingerprint: string
 ) {
   try {
     const { data } = await api.post(`/tasks/complete/${taskId}`, {

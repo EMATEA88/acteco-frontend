@@ -11,6 +11,10 @@ interface Task {
   imageUrl?: string
   instructions?: string
   minSeconds: number
+
+  // 🔥 NOVO
+  totalLimit?: number
+  completed?: number
 }
 
 /* =========================
@@ -71,7 +75,6 @@ export default function Tasks() {
 
   const [previewImage, setPreviewImage] = useState<string | null>(null)
 
-  // ✅ TOAST
   const [toast, setToast] = useState({
     visible: false,
     message: '',
@@ -99,39 +102,37 @@ export default function Tasks() {
   }
 
   async function startTask(task: Task) {
-  try {
-    await api.post(`/tasks/start/${task.id}`, {
-      fingerprint: getFingerprint()
-    })
+    try {
+      await api.post(`/tasks/start/${task.id}`, {
+        fingerprint: getFingerprint()
+      })
 
-    if (task.url) {
-      let url = task.url.trim()
+      if (task.url) {
+        let url = task.url.trim()
 
-      if (!url.startsWith('http')) {
-        url = 'https://' + url
+        if (!url.startsWith('http')) {
+          url = 'https://' + url
+        }
+
+        const a = document.createElement('a')
+        a.href = url
+        a.target = '_blank'
+        a.rel = 'noopener noreferrer'
+
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
       }
 
-      // 🔥 ABRE PRIMEIRO
-      const a = document.createElement('a')
-      a.href = url
-      a.target = '_blank'
-      a.rel = 'noopener noreferrer'
+      setTimeout(() => {
+        setActiveTask(task)
+        setTimeLeft(task.minSeconds)
+      }, 500)
 
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Erro')
     }
-
-    // ⏳ espera abrir o browser
-    setTimeout(() => {
-      setActiveTask(task)
-      setTimeLeft(task.minSeconds)
-    }, 500)
-
-  } catch (err: any) {
-    showToast(err.response?.data?.error || 'Erro')
   }
-}
 
   useEffect(() => {
     if (!activeTask || timeLeft <= 0) return
@@ -194,52 +195,89 @@ export default function Tasks() {
 
       <h1 className="text-xl p-4">Marketing</h1>
 
-      {/* EMPTY STATE */}
       {tasks.length === 0 && (
         <div className="text-center text-gray-400 mt-10">
           Nenhuma tarefa disponível
         </div>
       )}
 
-      {tasks.map(task => (
-        <div key={task.id} className="mb-4">
+      {tasks.map(task => {
 
-          {/* ✅ IMAGEM FULL (SEM ESPAÇO LATERAL) */}
-          {task.imageUrl && (
-            <img
-              src={task.imageUrl}
-              className="w-full h-auto object-contain bg-black cursor-pointer"
-              onClick={() => setPreviewImage(task.imageUrl!)}
-            />
-          )}
+        const completed = task.completed || 0
+        const total = task.totalLimit || 1
+        const percent = Math.min((completed / total) * 100, 100)
+        const remaining = Math.max(total - completed, 0)
 
-          <div className="p-4 bg-[#1E2329] border-t border-[#2B3139]">
+        return (
+          <div key={task.id} className="mb-4">
 
-            <h2 className="font-bold">{task.title}</h2>
-            <p className="text-sm text-gray-400">{task.description}</p>
-
-            {task.instructions && (
-              <p className="text-xs mt-2 text-gray-500">
-                {task.instructions}
-              </p>
+            {task.imageUrl && (
+              <img
+                src={task.imageUrl}
+                className="w-full h-auto object-contain bg-black cursor-pointer"
+                onClick={() => setPreviewImage(task.imageUrl!)}
+              />
             )}
 
-            <p className="text-[#02C076] font-bold mt-2">
-              {task.reward} Kz
-            </p>
+            <div className="p-4 bg-[#1E2329] border-t border-[#2B3139]">
 
-            <button
-              onClick={() => startTask(task)}
-              className="mt-3 bg-[#FCD535] text-black px-4 py-2 rounded font-bold w-full"
-            >
-              Fazer
-            </button>
+              <h2 className="font-bold">{task.title}</h2>
+              <p className="text-sm text-gray-400">{task.description}</p>
 
+              {task.instructions && (
+                <p className="text-xs mt-2 text-gray-500">
+                  {task.instructions}
+                </p>
+              )}
+
+              <p className="text-[#02C076] font-bold mt-2">
+                {task.reward} Kz
+              </p>
+
+              {/* 🔥 PROGRESSO */}
+              {task.totalLimit && (
+                <div className="mt-3">
+
+                  <div className="flex justify-between text-xs text-gray-400 mb-1">
+                    <span>{completed} / {total}</span>
+
+                    <span className="text-red-400 font-semibold">
+                      Restam {remaining}
+                    </span>
+                  </div>
+
+                  <div className="w-full h-2 bg-[#2B3139] rounded-full overflow-hidden">
+                    <div
+                      className={`
+                        h-2 rounded-full transition-all duration-700
+                        ${percent > 80 ? 'bg-red-500 animate-pulse' :
+                          percent > 50 ? 'bg-yellow-400' :
+                          'bg-[#02C076]'}
+                      `}
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+
+                  {percent > 80 && (
+                    <p className="text-red-400 text-xs mt-1 animate-pulse">
+                      🔥 Últimas vagas disponíveis
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <button
+                onClick={() => startTask(task)}
+                className="mt-3 bg-[#FCD535] text-black px-4 py-2 rounded font-bold w-full"
+              >
+                Fazer
+              </button>
+
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
 
-      {/* MODAL TASK */}
       {activeTask && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-[#1E2329] p-6 rounded-xl w-full max-w-md">
@@ -284,7 +322,6 @@ export default function Tasks() {
         </div>
       )}
 
-      {/* PREVIEW */}
       {previewImage && (
         <div
           className="fixed inset-0 bg-black/90 flex items-center justify-center z-50"
@@ -297,7 +334,6 @@ export default function Tasks() {
         </div>
       )}
 
-      {/* TOAST */}
       <Toast
         visible={toast.visible}
         message={toast.message}
