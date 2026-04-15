@@ -42,7 +42,7 @@ async function compressImage(file: File): Promise<string> {
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
 
-        const MAX_WIDTH = 800
+        const MAX_WIDTH = 400
         const scale = MAX_WIDTH / img.width
 
         canvas.width = MAX_WIDTH
@@ -50,7 +50,7 @@ async function compressImage(file: File): Promise<string> {
 
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height)
 
-        resolve(canvas.toDataURL('image/jpeg', 0.6))
+        resolve(canvas.toDataURL('image/jpeg', 0.4))
       }
     }
 
