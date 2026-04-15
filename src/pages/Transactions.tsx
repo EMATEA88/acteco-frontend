@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
 import { TransactionService } from '../services/transaction.service'
-import type { TransactionType } from '../types/transaction.types'
 import {
   ArrowDownCircle,
   ArrowUpCircle,
@@ -11,7 +10,7 @@ import {
 
 type Transaction = {
   id: number
-  type: TransactionType
+  type: string
   amount: number
   createdAt: string
 }
@@ -19,25 +18,28 @@ type Transaction = {
 const CACHE_KEY = 'transactions-cache'
 
 const TYPE_META: Record<
-  TransactionType,
+  string,
   {
     label: string
     icon: any
     color: string
     sign: '+' | '-'
+    category: 'IN' | 'OUT'
   }
 > = {
-  RECHARGE: { label: 'Recarga', icon: Wallet, color: 'text-[#FCD535]', sign: '+' },
-  WITHDRAW: { label: 'Levantamento', icon: ArrowDownCircle, color: 'text-[#EF4444]', sign: '-' },
-  BUY_DEBIT: { label: 'Compra OTC', icon: ArrowDownCircle, color: 'text-[#EF4444]', sign: '-' },
-  SELL_CREDIT: { label: 'Venda OTC', icon: ArrowUpCircle, color: 'text-[#FCD535]', sign: '+' },
-  SERVICE_DEBIT: { label: 'Pagamento Serviço', icon: ArrowDownCircle, color: 'text-[#EF4444]', sign: '-' },
-  REFUND: { label: 'Reembolso', icon: ArrowUpCircle, color: 'text-[#FCD535]', sign: '+' },
-  COMMISSION: { label: 'Comissão', icon: Coins, color: 'text-[#FCD535]', sign: '+' },
-  GIFT: { label: 'Presente', icon: Gift, color: 'text-[#FCD535]', sign: '+' },
-  INVESTMENT_DEBIT: { label: 'Investimento', icon: ArrowDownCircle, color: 'text-[#EF4444]', sign: '-' },
-  INVESTMENT_CREDIT: { label: 'Lucro Investimento', icon: ArrowUpCircle, color: 'text-[#FCD535]', sign: '+' },
-  INVESTMENT_CANCEL_REFUND: { label: 'Cancelamento Invest.', icon: ArrowUpCircle, color: 'text-[#FCD535]', sign: '+' },
+  RECHARGE: { label: 'Recarga', icon: Wallet, color: 'text-[#FCD535]', sign: '+', category: 'IN' },
+  WITHDRAW: { label: 'Levantamento', icon: ArrowDownCircle, color: 'text-red-500', sign: '-', category: 'OUT' },
+  BUY_DEBIT: { label: 'Compra OTC', icon: ArrowDownCircle, color: 'text-red-500', sign: '-', category: 'OUT' },
+  SELL_CREDIT: { label: 'Venda OTC', icon: ArrowUpCircle, color: 'text-[#FCD535]', sign: '+', category: 'IN' },
+  SERVICE_DEBIT: { label: 'Pagamento Serviço', icon: ArrowDownCircle, color: 'text-red-500', sign: '-', category: 'OUT' },
+  REFUND: { label: 'Reembolso', icon: ArrowUpCircle, color: 'text-[#FCD535]', sign: '+', category: 'IN' },
+  COMMISSION: { label: 'Comissão', icon: Coins, color: 'text-[#FCD535]', sign: '+', category: 'IN' },
+  GIFT: { label: 'Presente', icon: Gift, color: 'text-[#FCD535]', sign: '+', category: 'IN' },
+  INVESTMENT_DEBIT: { label: 'Investimento', icon: ArrowDownCircle, color: 'text-red-500', sign: '-', category: 'OUT' },
+  INVESTMENT_CREDIT: { label: 'Lucro Investimento', icon: ArrowUpCircle, color: 'text-[#FCD535]', sign: '+', category: 'IN' },
+  INVESTMENT_CANCEL_REFUND: { label: 'Cancelamento', icon: ArrowUpCircle, color: 'text-[#FCD535]', sign: '+', category: 'IN' },
+
+  TASK_REWARD: { label: 'Tarefa', icon: Coins, color: 'text-emerald-500', sign: '+', category: 'IN' }
 }
 
 export default function Transactions() {
@@ -46,23 +48,58 @@ export default function Transactions() {
   const initial = cached ? JSON.parse(cached) : []
 
   const [items, setItems] = useState<Transaction[]>(initial)
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<'ALL' | 'IN' | 'OUT'>('ALL')
 
   useEffect(() => {
-    let mounted = true
-
     TransactionService.list()
       .then(data => {
-        if (!mounted || !Array.isArray(data)) return
+        if (!Array.isArray(data)) return
         setItems(data)
         localStorage.setItem(CACHE_KEY, JSON.stringify(data))
       })
-      .catch(() => {})
-
-    return () => { mounted = false }
+      .finally(() => setLoading(false))
   }, [])
 
+  /* =========================
+     FILTRO
+  ========================= */
+  const filtered = useMemo(() => {
+    return items.filter(tx => {
+      const meta = TYPE_META[tx.type]
+      if (!meta) return true
+      if (filter === 'ALL') return true
+      return meta.category === filter
+    })
+  }, [items, filter])
+
+  /* =========================
+     RESUMO
+  ========================= */
+  const summary = useMemo(() => {
+    let totalIn = 0
+    let totalOut = 0
+
+    items.forEach(tx => {
+      const meta = TYPE_META[tx.type]
+      if (!meta) return
+
+      if (meta.category === 'IN') totalIn += Number(tx.amount)
+      else totalOut += Number(tx.amount)
+    })
+
+    return {
+      totalIn,
+      totalOut,
+      balance: totalIn - totalOut
+    }
+  }, [items])
+
+  /* =========================
+     AGRUPAR POR DATA
+  ========================= */
   const grouped = useMemo(() => {
-    return items.reduce((acc: any, tx) => {
+    return filtered.reduce((acc: any, tx) => {
       const date = new Date(tx.createdAt)
       const key = date.toLocaleDateString('pt-AO', {
         day: '2-digit',
@@ -73,58 +110,112 @@ export default function Transactions() {
       acc[key].push(tx)
       return acc
     }, {})
-  }, [items])
+  }, [filtered])
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] pb-28">
+    <div className="min-h-screen bg-[#0B0E11] text-white pb-28">
 
-      {/* HEADER FIXO */}
+      {/* HEADER */}
       <div className="sticky top-0 z-50 bg-[#1E2329] border-b border-[#2B3139] px-6 py-4">
-        <h1 className="text-lg font-semibold tracking-wide">
-          Histórico de Transações
+        <h1 className="text-lg font-semibold">
+          Transações
         </h1>
       </div>
 
-      <div className="px-6 py-6 space-y-8">
+      {/* RESUMO */}
+      <div className="grid grid-cols-3 gap-3 p-4">
+
+        <div className="bg-[#1E2329] p-4 rounded-xl text-center">
+          <p className="text-xs text-gray-400">Entradas</p>
+          <p className="text-emerald-500 font-bold">
+            +{summary.totalIn.toLocaleString()} Kz
+          </p>
+        </div>
+
+        <div className="bg-[#1E2329] p-4 rounded-xl text-center">
+          <p className="text-xs text-gray-400">Saídas</p>
+          <p className="text-red-500 font-bold">
+            -{summary.totalOut.toLocaleString()} Kz
+          </p>
+        </div>
+
+        <div className="bg-[#1E2329] p-4 rounded-xl text-center">
+          <p className="text-xs text-gray-400">Saldo</p>
+          <p className="text-[#FCD535] font-bold">
+            {summary.balance.toLocaleString()} Kz
+          </p>
+        </div>
+
+      </div>
+
+      {/* FILTRO */}
+      <div className="flex gap-2 px-4 mb-4">
+        {['ALL', 'IN', 'OUT'].map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f as any)}
+            className={`px-3 py-1 rounded text-sm ${
+              filter === f
+                ? 'bg-[#FCD535] text-black'
+                : 'bg-[#1E2329]'
+            }`}
+          >
+            {f === 'ALL' ? 'Todas' : f === 'IN' ? 'Entradas' : 'Saídas'}
+          </button>
+        ))}
+      </div>
+
+      {/* LISTA */}
+      <div className="px-4 space-y-6">
+
+        {loading && (
+          <div className="text-center text-gray-500 mt-10">
+            Carregando...
+          </div>
+        )}
+
+        {!loading && filtered.length === 0 && (
+          <div className="text-center text-gray-500 mt-10">
+            Nenhuma transação
+          </div>
+        )}
 
         {Object.entries(grouped).map(([date, txs]: any) => (
-          <div key={date} className="space-y-4">
+          <div key={date}>
 
-            <p className="text-xs text-[#848E9C] uppercase tracking-wide">
-              {date}
-            </p>
+            <p className="text-xs text-gray-400 mb-2">{date}</p>
 
             {txs.map((tx: Transaction) => {
-              const meta = TYPE_META[tx.type]
+
+              const meta = TYPE_META[tx.type] || {
+                label: tx.type,
+                icon: Wallet,
+                color: 'text-gray-400',
+                sign: '+',
+                category: 'IN'
+              }
+
               const Icon = meta.icon
 
               return (
                 <div
                   key={tx.id}
-                  className="bg-[#1E2329] border border-[#2B3139] rounded-2xl p-5 flex items-center justify-between hover:bg-[#2B3139] transition"
+                  className="bg-[#1E2329] rounded-xl p-4 mb-2 flex justify-between items-center"
                 >
-                  <div className="flex items-center gap-4">
-
-                    <div className="w-11 h-11 rounded-full bg-[#0B0E11] border border-[#2B3139] flex items-center justify-center">
-                      <Icon size={20} className={meta.color} />
-                    </div>
-
+                  <div className="flex items-center gap-3">
+                    <Icon className={meta.color} size={20} />
                     <div>
-                      <p className="text-sm font-medium">
-                        {meta.label}
-                      </p>
-                      <p className="text-xs text-[#848E9C]">
+                      <p className="text-sm">{meta.label}</p>
+                      <p className="text-xs text-gray-400">
                         {new Date(tx.createdAt).toLocaleTimeString()}
                       </p>
                     </div>
-
                   </div>
 
-                  <p className={`text-sm font-semibold ${meta.color}`}>
+                  <p className={`font-bold ${meta.color}`}>
                     {meta.sign}
-                    {tx.amount.toLocaleString()} Kz
+                    {Number(tx.amount).toLocaleString()} Kz
                   </p>
-
                 </div>
               )
             })}
