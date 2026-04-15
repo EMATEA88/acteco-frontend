@@ -99,21 +99,28 @@ export default function Tasks() {
   }
 
   async function startTask(task: Task) {
-    try {
-      await api.post(`/tasks/start/${task.id}`, {
-        fingerprint: getFingerprint()
-      })
+  try {
+    await api.post(`/tasks/start/${task.id}`, {
+      fingerprint: getFingerprint()
+    })
 
-      setActiveTask(task)
-      setTimeLeft(task.minSeconds)
+    setActiveTask(task)
+    setTimeLeft(task.minSeconds)
 
-      if (task.url) {
-     window.location.href = task.url
-   }
-    } catch (err: any) {
-      showToast(err.response?.data?.error || 'Erro')
+    if (task.url) {
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
+      if (isMobile) {
+        window.open(task.url, '_blank')
+      } else {
+        window.location.href = task.url
+      }
     }
+
+  } catch (err: any) {
+    showToast(err.response?.data?.error || 'Erro')
   }
+}
 
   useEffect(() => {
     if (!activeTask || timeLeft <= 0) return
