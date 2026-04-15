@@ -19,16 +19,29 @@ api.interceptors.request.use(config => {
 })
 
 /* =========================
+   INTERCEPTOR RESPONSE
+========================= */
+
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
+
+/* =========================
    AUTH
 ========================= */
 
-// 📧 Solicitar OTP de registro
 export const requestRegisterOtp = async (email: string) => {
   const { data } = await api.post('/auth/register/otp', { email })
   return data
 }
 
-// 📝 Registrar com OTP
 export const registerUser = async (
   phone: string,
   email: string,
@@ -44,13 +57,11 @@ export const registerUser = async (
   return data
 }
 
-// 🔁 Solicitar OTP reset
 export const requestResetOtp = async (email: string) => {
   const { data } = await api.post('/auth/reset-password/otp', { email })
   return data
 }
 
-// 🔐 Resetar senha
 export const resetPassword = async (
   email: string,
   newPassword: string,
@@ -64,7 +75,6 @@ export const resetPassword = async (
   return data
 }
 
-// 🔓 Login (email ou telefone)
 export const loginUser = async (
   identifier: string,
   password: string
@@ -78,6 +88,31 @@ export const loginUser = async (
     localStorage.setItem('token', data.token)
   }
 
+  return data
+}
+
+/* =========================
+   LOGOUT
+========================= */
+
+export const logoutUser = () => {
+  localStorage.removeItem('token')
+  window.location.href = '/login'
+}
+
+/* =========================
+   TASKS (CRÍTICO)
+========================= */
+
+export const getTasks = async () => {
+  const { data } = await api.get('/tasks')
+  return data
+}
+
+export const completeTask = async (taskId: number, proof: string) => {
+  const { data } = await api.post(`/tasks/complete/${taskId}`, {
+    proof
+  })
   return data
 }
 

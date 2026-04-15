@@ -37,6 +37,8 @@ import Marketing from "./pages/Marketing"
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import DeleteAccount from "./pages/DeleteAccount";
 import Kixikila from "./pages/Kixikila"
+import Tasks from './pages/Tasks'
+import CompanyDashboard from './pages/CompanyDashboard'
 
 /* ===== OTC USER ===== */
 import OtcPage from "./pages/otc/OtcPage"
@@ -110,6 +112,8 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/delete-account" element={<DeleteAccount />} />
           <Route path="/kixikila" element={<Kixikila />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/company-dashboard" element={<CompanyDashboard />} />
 
           {/* OTC */}
           <Route path="otc" element={<OtcPage />} />

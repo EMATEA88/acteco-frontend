@@ -12,13 +12,15 @@ const links = [
   { to: "/home", label: "Home", icon: Home },
   { to: "/kixikila", label: "Kixikila", icon: Users },
   { to: "/otc", label: "OTC", icon: Repeat },
-  { to: "/marketing", label: "Marketing", icon: Megaphone },
+
+  // 🔥 AGORA APONTA PARA TASKS
+  { to: "/tasks", label: "Marketing", icon: Megaphone },
+
   { to: "/applications", label: "Aplicações", icon: Wallet },
   { to: "/profile", label: "Perfil", icon: User },
 ]
 
 export default function BottomNav() {
-
   return (
     <nav
       className="
