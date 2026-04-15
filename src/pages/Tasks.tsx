@@ -108,9 +108,8 @@ export default function Tasks() {
       setTimeLeft(task.minSeconds)
 
       if (task.url) {
-        window.open(task.url, '_blank')
-      }
-
+     window.location.href = task.url
+   }
     } catch (err: any) {
       showToast(err.response?.data?.error || 'Erro')
     }
