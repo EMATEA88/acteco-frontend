@@ -12,7 +12,6 @@ interface Task {
   instructions?: string
   minSeconds: number
 
-  // 🔥 NOVO
   totalLimit?: number
   completed?: number
 }
@@ -114,20 +113,13 @@ export default function Tasks() {
           url = 'https://' + url
         }
 
-        const a = document.createElement('a')
-        a.href = url
-        a.target = '_blank'
-        a.rel = 'noopener noreferrer'
-
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
+        window.open(url, '_blank') // 🔥 mais estável no mobile
       }
 
       setTimeout(() => {
         setActiveTask(task)
         setTimeLeft(task.minSeconds)
-      }, 500)
+      }, 300)
 
     } catch (err: any) {
       showToast(err.response?.data?.error || 'Erro')
@@ -173,13 +165,23 @@ export default function Tasks() {
         fingerprint: getFingerprint()
       })
 
+      // 🔥 UPDATE IMEDIATO (UX PROFISSIONAL)
+      setTasks(prev =>
+        prev.map(t =>
+          t.id === activeTask.id
+            ? { ...t, completed: (t.completed || 0) + 1 }
+            : t
+        )
+      )
+
       showToast('Enviado para revisão', 'success')
 
       setActiveTask(null)
       setProof('')
       setImage(null)
 
-      loadTasks()
+      // 🔥 REFRESH REAL
+      await loadTasks()
 
     } catch (err: any) {
       showToast(err.response?.data?.error || 'Erro')
@@ -234,7 +236,6 @@ export default function Tasks() {
                 {task.reward} Kz
               </p>
 
-              {/* 🔥 PROGRESSO */}
               {task.totalLimit && (
                 <div className="mt-3">
 
@@ -249,7 +250,7 @@ export default function Tasks() {
                   <div className="w-full h-2 bg-[#2B3139] rounded-full overflow-hidden">
                     <div
                       className={`
-                        h-2 rounded-full transition-all duration-700
+                        h-2 rounded-full transition-all duration-500
                         ${percent > 80 ? 'bg-red-500 animate-pulse' :
                           percent > 50 ? 'bg-yellow-400' :
                           'bg-[#02C076]'}
@@ -258,11 +259,6 @@ export default function Tasks() {
                     />
                   </div>
 
-                  {percent > 80 && (
-                    <p className="text-red-400 text-xs mt-1 animate-pulse">
-                      🔥 Últimas vagas disponíveis
-                    </p>
-                  )}
                 </div>
               )}
 
