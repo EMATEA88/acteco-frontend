@@ -104,9 +104,6 @@ export default function Tasks() {
       fingerprint: getFingerprint()
     })
 
-    setActiveTask(task)
-    setTimeLeft(task.minSeconds)
-
     if (task.url) {
       let url = task.url.trim()
 
@@ -114,22 +111,22 @@ export default function Tasks() {
         url = 'https://' + url
       }
 
-      // 🚨 DETECTA FACEBOOK
-      const isFacebook = url.includes('facebook.com')
+      // 🔥 ABRE PRIMEIRO
+      const a = document.createElement('a')
+      a.href = url
+      a.target = '_blank'
+      a.rel = 'noopener noreferrer'
 
-      if (isFacebook) {
-        // força abrir fora do webview
-        window.location.href = url
-        return
-      }
-
-      // normal
-      const newWindow = window.open(url, '_blank')
-
-      if (!newWindow) {
-        window.location.href = url
-      }
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
     }
+
+    // ⏳ espera abrir o browser
+    setTimeout(() => {
+      setActiveTask(task)
+      setTimeLeft(task.minSeconds)
+    }, 500)
 
   } catch (err: any) {
     showToast(err.response?.data?.error || 'Erro')
