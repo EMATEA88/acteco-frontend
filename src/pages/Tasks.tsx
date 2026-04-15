@@ -108,12 +108,26 @@ export default function Tasks() {
     setTimeLeft(task.minSeconds)
 
     if (task.url) {
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+      let url = task.url.trim()
 
-      if (isMobile) {
-        window.open(task.url, '_blank')
-      } else {
-        window.location.href = task.url
+      if (!url.startsWith('http')) {
+        url = 'https://' + url
+      }
+
+      // 🚨 DETECTA FACEBOOK
+      const isFacebook = url.includes('facebook.com')
+
+      if (isFacebook) {
+        // força abrir fora do webview
+        window.location.href = url
+        return
+      }
+
+      // normal
+      const newWindow = window.open(url, '_blank')
+
+      if (!newWindow) {
+        window.location.href = url
       }
     }
 
