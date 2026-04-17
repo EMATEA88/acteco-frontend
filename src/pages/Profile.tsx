@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UserService } from '../services/user.service'
 import { formatCurrencyAOA } from "../utils/formatCurrency"
-
 import {
   Wallet,
   ArrowDown,
@@ -14,51 +13,63 @@ import {
   Copy,
   DownloadSimple,
   SignOut,
-  CaretRight
+  CaretRight,
+  UserCircleGear,
+  SealCheck,
+  WarningCircle,
+  CircleNotch // Certifique-se que @phosphor-icons/react está na v2.0+
 } from '@phosphor-icons/react'
 
-import { Check } from 'lucide-react'
-
-type UserProfile = {
-  fullName?: string
-  phone: string
-  email: string
-  publicId: string
-  balance: number
-  isVerified: boolean
-  kycStatus?: 'NOT_SUBMITTED' | 'PENDING' | 'APPROVED'
-  createdAt: string
-}
-
 export default function Profile() {
-
   const navigate = useNavigate()
-  const [user, setUser] = useState<UserProfile | null>(null)
-  const [copiedId, setCopiedId] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [showToast, setShowToast] = useState(false)
 
   useEffect(() => {
+    let isMounted = true
     async function load() {
       try {
+        setLoading(true)
         const userRes = await UserService.me()
-        setUser(userRes.data)
-      } catch {}
+        if (isMounted) {
+          setUser(userRes.data)
+        }
+      } catch (err) {
+        console.error("Erro ao carregar perfil", err)
+      } finally {
+        if (isMounted) setLoading(false)
+      }
     }
     load()
+    return () => { isMounted = false }
   }, [])
+
+  // 🟢 FEEDBACK VISUAL DE CARREGAMENTO PADRONIZADO
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
+        <CircleNotch size={40} weight="bold" className="text-green-500 animate-spin" />
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
+          Sincronizando Protocolo...
+        </p>
+      </div>
+    )
+  }
 
   if (!user) return null
 
   const shortId = user.publicId?.slice(0, 8)
   const accountLevel = user.isVerified ? 'Premium' : 'Basic'
-  const accountLimit = user.isVerified ? 'Ilimitado' : '50.000 Kz / dia'
-
-  const showVerifyLink =
-    !user.isVerified && user.kycStatus !== 'APPROVED'
 
   async function copyText(value: string) {
-    await navigator.clipboard.writeText(value)
-    setCopiedId(true)
-    setTimeout(() => setCopiedId(false), 2000)
+    try {
+      await navigator.clipboard.writeText(value)
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 2500)
+    } catch (err) {
+      console.error("Erro ao copiar", err)
+    }
   }
 
   function handleLogout() {
@@ -67,188 +78,144 @@ export default function Profile() {
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col font-sans selection:bg-green-500/30 overflow-x-hidden">
+      
+      {/* TOAST PREMIUM */}
+      <div className={`fixed top-10 left-1/2 -translate-x-1/2 z-[100] transition-all duration-500 transform ${showToast ? 'translate-y-0 opacity-100' : '-translate-y-20 opacity-0'}`}>
+        <div className="bg-[#1a1a1a]/95 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+          <SealCheck size={24} weight="fill" className="text-blue-500" />
+          <span className="text-sm font-bold tracking-tight">ID copiado com sucesso!</span>
+        </div>
+      </div>
 
-      <div className="flex-1 px-5 pt-4 flex flex-col gap-5">
+      <div className="flex-1 px-5 pt-8 pb-32 flex flex-col gap-6 max-w-xl mx-auto w-full">
 
-        {/* ================= PROFILE CARD (ANTIGO INTEGRADO) ================= */}
-        <div className="
-          rounded-3xl
-          p-5
-          bg-gradient-to-br from-[#1E2329] to-[#14181D]
-          border border-[#2B3139]
-          shadow-[0_12px_30px_rgba(0,0,0,0.6)]
-        ">
-
-          <div className="flex items-center gap-4">
-
-            <div className="flex flex-col items-center">
-
-              <div className="
-                w-14 h-14
-                rounded-full
-                overflow-hidden
-                border border-[#2B3139]
-                transition duration-300
-                hover:scale-105
-                hover:shadow-[0_0_10px_rgba(252,213,53,0.35)]
-              ">
-                <img src="/logo.png" className="w-full h-full object-cover" />
+        {/* PROFILE HEADER */}
+        <div className="flex flex-col gap-5 bg-[#111] p-6 rounded-[2.5rem] border border-white/5 shadow-xl relative overflow-hidden">
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full border-2 border-white/5 overflow-hidden bg-[#0a0a0a] flex items-center justify-center">
+                <img 
+                  src="/logo.png" 
+                  className="w-full h-full object-cover rounded-full" 
+                  alt="Profile" 
+                />
               </div>
-
-              {showVerifyLink && (
-                user.kycStatus === 'PENDING' ? (
-                  <span className="text-[11px] text-[#FCD535] mt-1">
-                    Em análise
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => navigate('/kyc')}
-                    className="text-[11px] text-[#FCD535] mt-1 hover:underline"
-                  >
-                    Verificar
-                  </button>
-                )
-              )}
-
             </div>
 
             <div className="flex-1 min-w-0">
-
-              <div className="flex items-center gap-2">
-                <p className="text-base font-semibold truncate">
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-lg font-black tracking-tight truncate">
                   {user.fullName || user.phone}
-                </p>
-
+                </h1>
                 {user.isVerified && (
-                  <span className="bg-emerald-600 w-4 h-4 rounded-full flex items-center justify-center">
-                    <Check size={10} className="text-white" />
-                  </span>
+                  <SealCheck size={22} weight="fill" className="text-[#0084ff] flex-shrink-0" />
                 )}
               </div>
-
-              <p className="text-[11px] text-[#848E9C] truncate">
-                {user.email}
-              </p>
-
-              <div className="flex items-center gap-2 text-[11px] text-[#848E9C]">
-                <span>ID: {shortId}</span>
-                <button onClick={() => copyText(user.publicId)}>
-                  {copiedId ? <Check size={12} /> : <Copy size={12} />}
+              
+              <div className="flex items-center gap-2 text-gray-500 text-xs mt-0.5">
+                <span className="font-mono tracking-tighter">ID: {shortId}</span>
+                <button onClick={() => copyText(user.publicId)} className="text-green-500 hover:text-green-400 transition-colors p-1 active:scale-90">
+                   <Copy size={16} />
                 </button>
               </div>
-
             </div>
-
+            
+            <button 
+                onClick={() => navigate('/settings')} 
+                className="p-2.5 bg-white/5 rounded-full text-gray-400 hover:text-green-500 hover:bg-green-500/10 transition-all active:scale-90 border border-transparent hover:border-green-500/20 shadow-lg"
+            >
+              <UserCircleGear size={26} weight="duotone" />
+            </button>
           </div>
 
-          {/* SALDO + BOTÕES (ORIGINAL) */}
-          <div className="mt-5 border-t border-[#2B3139] pt-4 flex justify-between items-center gap-4">
-
-            <div>
-              <p className="text-[11px] text-[#848E9C] uppercase tracking-widest">
-                Saldo disponível
-              </p>
-              <p className="text-xl font-semibold mt-1 whitespace-nowrap">
-                {formatCurrencyAOA(user.balance)}
-              </p>
-              <p className="text-[11px] text-[#848E9C] mt-1">
-                {accountLevel} • {accountLimit}
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2 w-[120px]">
-              <SmallAction
-                label="Recarregar"
-                icon={<Wallet size={14} weight="fill" />}
-                onClick={() => navigate('/deposit')}
-              />
-              <SmallAction
-                label="Retirar"
-                icon={<ArrowDown size={14} weight="fill" />}
-                onClick={() => navigate('/withdraw')}
-              />
-            </div>
-
-          </div>
-
+          {!user.isVerified && (
+            <button 
+              onClick={() => navigate('/kyc')}
+              className="flex items-center justify-between w-full bg-orange-500/10 border border-orange-500/20 p-4 rounded-2xl group hover:bg-orange-500/20 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <WarningCircle size={28} weight="fill" className="text-orange-500" />
+                <div className="text-left">
+                  <p className="text-xs font-black text-orange-500 uppercase tracking-wider">Conta não verificada</p>
+                  <p className="text-[10px] font-bold text-gray-400">Verifique agora para remover limites</p>
+                </div>
+              </div>
+              <CaretRight size={18} weight="bold" className="text-orange-500 group-hover:translate-x-1 transition-transform" />
+            </button>
+          )}
         </div>
 
-        {/* ================= SESSÕES PREMIUM ================= */}
-        <div className="flex flex flex-col">
+        {/* WALLET CARD */}
+        <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-[2.5rem] p-8 border border-white/5 shadow-2xl relative">
+          <div className="relative z-10">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-600 mb-1 italic">Capital Total</p>
+            <h2 className="text-4xl font-black tracking-tighter italic mb-8">
+              {formatCurrencyAOA(user.balance)}
+            </h2>
 
-          <p className="text-sm text-[#848E9C] mb-4 tracking-wide">
-            MINHAS SESSÕES
-          </p>
-
-          <div className="grid grid-cols-2 gap-4 mb-2">
-
-            <SessionItem label="Banco" sub="Conta & Dados" icon={<Bank size={18} weight="fill" />} onClick={() => navigate('/bank')} />
-            <SessionItem label="Transações" sub="Histórico geral" icon={<ArrowsLeftRight size={18} weight="fill" />} onClick={() => navigate('/transactions')} />
-            <SessionItem label="Presente" sub="Bônus & Prêmios" icon={<Gift size={18} weight="fill" />} onClick={() => navigate('/gift')} />
-            <SessionItem label="Segurança" sub="Proteção da conta" icon={<ShieldCheck size={18} weight="fill" />} onClick={() => navigate('/security')} />
-            <SessionItem label="Senha" sub="Alterar acesso" icon={<LockKey size={18} weight="fill" />} onClick={() => navigate('/password')} />
-            <SessionItem label="Aplicações" sub="Ferramentas" icon={<DownloadSimple size={18} weight="fill" />} onClick={() => navigate('/applications')} />
-
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Nível de Acesso</span>
+                <span className={`text-xs font-black uppercase tracking-tighter ${user.isVerified ? 'text-blue-500' : 'text-gray-500'}`}>
+                  {accountLevel}
+                </span>
+              </div>
+              
+              <div className="flex gap-3">
+                <button onClick={() => navigate('/deposit')} className="bg-white text-black h-12 w-12 rounded-2xl hover:bg-green-500 hover:text-white transition-all flex items-center justify-center shadow-lg active:scale-90">
+                  <Wallet size={26} weight="fill" />
+                </button>
+                <button onClick={() => navigate('/withdraw')} className="bg-[#1a1a1a] text-white h-12 w-12 rounded-2xl border border-white/10 hover:border-white/20 transition-all flex items-center justify-center active:scale-90">
+                  <ArrowDown size={26} weight="fill" />
+                </button>
+              </div>
+            </div>
           </div>
+        </div>
 
+        {/* SESSÕES GRID */}
+        <div className="space-y-4">
+          <p className="text-[10px] font-black text-gray-700 uppercase tracking-[0.3em] ml-2 font-mono">Operations Console</p>
+          
+          <div className="grid grid-cols-2 gap-3">
+            <SessionCard label="Bancos" sub="Saques & Dados" icon={<Bank size={28} weight="duotone" />} onClick={() => navigate('/bank')} />
+            <SessionCard label="Histórico" sub="Movimentos" icon={<ArrowsLeftRight size={28} weight="duotone" />} onClick={() => navigate('/transactions')} />
+            <SessionCard label="Brindes" sub="Ganhar Bónus" icon={<Gift size={28} weight="duotone" />} onClick={() => navigate('/gift')} />
+            <SessionCard label="Segurança" sub="Proteger Conta" icon={<ShieldCheck size={28} weight="duotone" />} onClick={() => navigate('/security')} />
+            <SessionCard label="Acesso" sub="Alterar Senha" icon={<LockKey size={28} weight="duotone" />} onClick={() => navigate('/password')} />
+            <SessionCard label="Apps" sub="Ecossistema" icon={<DownloadSimple size={28} weight="duotone" />} onClick={() => navigate('/applications')} />
+          </div>
         </div>
 
         {/* LOGOUT */}
-        <div className="flex justify-center pb-3">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-xs text-red-400 hover:text-red-500 transition"
-          >
-            <SignOut size={14} weight="bold" />
-            Sair da conta
-          </button>
-        </div>
+        <button
+          onClick={handleLogout}
+          className="w-full py-4 mt-4 flex items-center justify-center gap-2 text-[10px] font-black tracking-[0.3em] text-red-500 hover:text-white transition-all border border-red-500/10 rounded-[1.8rem] bg-red-500/5 hover:bg-red-500 shadow-xl"
+        >
+          <SignOut size={20} weight="bold" />
+          ENCERRAR SESSÃO NO TERMINAL
+        </button>
 
       </div>
     </div>
   )
 }
 
-/* COMPONENTES */
-
-function SmallAction({ label, icon, onClick }: any) {
+function SessionCard({ label, sub, icon, onClick }: any) {
   return (
     <button
       onClick={onClick}
-      className="w-full bg-[#0F1419] border border-[#2B3139] hover:bg-[#2B3139] px-2 py-1.5 rounded-lg text-[11px] flex items-center justify-center gap-1 transition"
+      className="flex flex-col items-start gap-4 p-6 rounded-[2.2rem] bg-[#111] border border-white/5 hover:border-green-500/20 transition-all group active:scale-[0.96] shadow-xl"
     >
-      {icon}
-      {label}
-    </button>
-  )
-}
-
-function SessionItem({ label, sub, icon, onClick }: any) {
-  return (
-    <button
-      onClick={onClick}
-      className="
-        flex items-center gap-3
-        p-4
-        rounded-2xl
-        bg-gradient-to-br from-[#1E2329] to-[#14181D]
-        border border-[#2B3139]
-        shadow-[0_6px_18px_rgba(0,0,0,0.6)]
-        hover:-translate-y-1
-        transition-all
-      "
-    >
-      <div className="w-10 h-10 rounded-xl bg-[#0B0E11] flex items-center justify-center text-[#FCD535]">
+      <div className="w-14 h-14 rounded-2xl bg-[#0a0a0a] flex items-center justify-center text-green-500 border border-white/5 group-hover:bg-green-500/10 transition-all">
         {icon}
       </div>
 
-      <div className="flex-1 text-left">
-        <p className="text-sm font-medium">{label}</p>
-        <p className="text-[11px] text-[#848E9C]">{sub}</p>
+      <div className="text-left">
+        <p className="text-[14px] font-black text-white tracking-tight italic uppercase">{label}</p>
+        <p className="text-[9px] text-gray-600 font-bold uppercase tracking-tighter opacity-70 leading-none">{sub}</p>
       </div>
-
-      <CaretRight size={16} className="text-[#848E9C]" />
     </button>
   )
 }

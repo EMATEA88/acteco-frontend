@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { PrivateRoute } from './routes/PrivateRoute'
 
 /* ===== PUBLIC ===== */
+import LoginUser from './pages/LoginUser'
 import Login from './pages/Login'
 import Register from './pages/Register'
 
@@ -39,6 +40,8 @@ import DeleteAccount from "./pages/DeleteAccount";
 import Kixikila from "./pages/Kixikila"
 import Tasks from './pages/Tasks'
 import CompanyDashboard from './pages/CompanyDashboard'
+import Terms from './pages/Terms'
+import Settings from './pages/Settings'
 
 /* ===== OTC USER ===== */
 import OtcPage from "./pages/otc/OtcPage"
@@ -74,8 +77,13 @@ function App() {
         {/* =====================
             PUBLIC ROUTES
         ===================== */}
+        <Route path="/login-user" element={<LoginUser />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/about" element={<About />} />
 
         {/* ===== Reset Password ===== */}
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -96,7 +104,6 @@ function App() {
           {/* MAIN */}
           <Route path="home" element={<Home />} />
           <Route path="history" element={<History />} />
-          <Route path="about" element={<About />} />
 
           {/* PROFILE */}
           <Route path="profile" element={<Profile />} />
@@ -109,11 +116,11 @@ function App() {
           <Route path="services/:id" element={<PartnerPlans />} />
           <Route path="kyc" element={<KYCPage />} />
           <Route path="/marketing" element={<Marketing />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/delete-account" element={<DeleteAccount />} />
           <Route path="/kixikila" element={<Kixikila />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/company-dashboard" element={<CompanyDashboard />} />
+          <Route path="/settings" element={<Settings />} />
 
           {/* OTC */}
           <Route path="otc" element={<OtcPage />} />

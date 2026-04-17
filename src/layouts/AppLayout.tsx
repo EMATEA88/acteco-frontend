@@ -28,7 +28,7 @@ export default function AppLayout() {
   /* ================= UI ================= */
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] flex flex-col">
+    <div className="min-h-screen w-full bg-[#0B0E11] text-[#EAECEF] flex flex-col">
 
       {/* ================= TOP BACK BUTTON (CHAT ONLY) ================= */}
       {isChatPage && (

@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  ArrowLeft,
-  Lock,
-  CheckCircle,
-  AlertCircle
-} from 'lucide-react'
+import { 
+  ArrowLeft, 
+  LockKey, 
+  CheckCircle, 
+  WarningCircle, 
+  ShieldCheck, 
+  ShieldPlus,
+  Key
+} from '@phosphor-icons/react'
 import { PasswordService } from '../services/password.service'
 
 export default function Password() {
-
   const navigate = useNavigate()
 
   const [loginCurrent, setLoginCurrent] = useState('')
@@ -21,294 +23,157 @@ export default function Password() {
   const [withdrawOtp, setWithdrawOtp] = useState('')
 
   const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error'
-    text: string
-  } | null>(null)
-
-  function showError(text: string) {
-    setMessage({ type: 'error', text })
-  }
-
-  function showSuccess(text: string) {
-    setMessage({ type: 'success', text })
-  }
+  function showError(text: string) { setMessage({ type: 'error', text }) }
+  function showSuccess(text: string) { setMessage({ type: 'success', text }) }
 
   async function handleLoginPasswordChange() {
     setMessage(null)
-
-    if (!loginCurrent || !loginNew || !loginOtp) {
-      showError('Preencha todos os campos da senha de login e o código OTP')
-      return
-    }
-
-    if (loginNew.length < 6) {
-      showError('A nova senha deve ter pelo menos 6 caracteres')
-      return
-    }
+    if (!loginCurrent || !loginNew || !loginOtp) return showError('Preencha todos os campos e o OTP')
+    if (loginNew.length < 6) return showError('A nova senha deve ter pelo menos 6 caracteres')
 
     try {
       setLoading(true)
-
       await PasswordService.changeLoginPassword({
         currentPassword: loginCurrent,
         newPassword: loginNew,
         otp: loginOtp
       })
-
-      showSuccess('Senha de login alterada com sucesso')
-
-      setLoginCurrent('')
-      setLoginNew('')
-      setLoginOtp('')
-
+      showSuccess('Senha de login atualizada')
+      setLoginCurrent(''); setLoginNew(''); setLoginOtp('')
     } catch (err: any) {
-
-      showError(
-        err?.response?.data?.error ??
-        'Erro ao alterar senha de login'
-      )
-
-    } finally {
-      setLoading(false)
-    }
+      showError(err?.response?.data?.error ?? 'Erro ao alterar senha')
+    } finally { setLoading(false) }
   }
 
   async function handleWithdrawPasswordChange() {
-
     setMessage(null)
-
-    if (!withdrawNew || !withdrawOtp) {
-      showError('Informe a nova senha de levantamento e o código OTP')
-      return
-    }
-
-    if (withdrawNew.length < 4) {
-      showError('A senha deve ter pelo menos 4 dígitos')
-      return
-    }
-
+    if (!withdrawNew || !withdrawOtp) return showError('Informe a nova senha e o OTP')
+    
     try {
-
       setLoading(true)
-
       await PasswordService.changeWithdrawPassword({
-        currentWithdrawPassword:
-          withdrawCurrent || undefined,
+        currentWithdrawPassword: withdrawCurrent || undefined,
         newWithdrawPassword: withdrawNew,
         otp: withdrawOtp
       })
-
-      showSuccess('Senha de levantamento definida com sucesso')
-
-      setWithdrawCurrent('')
-      setWithdrawNew('')
-      setWithdrawOtp('')
-
+      showSuccess('Senha de levantamento definida')
+      setWithdrawCurrent(''); setWithdrawNew(''); setWithdrawOtp('')
     } catch (err: any) {
-
-      showError(
-        err?.response?.data?.error ??
-        'Erro ao definir senha de levantamento'
-      )
-
-    } finally {
-      setLoading(false)
-    }
+      showError(err?.response?.data?.error ?? 'Erro ao definir senha')
+    } finally { setLoading(false) }
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF]">
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-green-500/30">
+      
+      {/* HEADER PREMIUM */}
+      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 px-6 py-5 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate(-1)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-all">
+            <ArrowLeft size={20} weight="bold" />
+          </button>
+          <h1 className="text-xl font-black tracking-tighter uppercase">Credenciais</h1>
+        </div>
+        <ShieldCheck size={24} weight="fill" className="text-green-500" />
+      </header>
 
-      {/* HEADER */}
-      <div className="sticky top-0 z-50 bg-[#1E2329] border-b border-[#2B3139] px-6 py-4 flex items-center gap-4">
-
-        <button
-          onClick={() => navigate(-1)}
-          className="p-2 rounded-lg bg-[#2B3139] hover:bg-[#3A424D] transition"
-        >
-          <ArrowLeft size={18} />
-        </button>
-
-        <h1 className="text-lg font-semibold tracking-wide">
-          Segurança de Senha
-        </h1>
-
-      </div>
-
-      <div className="px-6 py-8 space-y-8 max-w-xl mx-auto pb-28">
-
-        {/* FEEDBACK */}
+      <main className="max-w-xl mx-auto px-6 py-8 pb-32 space-y-8 relative z-10">
+        
+        {/* FEEDBACK TOAST INTERNO */}
         {message && (
-          <div
-            className={`
-              flex items-center gap-3 text-sm rounded-2xl p-4 border
-              ${message.type === 'success'
-                ? 'bg-[#1E2329] text-[#FCD535] border-[#FCD535]/40'
-                : 'bg-[#1E2329] text-[#EF4444] border-[#EF4444]/40'}
-            `}
-          >
-            {message.type === 'success'
-              ? <CheckCircle size={18} />
-              : <AlertCircle size={18} />
-            }
-
+          <div className={`flex items-center gap-3 text-xs font-bold uppercase tracking-wider rounded-2xl p-4 border animate-in fade-in slide-in-from-top-4 ${
+            message.type === 'success' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
+          }`}>
+            {message.type === 'success' ? <CheckCircle size={20} weight="fill" /> : <WarningCircle size={20} weight="fill" />}
             {message.text}
           </div>
         )}
 
-        {/* LOGIN CARD */}
-        <div className="
-          bg-[#1E2329]
-          border border-[#2B3139]
-          rounded-3xl
-          p-8
-          space-y-6
-        ">
-
-          <div className="flex items-center gap-3 text-[#FCD535]">
-            <Lock size={20} />
-            <h2 className="font-semibold">
-              Senha de login
-            </h2>
+        {/* LOGIN PASSWORD CARD */}
+        <section className="bg-[#111] border border-white/5 rounded-[2.5rem] p-8 space-y-8 shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+            <ShieldPlus size={80} weight="thin" />
           </div>
 
-          <Input
-            type="password"
-            placeholder="Senha atual"
-            value={loginCurrent}
-            onChange={setLoginCurrent}
-          />
-
-          <Input
-            type="password"
-            placeholder="Nova senha"
-            value={loginNew}
-            onChange={setLoginNew}
-          />
-
-          <Input
-            type="text"
-            placeholder="Código OTP enviado ao email"
-            value={loginOtp}
-            onChange={setLoginOtp}
-          />
-
-          <PrimaryButton
-            onClick={handleLoginPasswordChange}
-            loading={loading}
-          >
-            Alterar senha de login
-          </PrimaryButton>
-
-        </div>
-
-        {/* WITHDRAW CARD */}
-        <div className="
-          bg-[#1E2329]
-          border border-[#2B3139]
-          rounded-3xl
-          p-8
-          space-y-6
-        ">
-
-          <div className="flex items-center gap-3 text-[#FCD535]">
-            <Lock size={20} />
-            <h2 className="font-semibold">
-              Senha de levantamento
-            </h2>
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center border border-green-500/20 text-green-500">
+              <LockKey size={28} weight="duotone" />
+            </div>
+            <div>
+              <h2 className="text-lg font-black tracking-tight">Senha de Login</h2>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Acesso à Plataforma</p>
+            </div>
           </div>
 
-          <Input
-            type="password"
-            placeholder="Senha atual (se existir)"
-            value={withdrawCurrent}
-            onChange={setWithdrawCurrent}
-          />
+          <div className="space-y-4 relative z-10">
+            <AuthInput type="password" placeholder="Senha Atual" value={loginCurrent} onChange={setLoginCurrent} />
+            <AuthInput type="password" placeholder="Nova Senha" value={loginNew} onChange={setLoginNew} />
+            <AuthInput type="text" placeholder="Código OTP (E-mail)" value={loginOtp} onChange={setLoginOtp} />
+            
+            <PrimaryButton onClick={handleLoginPasswordChange} loading={loading}>
+              Atualizar Senha de Acesso
+            </PrimaryButton>
+          </div>
+        </section>
 
-          <Input
-            type="password"
-            placeholder="Nova senha de levantamento"
-            value={withdrawNew}
-            onChange={setWithdrawNew}
-          />
+        {/* WITHDRAW PASSWORD CARD */}
+        <section className="bg-[#111] border border-white/5 rounded-[2.5rem] p-8 space-y-8 shadow-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Key size={80} weight="thin" />
+          </div>
 
-          <Input
-            type="text"
-            placeholder="Código OTP"
-            value={withdrawOtp}
-            onChange={setWithdrawOtp}
-          />
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-blue-500">
+              <Key size={28} weight="duotone" />
+            </div>
+            <div>
+              <h2 className="text-lg font-black tracking-tight">Senha de Levantamento</h2>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Segurança de Saques</p>
+            </div>
+          </div>
 
-          <PrimaryButton
-            onClick={handleWithdrawPasswordChange}
-            loading={loading}
-          >
-            Definir senha de levantamento
-          </PrimaryButton>
+          <div className="space-y-4 relative z-10">
+            <AuthInput type="password" placeholder="Senha de Saque Atual" value={withdrawCurrent} onChange={setWithdrawCurrent} />
+            <AuthInput type="password" placeholder="Nova Senha de Saque" value={withdrawNew} onChange={setWithdrawNew} />
+            <AuthInput type="text" placeholder="Código OTP" value={withdrawOtp} onChange={setWithdrawOtp} />
+            
+            <PrimaryButton onClick={handleWithdrawPasswordChange} loading={loading}>
+              Definir Senha de Saque
+            </PrimaryButton>
+          </div>
+        </section>
 
-        </div>
-
-      </div>
+      </main>
     </div>
   )
 }
 
-/* ================= COMPONENTES ================= */
+/* ================= COMPONENTES AUXILIARES ================= */
 
-function Input({
-  type,
-  placeholder,
-  value,
-  onChange,
-}: {
-  type: string
-  placeholder: string
-  value: string
-  onChange: (v: string) => void
-}) {
+function AuthInput({ type, placeholder, value, onChange }: any) {
   return (
     <input
       type={type}
       placeholder={placeholder}
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="
-        w-full h-12 rounded-xl
-        bg-[#1E2329]
-        border border-[#2B3139]
-        px-4 text-sm text-[#EAECEF]
-        placeholder-[#848E9C]
-        focus:border-[#FCD535]
-        outline-none
-        transition
-      "
+      className="w-full h-14 rounded-2xl bg-[#0a0a0a] border border-white/5 px-6 text-sm text-white placeholder:text-gray-700 focus:border-green-500/40 focus:ring-4 focus:ring-green-500/5 outline-none transition-all font-medium"
     />
   )
 }
 
-function PrimaryButton({
-  children,
-  onClick,
-  loading,
-}: {
-  children: React.ReactNode
-  onClick: () => void
-  loading: boolean
-}) {
+function PrimaryButton({ children, onClick, loading }: any) {
   return (
     <button
       onClick={onClick}
       disabled={loading}
-      className="
-        w-full h-12 rounded-xl font-semibold
-        bg-[#FCD535] text-black
-        hover:brightness-110 transition
-        active:scale-95 disabled:opacity-50
-      "
+      className="w-full h-14 rounded-2xl font-bold bg-white text-black hover:bg-green-500 hover:text-white transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl mt-2"
     >
-      {loading ? 'Processando…' : children}
+      {loading ? (
+        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+      ) : children}
     </button>
   )
 }
