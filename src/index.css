@@ -2,34 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== RESET GLOBAL (CORRIGIDO) ===== */
+/* ===== RESET GLOBAL (FIXED PARA MOBILE) ===== */
 
-html,
+html {
+  /* Garante que o scroll seja suave e preencha a tela no iOS */
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  height: -webkit-fill-available;
+}
+
 body {
   width: 100%;
-  min-height: 100%;
   margin: 0;
   padding: 0;
+  
+  /* Permite o scroll vertical e bloqueia apenas o horizontal indesejado */
   overflow-x: hidden;
-  overflow-y: auto;
-  background-color: #0B0E11;
-  color-scheme: dark;
+  overflow-y: auto; 
+  
+  background-color: #0a0a0a;
   color: #EAECEF;
+  font-family: 'Inter', sans-serif; /* Ou a sua fonte padrão */
+  
+  /* Ajustes de renderização */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Importante para Mobile: Remove o travamento do scroll */
+  touch-action: auto; 
   -webkit-tap-highlight-color: transparent;
 }
 
 #root {
+  /* min-height dinâmico para evitar bugs com a barra de endereços do browser */
   min-height: 100vh;
+  min-height: 100dvh; 
+  display: flex;
+  flex-direction: column;
 }
 
-/* ===== MOBILE BEHAVIOR ===== */
+/* ===== UTILITÁRIOS DE SCROLL ===== */
 
-body {
-  overscroll-behavior: none;
-  touch-action: manipulation;
+/* Classe para esconder a barra de scroll mas manter a funcionalidade */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-/* ===== FLOAT ANIMATION ===== */
+/* ===== ANIMAÇÕES ===== */
 
 @keyframes floatSoft {
   0%   { transform: translateY(0px); }
@@ -41,46 +64,48 @@ body {
   animation: floatSoft 3.5s ease-in-out infinite;
 }
 
-/* ===== BINANCE COMPONENT SYSTEM ===== */
+@keyframes floatBell {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: floatBell 2.5s ease-in-out infinite;
+}
+
+/* ===== SISTEMA DE COMPONENTES EMATEA/BINANCE ===== */
 
 .binance-card {
-  @apply bg-[#1E2329] border border-[#2B3139] rounded-xl;
+  @apply bg-[#1E2329] border border-[#2B3139] rounded-xl shadow-lg;
 }
 
 .binance-input {
-  @apply w-full h-12 px-3 rounded-lg
+  @apply w-full h-12 px-4 rounded-lg
   bg-[#1E2329]
   border border-[#2B3139]
   text-[#EAECEF]
   placeholder-[#848E9C]
   focus:border-[#FCD535]
-  outline-none transition;
+  outline-none transition-all;
 }
 
 .binance-button-primary {
-  @apply bg-[#FCD535] text-black font-medium
-  hover:brightness-110 transition rounded-lg;
+  @apply bg-[#FCD535] text-black font-bold
+  hover:brightness-110 active:scale-95 transition-all rounded-lg;
 }
 
 .binance-button-dark {
   @apply bg-[#1E2329] border border-[#2B3139]
-  hover:bg-[#2B3139] transition rounded-lg;
+  hover:bg-[#2B3139] active:scale-95 transition-all rounded-lg;
 }
 
-/* ===== FLOAT BELL ===== */
-
-@keyframes floatBell {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
+/* Ajuste para inputs não ficarem cinzas no iOS */
+input, textarea, select {
+  font-size: 16px !important; /* Evita o zoom automático do iPhone ao focar */
 }
 
-.animate-float {
-  animation: floatBell 2.5s ease-in-out infinite;
+/* ===== SAFE AREA PARA IPHONES MODERNOS ===== */
+.safe-pb {
+  padding-bottom: env(safe-area-inset-bottom);
 }
