@@ -1,4 +1,3 @@
-import React from "react"
 import { CheckCircle, Info, ShieldCheck, Warning } from "@phosphor-icons/react"
 
 export default function KixikilaTermsModal({ onAccept }: { onAccept: () => void }) {
