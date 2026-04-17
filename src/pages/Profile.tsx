@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { UserService } from '../services/user.service'
 import { formatCurrencyAOA } from "../utils/formatCurrency"
 import {
-  Wallet,
   ArrowDown,
   Bank,
   ArrowsLeftRight,
