@@ -21,7 +21,9 @@ export default function Withdraw() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info', text: string } | null>(null)
 
-  const FEE_PERCENT = 0.02
+  // ✅ ATUALIZADO
+  const FEE_PERCENT = 0.10
+  const MIN_WITHDRAW = 10
 
   useEffect(() => {
     UserService.me()
@@ -30,7 +32,9 @@ export default function Withdraw() {
   }, [])
 
   const numericAmount = Number(amount)
-  const fee = numericAmount * FEE_PERCENT
+
+  // opcional profissional (sem quebrar nada)
+  const fee = Math.floor(numericAmount * FEE_PERCENT)
   const netAmount = numericAmount - fee
 
   function handleError(error: any) {
@@ -46,10 +50,18 @@ export default function Withdraw() {
 
   async function handleWithdraw() {
     setMessage(null)
+
     if (!numericAmount || numericAmount <= 0) {
       setMessage({ type: 'error', text: 'Introduza um montante válido' })
       return
     }
+
+    // ✅ NOVO: validação mínima
+    if (numericAmount < MIN_WITHDRAW) {
+      setMessage({ type: 'error', text: 'Valor mínimo de levantamento é 10 Kz' })
+      return
+    }
+
     if (numericAmount > balance) {
       setMessage({ type: 'error', text: 'Saldo insuficiente para esta operação' })
       return
@@ -128,7 +140,7 @@ export default function Withdraw() {
           {numericAmount > 0 && (
             <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 space-y-3 animate-in fade-in zoom-in duration-300">
               <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
-                <span className="text-gray-500">Taxa de Operação (2%)</span>
+                <span className="text-gray-500">Taxa de Operação (10%)</span>
                 <span className="text-red-500/80">-{fee.toLocaleString()} Kz</span>
               </div>
               <div className="h-px bg-white/5 w-full"></div>
@@ -171,7 +183,7 @@ export default function Withdraw() {
         </div>
       </main>
 
-      {/* FOOTER DISCRETO */}
+      {/* FOOTER */}
       <footer className="mt-12 text-center opacity-20">
         <p className="text-[9px] font-bold uppercase tracking-[0.4em]">Secure Funds Protocol • EMATEA 2026</p>
       </footer>

@@ -4,7 +4,7 @@ export interface WithdrawalResponse {
   id: number
   amount: number
   fee: number
-  status: string
+  status: 'PENDING' | 'APPROVED' | 'SUCCESS' | 'REJECTED'
   createdAt: string
 }
 
@@ -17,19 +17,30 @@ export const WithdrawalService = {
 
   async create(amount: number): Promise<WithdrawalResponse> {
 
-  try {
+    try {
 
-    const response = await api.post('/withdrawals', {
-      amount
-    })
+      const response = await api.post('/withdraw', {
+        amount
+      })
 
-    return response.data
+      return response.data
 
-  } catch (error: any) {
+    } catch (err: unknown) {
 
-    throw error.response?.data
+      const error = err as {
+        response?: {
+          data?: WithdrawalError
+        }
+      }
 
+      // 🔒 fallback seguro
+      if (error.response?.data) {
+        throw error.response.data
+      }
+
+      throw {
+        message: 'Erro ao processar levantamento'
+      } as WithdrawalError
+    }
   }
-}
-
 }
