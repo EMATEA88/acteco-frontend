@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
-import { 
-  Bank, 
-  ArrowLeft, 
-  CheckCircle, 
-  ShieldCheck 
-} from '@phosphor-icons/react' 
+import {
+  ArrowLeft,
+  CheckCircle,
+  ShieldCheck
+} from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 type BankForm = {
@@ -26,156 +25,165 @@ export default function BankPage() {
     : { name: '', bank: '', iban: '' }
 
   const [form, setForm] = useState<BankForm>(initial)
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     let mounted = true
-    api
-      .get('/user-bank')
+
+    api.get('/user-bank')
       .then(res => {
         if (!mounted || !res.data) return
         setForm(res.data)
         localStorage.setItem(CACHE_KEY, JSON.stringify(res.data))
       })
       .catch(() => {})
+      .finally(() => setLoading(false))
 
-    return () => {
-      mounted = false
-    }
+    return () => { mounted = false }
   }, [])
 
   async function save() {
     if (saving) return
+
     try {
       setSaving(true)
       await api.post('/user-bank', form)
+
       localStorage.setItem(CACHE_KEY, JSON.stringify(form))
-      
+
       toast.success('Dados bancários atualizados')
       setTimeout(() => navigate('/profile'), 800)
     } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Erro ao guardar dados')
+      toast.error(err?.response?.data?.error || 'Erro ao guardar')
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white px-6 pt-12 pb-28 font-sans selection:bg-green-500/30">
-      
-      {/* BOTÃO VOLTAR */}
-      <button 
-        onClick={() => navigate(-1)}
-        className="mb-8 flex items-center gap-2 text-gray-500 hover:text-white transition-colors group"
-      >
-        <ArrowLeft size={20} weight="bold" className="group-hover:-translate-x-1 transition-transform" />
-        <span className="text-xs font-bold uppercase tracking-widest">Voltar</span>
-      </button>
+    <div className="min-h-screen bg-[#0B0E11] text-white">
 
-      {/* HEADER INSTITUCIONAL */}
-      <div className="flex items-center gap-4 mb-10">
-        <div className="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center border border-green-500/20 shadow-[0_0_20px_rgba(34,197,94,0.1)]">
-          <Bank size={28} weight="duotone" className="text-green-500" />
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 bg-[#0B0E11]/80 backdrop-blur border-b border-white/5">
+        <div className="max-w-xl mx-auto flex items-center gap-4 px-5 py-4">
+
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 bg-white/5 rounded-full"
+          >
+            <ArrowLeft size={18} />
+          </button>
+
+          <h1 className="text-base font-bold">Conta Bancária</h1>
         </div>
-        <div>
-          <h1 className="text-2xl font-black tracking-tight uppercase italic">Conta Bancária</h1>
-          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em]">Configuração de Saque</p>
-        </div>
-      </div>
+      </header>
 
-      {/* CARD DE FORMULÁRIO */}
-      <div className="bg-[#111] border border-white/5 rounded-[2.5rem] p-8 space-y-8 shadow-2xl relative overflow-hidden">
-        
-        {/* INFO BOX SUTIL */}
-        <div className="bg-green-500/5 border border-green-500/10 p-5 rounded-2xl flex items-start gap-4">
-          <ShieldCheck size={28} weight="duotone" className="text-green-500 flex-shrink-0" />
-          <p className="text-[11px] text-gray-400 leading-relaxed font-medium">
-            Certifique-se de que o <span className="text-white font-bold">IBAN</span> e o <span className="text-white font-bold">Titular</span> coincidem com o seu documento de identidade para evitar rejeições.
-          </p>
-        </div>
+      <main className="max-w-xl mx-auto px-5 py-6 pb-28">
 
-        <div className="space-y-6">
-          <BankInput
-            label="Titular da Conta"
-            placeholder="Nome completo do titular"
-            value={form.name}
-            onChange={v => setForm({ ...form, name: v })}
-          />
+        {loading ? (
+          <div className="space-y-4 animate-pulse">
 
-          <BankInput
-            label="Instituição Bancária"
-            placeholder="Ex: BAI, BFA, BIC..."
-            value={form.bank}
-            onChange={v => setForm({ ...form, bank: v })}
-          />
+            <div className="bg-[#111318] rounded-2xl p-4 h-16" />
 
-          <BankInput
-            label="Número IBAN (21 Dígitos)"
-            placeholder="AO06.0000.0000..."
-            value={form.iban}
-            onChange={v => setForm({ ...form, iban: v })}
-          />
-        </div>
+            <div className="bg-[#111318] rounded-2xl p-4 space-y-3">
+              <div className="h-11 bg-white/5 rounded-xl" />
+              <div className="h-11 bg-white/5 rounded-xl" />
+              <div className="h-11 bg-white/5 rounded-xl" />
+              <div className="h-12 bg-white/5 rounded-xl" />
+            </div>
 
-        <button
-          onClick={save}
-          disabled={saving}
-          className="w-full h-16 rounded-2xl font-black text-sm uppercase tracking-widest bg-white text-black hover:bg-green-500 hover:text-white transition-all active:scale-[0.98] disabled:opacity-20 flex items-center justify-center gap-3 shadow-xl"
-        >
-          {saving ? (
-             <div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-          ) : (
-            <>
-              Guardar Protocolo
-              <CheckCircle size={22} weight="fill" />
-            </>
-          )}
-        </button>
-      </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
 
-      {/* FOOTER */}
-      <div className="mt-12 text-center opacity-20">
-        <p className="text-[9px] font-bold uppercase tracking-[0.5em]">Segurança Certificada • EMATEA 2026</p>
-      </div>
+            {/* INFO */}
+            <div className="bg-[#111318] border border-white/5 rounded-2xl p-4 flex gap-3">
+              <ShieldCheck size={18} className="text-emerald-500 mt-0.5" />
+
+              <p className="text-[11px] text-gray-400">
+                O IBAN deve coincidir com o titular para evitar rejeições.
+              </p>
+            </div>
+
+            {/* FORM */}
+            <div className="bg-[#111318] border border-white/5 rounded-2xl p-4 space-y-4">
+
+              <BankInput
+                label="Titular"
+                value={form.name}
+                onChange={v => setForm({ ...form, name: v })}
+              />
+
+              <BankInput
+                label="Banco"
+                value={form.bank}
+                onChange={v => setForm({ ...form, bank: v })}
+              />
+
+              <BankInput
+                label="IBAN"
+                value={form.iban}
+                onChange={v => setForm({ ...form, iban: v })}
+              />
+
+            </div>
+
+            {/* BUTTON */}
+            <button
+              onClick={save}
+              disabled={saving}
+              className={`w-full h-12 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2
+                ${saving
+                  ? 'bg-white/10 text-gray-500'
+                  : 'bg-white text-black hover:bg-emerald-500 hover:text-white'
+                }
+              `}
+            >
+              {saving ? 'A guardar...' : (
+                <>
+                  Guardar
+                  <CheckCircle size={16} />
+                </>
+              )}
+            </button>
+
+          </div>
+        )}
+
+      </main>
     </div>
   )
 }
 
-/* ============================= */
-/* INPUT COMPONENT PREMIUM */
-/* ============================= */
+/* INPUT PADRÃO */
 
 function BankInput({
   label,
   value,
-  placeholder,
   onChange,
 }: {
   label: string
   value: string
-  placeholder: string
   onChange: (v: string) => void
 }) {
   return (
-    <div className="space-y-2">
-      <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600 ml-1">
+    <div className="space-y-1">
+
+      <label className="text-[10px] text-gray-500 uppercase">
         {label}
       </label>
 
       <input
         value={value}
-        placeholder={placeholder}
         onChange={e => onChange(e.target.value)}
         className="
-          w-full h-14 rounded-2xl
-          bg-[#0a0a0a]
+          w-full h-11 rounded-xl
+          bg-[#0B0E11]
           border border-white/5
-          px-6 text-sm font-medium text-white
-          placeholder:text-gray-800
-          focus:border-green-500/40
-          focus:ring-4 focus:ring-green-500/5
+          px-4 text-sm
           outline-none
-          transition-all
+          focus:border-emerald-500/30
         "
       />
     </div>

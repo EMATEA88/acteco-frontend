@@ -1,106 +1,135 @@
-import { 
-  ArrowLeft, 
-  ShieldCheck, 
-  Lock, 
-  WifiHigh,      // Alterado de Wifi para WifiHigh
-  DeviceMobile,  // Alterado de Smartphone para DeviceMobile
-  WarningOctagon, 
-  ShieldPlus, 
-  CheckCircle 
+import {
+  ArrowLeft,
+  ShieldCheck,
+  Lock,
+  WifiHigh,
+  DeviceMobile,
+  WarningOctagon,
+  ShieldPlus,
+  CheckCircle
 } from '@phosphor-icons/react'
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 
 export default function Security() {
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(true)
+
+  // simulação leve (mantém padrão do app)
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 600)
+    return () => clearTimeout(t)
+  }, [])
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-green-500/30">
-      
-      {/* DECORAÇÃO DE FUNDO */}
-      <div className="fixed top-0 right-0 w-80 h-80 bg-green-600/5 rounded-full filter blur-[120px] pointer-events-none"></div>
+    <div className="min-h-screen bg-[#0B0E11] text-white font-sans">
 
-      {/* HEADER PREMIUM */}
-      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-xl mx-auto flex items-center justify-between px-6 py-5">
-          <button 
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 bg-[#0B0E11]/80 backdrop-blur border-b border-white/5">
+        <div className="max-w-xl mx-auto flex items-center justify-between px-5 py-4">
+          
+          <button
             onClick={() => navigate(-1)}
-            className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors"
+            className="p-2 bg-white/5 rounded-full"
           >
-            <ArrowLeft size={20} weight="bold" />
+            <ArrowLeft size={18} />
           </button>
-          <h1 className="text-xl font-black tracking-tighter uppercase">Segurança</h1>
-          <ShieldPlus size={24} weight="fill" className="text-green-500" />
+
+          <h1 className="text-base font-bold">Segurança</h1>
+
+          <ShieldPlus size={18} className="text-emerald-500" />
         </div>
       </header>
 
-      <main className="max-w-xl mx-auto px-6 py-10 pb-32 space-y-8 relative z-10">
-        
-        {/* STATUS CENTRAL */}
-        <div className="flex flex-col items-center text-center mb-10">
-          <div className="w-20 h-20 rounded-[2rem] bg-green-500/10 flex items-center justify-center border border-green-500/20 mb-4 shadow-[0_0_40px_rgba(34,197,94,0.1)]">
-            <ShieldCheck size={40} weight="duotone" className="text-green-500" />
-          </div>
-          <h2 className="text-2xl font-black tracking-tight italic">Proteção Ativa</h2>
-          <p className="text-gray-500 text-sm font-medium text-center uppercase tracking-widest text-[10px]">
-            Protocolos de segurança EMATEA em vigor.
-          </p>
-        </div>
+      <main className="max-w-xl mx-auto px-5 py-6 pb-28">
 
-        {/* LISTA DE DIRETRIZES */}
-        <div className="bg-[#111] border border-white/5 rounded-[2.5rem] p-8 space-y-10 shadow-2xl">
-          <div className="flex items-center gap-3 pb-6 border-b border-white/5">
-            <CheckCircle size={24} weight="fill" className="text-green-500" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Manual de Boas Práticas</span>
-          </div>
+        {loading ? (
+          <div className="space-y-4 animate-pulse">
 
-          <div className="space-y-10">
-            <SecurityItem 
-              icon={<Lock size={28} weight="duotone" />} 
-              title="Sigilo Absoluto"
-              text="Nunca partilhe a sua palavra-passe de acesso ou códigos OTP com terceiros, inclusive supostos funcionários." 
-            />
-            <SecurityItem 
-              icon={<ShieldPlus size={28} weight="duotone" />} 
-              title="Operações Blindadas"
-              text="Utilize uma senha exclusiva e complexa para levantamentos, diferente da senha de entrada na conta." 
-            />
-            <SecurityItem 
-              icon={<DeviceMobile size={28} weight="duotone" />} // Nome corrigido
-              title="Acesso Biométrico"
-              text="Mantenha o bloqueio de ecrã e a autenticação biométrica (FaceID/Digital) ativos no seu dispositivo." 
-            />
-            <SecurityItem 
-              icon={<WifiHigh size={28} weight="duotone" />} // Nome corrigido
-              title="Redes Confiáveis"
-              text="Evite aceder à sua conta financeira através de redes Wi-Fi públicas, abertas ou VPNs desconhecidas." 
-            />
-            <SecurityItem 
-              icon={<WarningOctagon size={28} weight="duotone" />} 
-              title="Alerta de Phishing"
-              text="A EMATEA nunca solicita dados sensíveis ou códigos de confirmação via SMS, chamadas ou redes sociais." 
-            />
-          </div>
-        </div>
+            {/* STATUS */}
+            <div className="bg-[#111318] rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/5 rounded-xl" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-24 bg-white/5 rounded" />
+                <div className="h-2 w-32 bg-white/5 rounded" />
+              </div>
+            </div>
 
-        {/* ALERTA DE EMERGÊNCIA */}
-        <div className="bg-red-500/5 border border-red-500/10 rounded-[2rem] p-6 flex items-start gap-5">
-          <WarningOctagon size={32} weight="fill" className="text-red-500 flex-shrink-0" />
-          <div className="space-y-1">
-            <h4 className="text-red-500 font-bold text-sm uppercase tracking-wider italic">Atividade Suspeita?</h4>
-            <p className="text-gray-400 text-xs leading-relaxed font-medium">
-              Se detectar qualquer movimento estranho, altere as suas credenciais imediatamente e bloqueie a conta contactando o suporte.
-            </p>
+            {/* LISTA */}
+            <div className="bg-[#111318] rounded-2xl p-4 space-y-4">
+              {[1,2,3,4,5].map(i => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/5 rounded-xl" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 w-24 bg-white/5 rounded" />
+                    <div className="h-2 w-40 bg-white/5 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ALERT */}
+            <div className="bg-white/5 rounded-2xl p-4 h-14" />
+
           </div>
-        </div>
+        ) : (
+          <div className="space-y-6">
+
+            {/* STATUS */}
+            <div className="bg-[#111318] border border-white/5 rounded-2xl p-4 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <ShieldCheck size={20} className="text-emerald-500" />
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold">Proteção ativa</p>
+                <p className="text-[11px] text-gray-500">
+                  Sistema seguro em funcionamento
+                </p>
+              </div>
+            </div>
+
+            {/* BOAS PRÁTICAS */}
+            <div className="bg-[#111318] border border-white/5 rounded-2xl p-4 space-y-4">
+
+              <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+                <CheckCircle size={14} className="text-emerald-500" />
+                <span className="text-[10px] text-gray-500 uppercase">
+                  Boas práticas
+                </span>
+              </div>
+
+              <SecurityItem icon={<Lock size={16} />} title="Sigilo" text="Nunca partilhe senha ou códigos." />
+              <SecurityItem icon={<ShieldPlus size={16} />} title="Senha forte" text="Use senha diferente para operações." />
+              <SecurityItem icon={<DeviceMobile size={16} />} title="Dispositivo" text="Use bloqueio e biometria." />
+              <SecurityItem icon={<WifiHigh size={16} />} title="Rede segura" text="Evite Wi-Fi público." />
+              <SecurityItem icon={<WarningOctagon size={16} />} title="Phishing" text="Nunca forneça dados fora da app." />
+
+            </div>
+
+            {/* ALERTA */}
+            <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-4 flex gap-3">
+              <WarningOctagon size={18} className="text-red-500 mt-0.5" />
+
+              <div>
+                <p className="text-xs font-semibold text-red-500">
+                  Atividade suspeita
+                </p>
+                <p className="text-[11px] text-gray-400">
+                  Altere a senha imediatamente e contacte o suporte.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        )}
 
       </main>
-
-      <footer className="fixed bottom-10 left-0 w-full text-center opacity-20 pointer-events-none">
-        <p className="text-[9px] font-bold uppercase tracking-[0.5em]">End-to-End Encryption Protocol v4.0</p>
-      </footer>
     </div>
   )
 }
+
+/* ITEM */
 
 function SecurityItem({
   icon,
@@ -112,16 +141,17 @@ function SecurityItem({
   text: string
 }) {
   return (
-    <div className="flex items-start gap-5 group">
-      <div className="w-14 h-14 rounded-2xl bg-[#0a0a0a] border border-white/5 text-green-500 flex items-center justify-center shrink-0 group-hover:border-green-500/30 transition-all shadow-lg">
+    <div className="flex items-start gap-3">
+
+      <div className="w-10 h-10 rounded-xl bg-[#0B0E11] border border-white/5 flex items-center justify-center text-emerald-500">
         {icon}
       </div>
-      <div className="space-y-1">
-        <h3 className="text-sm font-bold text-white tracking-tight">{title}</h3>
-        <p className="text-xs text-gray-400 leading-relaxed font-medium">
-          {text}
-        </p>
+
+      <div>
+        <p className="text-xs font-semibold">{title}</p>
+        <p className="text-[11px] text-gray-500">{text}</p>
       </div>
+
     </div>
   )
 }

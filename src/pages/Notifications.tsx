@@ -88,7 +88,7 @@ export default function Notifications() {
         setProcessingId(null)
       }
     }
-    if (notification.orderId) navigate(`/otc/${notification.orderId}`)
+    if (notification.orderId) navigate(`/otc/order/${notification.orderId}`)
   }
 
   async function markAllAsRead() {
@@ -118,7 +118,7 @@ export default function Notifications() {
         <div
           onClick={() => {
             setToast(null)
-            if (toast.orderId) navigate(`/otc/${toast.orderId}`)
+            if (toast.orderId) navigate(`/otc/order/${toast.orderId}`)
           }}
           className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] bg-[#111]/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl p-5 w-[90%] max-w-sm cursor-pointer animate-in slide-in-from-top-10"
         >

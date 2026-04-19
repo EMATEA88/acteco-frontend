@@ -10,3 +10,4 @@ export type TransactionType =
   | 'INVESTMENT_DEBIT'
   | 'INVESTMENT_CREDIT'
   | 'INVESTMENT_CANCEL_REFUND'
+  | 'TASK_REWARD' // 🔥 NOVO

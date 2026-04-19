@@ -1,13 +1,10 @@
 import { useEffect, useState, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { otcService } from "../../services/otc"
-import { 
-  Clock, 
+import {  
   ChatTeardropText, 
-  ArrowLeft, 
-  CheckCircle, 
+  ArrowLeft,  
   ShieldCheck,
-  Receipt,
   Coin,
 } from "@phosphor-icons/react"
 import Toast from "../../components/ui/Toast"
@@ -46,12 +43,11 @@ export default function OtcOrder() {
   }
 
   const load = useCallback(async () => {
-    if (!id || isNaN(id)) return
     try {
       const res = await otcService.getOrder(id)
       setOrder(res)
     } catch {
-      showToast("Erro ao sincronizar dados da ordem")
+      showToast("Erro ao carregar ordem")
     } finally {
       setLoading(false)
     }
@@ -72,11 +68,13 @@ export default function OtcOrder() {
     return () => clearInterval(timer)
   }, [order?.expiresAt])
 
-  if (loading) return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  )
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0B0E11] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"/>
+      </div>
+    )
+  }
 
   if (!order) return null
 
@@ -91,128 +89,116 @@ export default function OtcOrder() {
       await fn()
       showToast(msg, "success")
       await load()
-    } catch (err: any) {
-      showToast(err?.response?.data?.error || "Operação recusada pelo sistema", "error")
+    } catch {
+      showToast("Operação falhou")
     } finally {
       setProcessing(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-green-500/30">
-      
-      {/* HEADER FIXO PREMIUM */}
-      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 px-6 py-5 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-all">
-            <ArrowLeft size={20} weight="bold" />
+    <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 pb-32 space-y-6">
+
+      {/* HEADER */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="p-2 rounded-xl bg-white/5 border border-white/10"
+          >
+            <ArrowLeft size={18} />
           </button>
+
           <div>
-            <h1 className="text-xl font-black tracking-tighter uppercase italic">Ordem #{order.id}</h1>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{order.asset.symbol} Protocol</p>
+            <h1 className="text-base font-semibold">Ordem #{order.id}</h1>
+            <p className="text-[10px] text-gray-500">{order.asset.symbol}</p>
           </div>
         </div>
 
         {!isClosed && (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate(`/otc/orders/${order.id}`)}
-              className="relative p-3 bg-white/5 rounded-2xl hover:bg-blue-500/10 hover:text-blue-400 transition-all"
-            >
-              <ChatTeardropText size={24} weight="duotone" />
-              {order.unreadMessages && order.unreadMessages > 0 && (
-                <span className="absolute -top-1 -right-1 bg-green-500 text-black text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-[#0a0a0a]">
-                  {order.unreadMessages}
-                </span>
-              )}
-            </button>
-          </div>
+          <button
+            onClick={() => navigate(`/otc/orders/${order.id}`)}
+            className="p-2 rounded-xl bg-white/5 border border-white/10"
+          >
+            <ChatTeardropText size={18} />
+          </button>
         )}
-      </header>
+      </div>
 
-      <main className="max-w-xl mx-auto px-6 py-8 pb-32 space-y-8">
-        
-        {/* CRONÔMETRO DE SEGURANÇA */}
-        {!isClosed && order.status === "PENDING" && (
-          <div className="bg-[#111] border border-orange-500/20 rounded-[2.5rem] p-8 text-center shadow-[0_0_40px_rgba(249,115,22,0.05)] relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
-                <div className="h-full bg-orange-500 transition-all duration-1000" style={{ width: `${(timeLeft/900)*100}%` }}></div>
-            </div>
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-3">Expiração do Contrato</p>
-            <div className="flex justify-center items-center gap-3 text-orange-500 font-black text-4xl tracking-tighter italic">
-              <Clock size={32} weight="duotone" className="animate-pulse" />
-              {minutes}:{seconds.toString().padStart(2, "0")}
-            </div>
-          </div>
-        )}
-
-        {/* DETALHES DA TRANSAÇÃO (ESTILO RECIBO) */}
-        <div className="bg-[#111] border border-white/5 rounded-[2.5rem] p-8 space-y-8 shadow-2xl relative">
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-            <Receipt size={80} weight="thin" />
-          </div>
-
-          <div className="flex items-center gap-4 relative z-10 border-b border-white/5 pb-6">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${order.type === 'BUY' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-              <Coin size={28} weight="duotone" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Tipo de Operação</p>
-              <p className={`text-lg font-black tracking-tighter italic ${order.type === 'BUY' ? 'text-green-500' : 'text-red-500'}`}>
-                {order.type === 'BUY' ? 'COMPRA DIRETA' : 'VENDA DE ATIVO'}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-6 relative z-10">
-            <Detail label="Quantidade" value={`${order.quantity} ${order.asset.symbol}`} />
-            <Detail label="Preço Unitário" value={`${order.priceUsed.toLocaleString()} AOA`} />
-            <Detail label="Volume Total" value={`${order.totalAoa.toLocaleString()} AOA`} highlight />
-            <Detail label="Status da Ordem" value={order.status} isStatus />
-          </div>
-        </div>
-
-        {/* AÇÕES DE RODAPÉ */}
-        {!isClosed && order.status === "PENDING" && (
-          <div className="grid grid-cols-1 gap-4">
-            <button
-              onClick={() => safeAction(() => otcService.markAsPaid(order.id), "Pagamento registado. Aguarde confirmação.")}
-              disabled={processing}
-              className="w-full h-16 rounded-2xl bg-white text-black font-black text-sm uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all active:scale-[0.98] disabled:opacity-20 flex items-center justify-center gap-3 shadow-xl"
-            >
-              Confirmar Pagamento
-              <CheckCircle size={24} weight="fill" />
-            </button>
-
-            <button
-              onClick={() => safeAction(() => otcService.cancelOrder(order.id), "Ordem cancelada permanentemente")}
-              disabled={processing}
-              className="w-full h-14 rounded-2xl bg-[#1a1a1a] text-gray-500 font-bold text-[10px] uppercase tracking-widest hover:bg-red-500/10 hover:text-red-500 transition-all border border-white/5"
-            >
-              Cancelar Transação
-            </button>
-          </div>
-        )}
-
-        {/* INFO DE SEGURANÇA */}
-        <div className="bg-[#111]/50 border border-white/5 rounded-3xl p-6 flex items-start gap-4">
-          <ShieldCheck size={28} weight="duotone" className="text-gray-600 flex-shrink-0" />
-          <p className="text-[10px] text-gray-500 leading-relaxed font-medium">
-            O sistema de custódia EMATEA protege ambos os lados. Não marque como "Pago" sem ter realizado a transferência real para evitar sanções na conta.
+      {/* TIMER */}
+      {!isClosed && order.status === "PENDING" && (
+        <div className="glass-card p-4 rounded-2xl text-center">
+          <p className="text-xs text-gray-500 mb-1">Expira em</p>
+          <p className="text-lg font-bold text-amber-500">
+            {minutes}:{seconds.toString().padStart(2, "0")}
           </p>
         </div>
-      </main>
+      )}
+
+      {/* DETALHES */}
+      <div className="glass-card p-5 rounded-2xl space-y-4">
+
+        <div className="flex items-center gap-3 pb-3 border-b border-white/5">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+            order.type === 'BUY' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+          }`}>
+            <Coin size={18}/>
+          </div>
+
+          <p className="text-sm font-semibold">
+            {order.type === 'BUY' ? 'Compra' : 'Venda'}
+          </p>
+        </div>
+
+        <Detail label="Quantidade" value={`${order.quantity} ${order.asset.symbol}`} />
+        <Detail label="Preço" value={`${order.priceUsed.toLocaleString()} AOA`} />
+        <Detail label="Total" value={`${order.totalAoa.toLocaleString()} AOA`} highlight />
+        <Detail label="Status" value={order.status} />
+
+      </div>
+
+      {/* AÇÕES */}
+      {!isClosed && order.status === "PENDING" && (
+        <div className="space-y-3">
+
+          <button
+            onClick={() => safeAction(() => otcService.markAsPaid(order.id), "Pagamento confirmado")}
+            disabled={processing}
+            className="w-full h-12 bg-white text-black rounded-xl font-semibold"
+          >
+            Confirmar pagamento
+          </button>
+
+          <button
+            onClick={() => safeAction(() => otcService.cancelOrder(order.id), "Cancelado")}
+            disabled={processing}
+            className="w-full h-11 bg-[#1a1a1a] border border-white/10 rounded-xl text-xs"
+          >
+            Cancelar
+          </button>
+
+        </div>
+      )}
+
+      {/* INFO */}
+      <div className="glass-card p-4 rounded-2xl flex gap-3">
+        <ShieldCheck size={18} className="text-gray-500"/>
+        <p className="text-xs text-gray-500">
+          Não marque como pago sem transferência real.
+        </p>
+      </div>
 
       <Toast message={toastMessage} visible={toastVisible} type={toastType} />
+
     </div>
   )
 }
 
-function Detail({ label, value, highlight, isStatus }: any) {
+function Detail({ label, value, highlight }: any) {
   return (
-    <div className="flex justify-between items-end pb-2 border-b border-white/5">
-      <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{label}</span>
-      <span className={`font-black tracking-tight ${highlight ? 'text-xl text-green-500 italic' : isStatus ? 'text-xs text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full' : 'text-sm text-white'}`}>
+    <div className="flex justify-between text-sm">
+      <span className="text-gray-500">{label}</span>
+      <span className={highlight ? "text-emerald-500 font-semibold" : "font-medium"}>
         {value}
       </span>
     </div>

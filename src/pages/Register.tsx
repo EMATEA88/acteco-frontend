@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Eye, EyeSlash, UserPlus, PaperPlaneTilt, ShieldCheck } from '@phosphor-icons/react'
+import { Eye, EyeSlash, UserPlus } from '@phosphor-icons/react'
 import { requestRegisterOtp, registerUser } from '../services/api'
 import Toast from '../components/ui/Toast'
 
@@ -43,14 +43,15 @@ export default function Register() {
   }
 
   async function handleRequestOtp() {
-    if (!email) return showError('Informe o seu e-mail para validar')
+    if (!email) return showError('Informe o e-mail')
+
     try {
       setOtpLoading(true)
       await requestRegisterOtp(email)
       setOtpSent(true)
-      showSuccess('Código de validação enviado!')
+      showSuccess('Código enviado')
     } catch (err: any) {
-      showError(err?.response?.data?.message || 'Falha ao enviar código')
+      showError(err?.response?.data?.message || 'Erro ao enviar código')
     } finally {
       setOtpLoading(false)
     }
@@ -58,175 +59,152 @@ export default function Register() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
     if (!phone || !email || !password || !confirmPassword || !code) {
-      return showError('Todos os campos são obrigatórios')
+      return showError('Preencha todos os campos')
     }
+
     if (password !== confirmPassword) {
-      return showError('As palavras-passe não coincidem')
+      return showError('Passwords não coincidem')
     }
 
     try {
       setRegisterLoading(true)
+
       await registerUser(
         `+244${phone.replace(/\D/g, '')}`,
         email,
         password,
         code
       )
-      showSuccess('Bem-vindo à EMATEA! Conta criada.')
-      setTimeout(() => navigate('/login-user'), 2000)
+
+      showSuccess('Conta criada com sucesso')
+
+      setTimeout(() => navigate('/login-user'), 1500)
     } catch (err: any) {
-      showError(err?.response?.data?.message || 'Erro na criação da conta')
+      showError(err?.response?.data?.message || 'Erro no registo')
     } finally {
       setRegisterLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6 py-10 selection:bg-green-500/30">
+    <div className="min-h-screen bg-[#0B0E11] text-white flex items-center justify-center px-5">
+
       <Toast visible={toastVisible} message={toastMessage} type={toastType} />
 
-      {/* BACKGROUND GLOW SUTIL */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-green-600/5 rounded-full filter blur-[120px] pointer-events-none"></div>
+      <div className="w-full max-w-sm">
 
-      <div className="w-full max-w-md z-10">
-        
         {/* HEADER */}
-        <div className="text-center mb-10">
-          <div className="relative inline-block mb-6">
-            <div className="w-20 h-20 rounded-full border-2 border-white/5 overflow-hidden bg-[#111] flex items-center justify-center shadow-2xl">
-              <img src="/logo.png" className="w-full h-full object-cover rounded-full" alt="EMATEA" />
-            </div>
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-16 h-16 rounded-full bg-[#111318] border border-white/5 flex items-center justify-center mb-3">
+            <img src="/logo.png" className="w-full h-full object-contain p-1.5 rounded-full" />
           </div>
-          
-          <h1 className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
-            Criar Conta
-          </h1>
-          <p className="text-gray-500 mt-2 text-sm font-medium">
-            Junte-se à nova era da tecnologia financeira.
-          </p>
+
+          <h1 className="text-lg font-semibold">Criar conta</h1>
+          <p className="text-xs text-gray-500">Registo seguro</p>
         </div>
 
-        {/* CARD PRINCIPAL */}
-        <div className="bg-[#111111] p-8 rounded-[2.5rem] border border-white/5 shadow-2xl">
+        {/* CARD */}
+        <div className="bg-[#111318] border border-white/5 rounded-xl p-5">
+
           <form onSubmit={handleSubmit} className="space-y-4">
-            
-            {/* TELEFONE */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 ml-1">Telemóvel</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold border-r border-white/10 pr-3">+244</span>
-                <input
-                  type="text"
-                  value={phone}
-                  onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
-                  placeholder="923 000 000"
-                  className="w-full bg-[#1a1a1a] border border-white/5 focus:border-green-500/40 rounded-2xl p-4 pl-20 text-sm transition-all outline-none"
-                />
+
+            {/* PHONE */}
+            <div className="flex">
+              <div className="flex items-center px-3 bg-[#0B0E11] border border-white/5 rounded-l-lg text-xs text-gray-400">
+                +244
               </div>
+              <input
+                value={phone}
+                onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
+                placeholder="923000000"
+                className="flex-1 h-11 bg-[#0B0E11] border border-white/5 border-l-0 rounded-r-lg px-3 text-sm outline-none"
+              />
             </div>
 
             {/* EMAIL + OTP */}
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 ml-1">E-mail</label>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="exemplo@email.com"
-                  className="flex-1 bg-[#1a1a1a] border border-white/5 focus:border-green-500/40 rounded-2xl p-4 text-sm transition-all outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={handleRequestOtp}
-                  disabled={otpLoading || otpSent}
-                  className={`px-4 rounded-2xl font-bold text-xs transition-all flex items-center gap-2 ${otpSent ? 'bg-green-500/20 text-green-500 border border-green-500/30' : 'bg-white text-black hover:bg-green-500 hover:text-white disabled:opacity-50'}`}
-                >
-                  {otpLoading ? '...' : otpSent ? <ShieldCheck size={20} /> : <PaperPlaneTilt size={20} />}
-                </button>
-              </div>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="email"
+                className="flex-1 h-11 bg-[#0B0E11] border border-white/5 rounded-lg px-3 text-sm outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleRequestOtp}
+                disabled={otpLoading || otpSent}
+                className="px-3 text-xs bg-white text-black rounded-lg disabled:opacity-50"
+              >
+                {otpSent ? 'OK' : otpLoading ? '...' : 'OTP'}
+              </button>
             </div>
 
-            {/* CAMPO DE CÓDIGO (SÓ APARECE OU DESTACA APÓS O ENVIO) */}
+            {/* OTP */}
             {otpSent && (
-              <div className="space-y-1 animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-green-500 ml-1">Código de Verificação</label>
-                <input
-                  type="text"
-                  value={code}
-                  onChange={e => setCode(e.target.value)}
-                  placeholder="Introduza o código recebido"
-                  className="w-full bg-[#1a1a1a] border border-green-500/30 focus:border-green-500/60 rounded-2xl p-4 text-sm transition-all outline-none font-bold tracking-[0.2em] text-center"
-                />
-              </div>
+              <input
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                placeholder="Código"
+                className="w-full h-11 bg-[#0B0E11] border border-emerald-500/30 rounded-lg px-3 text-sm text-center tracking-widest outline-none"
+              />
             )}
 
-            {/* PASSWORDS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 ml-1">Password</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-[#1a1a1a] border border-white/5 focus:border-green-500/40 rounded-2xl p-4 text-sm outline-none"
-                  />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
-                    {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 ml-1">Confirmar</label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-[#1a1a1a] border border-white/5 focus:border-green-500/40 rounded-2xl p-4 text-sm outline-none"
-                  />
-                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
-                    {showConfirmPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
+            {/* PASSWORD */}
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Password"
+                className="w-full h-11 bg-[#0B0E11] border border-white/5 rounded-lg px-3 text-sm outline-none"
+              />
+              <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2">
+                {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
-            {/* BOTÃO SUBMIT */}
+            {/* CONFIRM */}
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                placeholder="Confirmar password"
+                className="w-full h-11 bg-[#0B0E11] border border-white/5 rounded-lg px-3 text-sm outline-none"
+              />
+              <button type="button" onClick={() => setShowConfirmPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2">
+                {showConfirmPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            {/* BUTTON */}
             <button
               type="submit"
               disabled={registerLoading}
-              className="w-full bg-white text-black hover:bg-green-500 hover:text-white py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50 mt-4"
+              className="w-full h-11 rounded-lg bg-white text-black text-sm font-semibold hover:bg-emerald-500 hover:text-white transition flex items-center justify-center gap-2"
             >
-              {registerLoading ? (
-                <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  Concluir Registo
-                  <UserPlus size={20} weight="bold" />
-                </>
-              )}
+              {registerLoading
+                ? <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                : <>
+                    Criar conta
+                    <UserPlus size={16} />
+                  </>
+              }
             </button>
 
-            <div className="text-center pt-2">
-              <p className="text-xs text-gray-500">
-                Já tem uma conta?{' '}
-                <Link to="/login-user" className="text-green-500 font-bold hover:underline">Entrar agora</Link>
-              </p>
+            {/* LOGIN */}
+            <div className="text-center text-xs text-gray-500">
+              Já tem conta?{' '}
+              <Link to="/login-user" className="text-white">
+                Entrar
+              </Link>
             </div>
+
           </form>
         </div>
-
-        <footer className="mt-8 text-center">
-          <p className="text-[9px] text-gray-700 font-bold uppercase tracking-[0.4em] leading-relaxed">
-            Ao registar-se, concorda com os nossos <br/> Termos e Políticas de Privacidade.
-          </p>
-        </footer>
       </div>
     </div>
   )

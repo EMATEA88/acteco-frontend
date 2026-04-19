@@ -109,3 +109,34 @@ input, textarea, select {
 .safe-pb {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* ===== REMOVE CLICK / TOUCH EFFECT COMPLETO ===== */
+
+/* remove highlight mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* remove comportamento de foco/ativo */
+a, button {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* remove flash ao clicar */
+a:active,
+a:focus,
+a:focus-visible,
+button:active,
+button:focus,
+button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* evita seleção acidental */
+* {
+  user-select: none;
+}

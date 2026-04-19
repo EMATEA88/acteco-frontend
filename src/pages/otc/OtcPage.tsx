@@ -39,129 +39,163 @@ export default function OtcPage() {
   const load = async () => {
     try {
       const data = await otcService.listAssets()
-      if (!Array.isArray(data)) {
-        toast.error("Falha na sincronização de mercado")
-        return
-      }
       const sorted = [...data].sort((a, b) =>
         ORDER.indexOf(a.symbol) - ORDER.indexOf(b.symbol)
       )
       setAssets(sorted)
     } catch {
-      toast.error("Mercado OTC temporariamente offline")
+      toast.error("Mercado OTC offline")
     } finally {
       setLoading(false)
     }
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center space-y-4">
-        <div className="w-10 h-10 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Mapeando Ativos...</p>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-green-500/30">
-      
-      {/* HEADER PREMIUM FIXO */}
-      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-xl mx-auto flex items-center justify-between px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500">
-              <CurrencyDollarSimple size={24} weight="duotone" />
+    <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 space-y-6 animate-pulse">
+
+      {/* HEADER FAKE */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-white/5 rounded-xl"/>
+          <div className="w-32 h-4 bg-white/5 rounded"/>
+        </div>
+        <div className="w-9 h-9 bg-white/5 rounded-xl"/>
+      </div>
+
+      {/* TEXTO */}
+      <p className="text-xs text-gray-500">
+        Carregando mercado OTC...
+      </p>
+
+      {/* LISTA FAKE */}
+      {[1,2,3].map(i => (
+        <div key={i} className="glass-card p-4 rounded-2xl space-y-4">
+
+          {/* HEADER CARD */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/5 rounded-full"/>
+              <div>
+                <div className="w-16 h-3 bg-white/5 rounded mb-2"/>
+                <div className="w-12 h-2 bg-white/5 rounded"/>
+              </div>
             </div>
-            <h1 className="text-xl font-black tracking-tighter uppercase italic">Mercado OTC</h1>
+            <div className="w-10 h-3 bg-white/5 rounded"/>
           </div>
 
-          <button
-            onClick={() => navigate("/otc/orders")}
-            className="p-2.5 bg-white/5 border border-white/10 rounded-full hover:text-green-500 transition-all group"
-          >
-            <ClockCounterClockwise size={24} weight="duotone" className="group-hover:rotate-[-30deg] transition-transform" />
-          </button>
-        </div>
-      </header>
+          {/* PREÇOS */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-12 bg-white/5 rounded-xl"/>
+            <div className="h-12 bg-white/5 rounded-xl"/>
+          </div>
 
-      {/* LISTA DE ATIVOS */}
-      <main className="px-6 pt-8 pb-32 space-y-6 max-w-xl mx-auto">
-        
+          {/* BOTÕES */}
+          <div className="flex gap-3">
+            <div className="flex-1 h-10 bg-white/5 rounded-xl"/>
+            <div className="flex-1 h-10 bg-white/5 rounded-xl"/>
+          </div>
+
+        </div>
+      ))}
+
+    </div>
+  )
+}
+
+  return (
+    <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 pb-32">
+
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+            <CurrencyDollarSimple size={20} className="text-emerald-500"/>
+          </div>
+          <h1 className="text-lg font-bold">Mercado OTC</h1>
+        </div>
+
+        <button
+          onClick={() => navigate("/otc/orders")}
+          className="p-2 rounded-xl bg-white/5 border border-white/10"
+        >
+          <ClockCounterClockwise size={18} />
+        </button>
+      </div>
+
+      {/* LISTA */}
+      <div className="space-y-4">
+
         {assets.map(asset => (
           <div
             key={asset.id}
-            className="group relative bg-[#111] border border-white/5 rounded-[2.5rem] p-8 shadow-2xl transition-all duration-500 hover:border-green-500/20 overflow-hidden"
+            className="glass-card p-4 rounded-2xl space-y-4"
           >
-            {/* EFEITO DE GLOW NO HOVER */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-green-500/5 rounded-full filter blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-            <div className="flex items-center justify-between mb-8 relative z-10">
-              <div className="flex items-center gap-4">
-                
-                {/* 🟢 CORREÇÃO: IMAGEM PERFEITAMENTE CIRCULAR */}
-                <div className="w-14 h-14 rounded-full border border-white/10 overflow-hidden bg-[#0a0a0a] shadow-xl flex items-center justify-center group-hover:border-green-500/30 transition-all shrink-0">
+            {/* HEADER CARD */}
+            <div className="flex items-center justify-between">
+
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-[#0B0E11] border border-white/10">
                   <img
-                    src={IMAGE_MAP[asset.symbol] || "/assets/otc/default.png"}
-                    alt={asset.symbol}
-                    className="w-full h-full object-cover rounded-full" 
+                    src={IMAGE_MAP[asset.symbol]}
+                    className="w-full h-full object-cover"
                   />
                 </div>
 
-                <h2 className="text-2xl font-black tracking-tight italic uppercase">{asset.symbol}</h2>
-              </div>
-              
-              <div className="text-right">
-                <p className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Preço em Tempo Real</p>
-                <div className="flex items-center gap-2 text-green-500">
-                  <span className="text-xs font-black italic uppercase animate-pulse">Live</span>
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></div>
+                <div>
+                  <p className="font-semibold text-sm">{asset.symbol}</p>
+                  <p className="text-[10px] text-gray-500">Tempo real</p>
                 </div>
               </div>
+
+              <span className="text-[10px] text-emerald-500 font-semibold">
+                ● LIVE
+              </span>
             </div>
 
-            {/* BOX DE PREÇOS */}
-            <div className="grid grid-cols-2 gap-4 mb-8 relative z-10">
-              <div className="bg-[#0a0a0a] p-5 rounded-3xl border border-white/5 group-hover:border-green-500/10 transition-colors">
-                <p className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-1">Cotação Compra</p>
-                <p className="text-lg font-black text-green-500 tracking-tighter italic">
-                  {asset.buyPrice.toLocaleString()} <span className="text-[9px] not-italic opacity-40">AOA</span>
+            {/* PREÇOS */}
+            <div className="grid grid-cols-2 gap-3">
+
+              <div className="bg-[#0B0E11] border border-white/5 rounded-xl p-3">
+                <p className="text-[10px] text-gray-500 mb-1">Compra</p>
+                <p className="text-sm font-bold text-emerald-500">
+                  {asset.buyPrice.toLocaleString()} AOA
                 </p>
               </div>
-              <div className="bg-[#0a0a0a] p-5 rounded-3xl border border-white/5 text-right group-hover:border-white/10 transition-colors">
-                <p className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-1">Cotação Venda</p>
-                <p className="text-lg font-black text-white tracking-tighter italic">
-                  {asset.sellPrice.toLocaleString()} <span className="text-[9px] not-italic opacity-40">AOA</span>
+
+              <div className="bg-[#0B0E11] border border-white/5 rounded-xl p-3 text-right">
+                <p className="text-[10px] text-gray-500 mb-1">Venda</p>
+                <p className="text-sm font-bold">
+                  {asset.sellPrice.toLocaleString()} AOA
                 </p>
               </div>
+
             </div>
 
-            {/* BOTÕES DE AÇÃO */}
-            <div className="flex gap-4 relative z-10">
+            {/* BOTÕES */}
+            <div className="flex gap-3">
+
               <button
                 onClick={() => navigate(`/otc/${asset.id}/BUY`)}
-                className="flex-1 h-14 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-green-500 hover:text-white transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-xl"
+                className="flex-1 h-10 bg-white text-black rounded-xl font-semibold text-xs flex items-center justify-center gap-1"
               >
-                Comprar
-                <ArrowRight size={18} weight="bold" />
+                Comprar <ArrowRight size={14}/>
               </button>
 
               <button
                 onClick={() => navigate(`/otc/${asset.id}/SELL`)}
-                className="flex-1 h-14 bg-[#1a1a1a] text-white border border-white/5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-600 hover:border-transparent transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                className="flex-1 h-10 bg-[#1a1a1a] border border-white/10 rounded-xl text-xs font-semibold flex items-center justify-center gap-1"
               >
-                Vender
-                <ShoppingCart size={18} weight="bold" />
+                Vender <ShoppingCart size={14}/>
               </button>
+
             </div>
 
           </div>
         ))}
-      </main>
 
-      <footer className="fixed bottom-10 left-0 w-full text-center opacity-20 pointer-events-none">
-        <p className="text-[9px] font-bold uppercase tracking-[0.5em]">EMATEA Liquidity Protocol v4.0</p>
-      </footer>
+      </div>
 
     </div>
   )

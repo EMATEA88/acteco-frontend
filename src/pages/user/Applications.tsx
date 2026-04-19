@@ -1,15 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ApplicationService } from '../../services/application.service'
-import { 
-  ChartLineUp, 
-  ArrowLeft, 
-  Calendar, 
-  TrendUp, 
-  ShieldCheck, 
-  CurrencyCircleDollar,
-  HourglassMedium
-} from '@phosphor-icons/react'
+import { ArrowLeft, Calendar } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 interface Application {
@@ -24,6 +16,7 @@ interface Application {
 
 export default function Applications() {
   const navigate = useNavigate()
+
   const [items, setItems] = useState<Application[]>([])
   const [amount, setAmount] = useState('')
   const [periodDays, setPeriodDays] = useState(15)
@@ -48,9 +41,13 @@ export default function Applications() {
 
   function calculatePreview() {
     const value = Number(amount)
-    if (!value) return 0
+    if (!value) return { total: 0, profit: 0 }
+
     const rate = periodDays === 15 ? 1.5 : 1.8
-    return value + (value * rate / 100)
+    const profit = value * (rate / 100)
+    const total = value + profit
+
+    return { total, profit }
   }
 
   async function create() {
@@ -72,144 +69,175 @@ export default function Applications() {
     }
   }
 
+  const isValid = Number(amount) > 0 && !creating
+  const preview = calculatePreview()
+
+  /* =========================
+     LOADING BINANCE STYLE
+  ========================= */
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 space-y-6 animate-pulse">
+
+        {/* HEADER */}
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-white/5 rounded-xl"/>
+          <div className="w-40 h-4 bg-white/5 rounded"/>
+        </div>
+
+        <p className="text-xs text-gray-500">
+          Carregando investimentos...
+        </p>
+
+        {/* FORM FAKE */}
+        <div className="glass-card p-6 rounded-3xl space-y-4">
+          <div className="h-10 bg-white/5 rounded-xl"/>
+          <div className="h-10 bg-white/5 rounded-xl"/>
+          <div className="h-12 bg-white/5 rounded-xl"/>
+        </div>
+
+        {/* LISTA FAKE */}
+        {[1,2,3].map(i => (
+          <div key={i} className="glass-card p-5 rounded-2xl space-y-3">
+            <div className="h-3 w-24 bg-white/5 rounded"/>
+            <div className="h-3 w-32 bg-white/5 rounded"/>
+            <div className="h-3 w-20 bg-white/5 rounded"/>
+          </div>
+        ))}
+
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-green-500/30">
-      
-      {/* HEADER PREMIUM */}
-      <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 px-6 py-5 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-all">
-            <ArrowLeft size={20} weight="bold" />
-          </button>
-          <h1 className="text-xl font-black tracking-tighter uppercase">Investimentos</h1>
+    <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 pb-32">
+
+      {/* HEADER */}
+      <div className="flex items-center gap-3 mb-8">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="p-2 rounded-xl bg-white/5 border border-white/10"
+        >
+          <ArrowLeft size={18} />
+        </button>
+
+        <h1 className="text-lg font-semibold">Investimentos</h1>
+      </div>
+
+      {/* FORM */}
+      <div className="glass-card p-6 rounded-2xl space-y-6">
+
+        <div>
+          <p className="text-xs text-gray-400 mb-2">Prazo</p>
+          <select
+            value={periodDays}
+            onChange={(e) => setPeriodDays(Number(e.target.value))}
+            className="w-full h-11 bg-[#0B0E11] border border-white/10 rounded-xl px-3 text-sm outline-none focus:border-emerald-500"
+          >
+            <option value={15}>15 dias (1.5%)</option>
+            <option value={90}>3 meses (1.8%)</option>
+            <option value={180}>6 meses (1.8%)</option>
+            <option value={365}>12 meses (1.8%)</option>
+          </select>
         </div>
-        <ChartLineUp size={24} weight="fill" className="text-green-500" />
-      </header>
 
-      <main className="max-w-xl mx-auto px-6 py-8 pb-32 space-y-8 relative z-10">
-        
-        {/* CARD DE NOVA APLICAÇÃO */}
-        <section className="bg-[#111] border border-white/5 rounded-[2.5rem] p-8 space-y-8 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-            <TrendUp size={80} weight="thin" />
+        <div>
+          <p className="text-xs text-gray-400 mb-2">Valor (Kz)</p>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="w-full h-11 bg-[#0B0E11] border border-white/10 rounded-xl px-3 text-sm outline-none focus:border-emerald-500"
+          />
+        </div>
+
+        {Number(amount) > 0 && (
+          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4">
+            <div className="flex justify-between text-xs">
+              <span className="text-gray-400">Lucro</span>
+              <span className="text-emerald-500 font-medium">
+                {preview.profit.toLocaleString()} Kz
+              </span>
+            </div>
+
+            <div className="flex justify-between text-sm mt-2">
+              <span className="text-gray-400">Total</span>
+              <span className="font-semibold">
+                {preview.total.toLocaleString()} Kz
+              </span>
+            </div>
           </div>
+        )}
 
-          <div className="flex items-center gap-4 relative z-10">
-            <div className="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center border border-green-500/20 text-green-500">
-              <CurrencyCircleDollar size={28} weight="duotone" />
-            </div>
-            <div>
-              <h2 className="text-lg font-black tracking-tight">Aplicar Capital</h2>
-              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Crescimento Sustentável</p>
-            </div>
+        <button
+          disabled={!isValid}
+          onClick={create}
+          className={`w-full h-11 rounded-xl text-sm transition
+            ${isValid
+              ? "bg-white text-black"
+              : "bg-white/10 text-gray-500"
+            }
+          `}
+        >
+          {creating ? 'Processando...' : 'Investir'}
+        </button>
+
+      </div>
+
+      {/* LISTA REAL */}
+      <div className="mt-6 space-y-3">
+
+        {items.length === 0 && (
+          <div className="glass-card p-6 text-center text-gray-500 text-sm">
+            Nenhum investimento encontrado
           </div>
+        )}
 
-          <div className="space-y-6 relative z-10">
-            {/* SELECT PRAZO */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-600 ml-1">Prazo de Aplicação</label>
-              <select
-                value={periodDays}
-                onChange={e => setPeriodDays(Number(e.target.value))}
-                className="w-full h-14 bg-[#0a0a0a] border border-white/5 rounded-2xl px-5 text-sm font-bold text-white outline-none focus:border-green-500/40 transition-all appearance-none cursor-pointer"
-              >
-                <option value={15}>15 dias (1.5% Yield)</option>
-                <option value={90}>3 meses (1.8% Yield)</option>
-                <option value={180}>6 meses (1.8% Yield)</option>
-                <option value={365}>12 meses (1.8% Yield)</option>
-              </select>
-            </div>
+        {items.map(app => {
+          const maturity = new Date(app.maturityDate)
+          const isMature = new Date() >= maturity
 
-            {/* INPUT VALOR */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-600 ml-1">Valor do Depósito (Kz)</label>
-              <input
-                type="number"
-                placeholder="Introduza o montante"
-                value={amount}
-                onChange={e => setAmount(e.target.value)}
-                className="w-full h-14 bg-[#0a0a0a] border border-white/5 rounded-2xl px-5 text-sm font-bold text-white placeholder:text-gray-800 outline-none focus:border-green-500/40 transition-all"
-              />
-            </div>
+          return (
+            <div key={app.id} className="glass-card p-4 rounded-xl space-y-2">
 
-            {/* PREVIEW BOX */}
-            {Number(amount) > 0 && (
-              <div className="bg-green-500/5 border border-green-500/10 rounded-2xl p-5 animate-in fade-in zoom-in duration-300">
-                <p className="text-[10px] font-bold text-green-500 uppercase tracking-widest mb-1">Retorno Estimado em {periodDays} dias</p>
-                <p className="text-2xl font-black text-white italic tracking-tighter">
-                  {calculatePreview().toLocaleString()} <span className="text-xs not-italic font-bold opacity-50">Kz</span>
-                </p>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Valor</span>
+                <span>{Number(app.amount).toLocaleString()} Kz</span>
               </div>
-            )}
 
-            <button
-              disabled={creating}
-              onClick={create}
-              className="w-full h-14 rounded-2xl font-black text-sm uppercase tracking-widest bg-white text-black hover:bg-green-500 hover:text-white transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl"
-            >
-              {creating ? 'A Processar...' : 'Confirmar Aplicação'}
-            </button>
-          </div>
-        </section>
-
-        {/* LISTA DE ATIVOS ATIVOS */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-2 ml-2">
-            <HourglassMedium size={18} weight="bold" className="text-gray-600" />
-            <p className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.3em]">Portfólio Ativo</p>
-          </div>
-
-          {loading ? (
-             <div className="text-center py-10 opacity-20 animate-pulse text-xs font-bold uppercase tracking-widest">Sincronizando Ativos...</div>
-          ) : items.length === 0 ? (
-            <div className="bg-[#111]/50 border border-white/5 rounded-[2rem] p-10 text-center text-gray-600 font-bold uppercase text-[10px] tracking-widest italic">
-              Nenhuma aplicação em curso
-            </div>
-          ) : (
-            items.map(app => (
-              <div
-                key={app.id}
-                className="bg-[#111] border border-white/5 rounded-[2rem] p-6 space-y-4 hover:border-green-500/20 transition-all group"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Montante Aplicado</p>
-                    <p className="text-lg font-black tracking-tight">{Number(app.amount).toLocaleString()} Kz</p>
-                  </div>
-                  <div className="bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-green-500/20">
-                    {app.status}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-                  <div className="flex items-center gap-2">
-                    <TrendUp size={16} weight="bold" className="text-green-500" />
-                    <div>
-                      <p className="text-[8px] font-bold text-gray-600 uppercase tracking-widest">Yield Estimado</p>
-                      <p className="text-xs font-bold text-green-400">{Number(app.totalReturn).toLocaleString()} Kz</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 justify-end text-right">
-                    <div>
-                      <p className="text-[8px] font-bold text-gray-600 uppercase tracking-widest">Vencimento</p>
-                      <p className="text-xs font-bold text-gray-300">{new Date(app.maturityDate).toLocaleDateString('pt-AO')}</p>
-                    </div>
-                    <Calendar size={16} weight="bold" className="text-gray-500" />
-                  </div>
-                </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Retorno</span>
+                <span className="text-emerald-500">
+                  {Number(app.totalReturn).toLocaleString()} Kz
+                </span>
               </div>
-            ))
-          )}
-        </div>
-      </main>
 
-      {/* FOOTER DE CONFORMIDADE */}
-      <footer className="fixed bottom-10 left-0 w-full text-center opacity-20 pointer-events-none">
-        <div className="flex items-center justify-center gap-2">
-          <ShieldCheck size={14} weight="bold" />
-          <p className="text-[9px] font-bold uppercase tracking-[0.4em]">Equity Protection Enabled</p>
-        </div>
-      </footer>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Prazo</span>
+                <span>{app.periodDays} dias</span>
+              </div>
+
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Vencimento</span>
+                <span className="flex items-center gap-1">
+                  <Calendar size={12}/>
+                  {maturity.toLocaleDateString('pt-AO')}
+                </span>
+              </div>
+
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Status</span>
+                <span className={isMature ? "text-gray-400" : "text-emerald-500"}>
+                  {isMature ? 'MATURE' : 'ACTIVE'}
+                </span>
+              </div>
+
+            </div>
+          )
+        })}
+
+      </div>
+
     </div>
   )
 }
