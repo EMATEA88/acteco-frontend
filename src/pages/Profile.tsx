@@ -52,9 +52,9 @@ export default function Profile() {
           
           <button 
             onClick={() => navigate('/settings')}
-            className="absolute top-6 right-6 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500"
+            className="absolute top-4 right-4 p-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500"
           >
-            <UserCircleGear size={24} weight="fill" />
+            <UserCircleGear size={22} weight="fill" />
           </button>
 
           <div className="flex items-center gap-4">
@@ -83,29 +83,40 @@ export default function Profile() {
           </div>
 
           <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+            
+            {/* SALDO */}
             <div>
               <p className="text-[10px] text-gray-500 mb-1">
                 Saldo Disponível
               </p>
-              <span className="text-2xl font-semibold">
+              <span className="text-2xl font-semibold whitespace-nowrap">
                 {formatCurrencyAOA(user.balance)}
               </span>
             </div>
 
-            <div className="flex flex-col gap-2">
+            {/* BOTÕES COM LABEL */}
+            <div className="flex items-center gap-4">
+
               <button 
                 onClick={() => navigate('/deposit')} 
-                className="glass-button px-6 py-2 text-xs flex items-center gap-2 bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
+                className="flex flex-col items-center gap-1"
               >
-                <Wallet size={16} /> Recarregar
+                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+                  <Wallet size={18} />
+                </div>
+                <span className="text-[10px] text-gray-400">Depósito</span>
               </button>
 
               <button 
                 onClick={() => navigate('/withdraw')} 
-                className="glass-button px-6 py-2 text-xs flex items-center gap-2 bg-rose-500/10 border-rose-500/20 text-rose-400"
+                className="flex flex-col items-center gap-1"
               >
-                <ArrowDown size={16} /> Retirar
+                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400">
+                  <ArrowDown size={18} />
+                </div>
+                <span className="text-[10px] text-gray-400">Saque</span>
               </button>
+
             </div>
           </div>
         </div>
