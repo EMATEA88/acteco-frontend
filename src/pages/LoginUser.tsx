@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { Eye, EyeSlash, ArrowRight } from '@phosphor-icons/react'
 import { loginUser } from '../services/api'
 import { AuthContext } from '../contexts/AuthContext'
+import { toast } from 'sonner' // Importado o toast
 
 export default function LoginUser() {
   const navigate = useNavigate()
@@ -33,34 +34,48 @@ export default function LoginUser() {
     try {
       setLoading(true)
       let finalIdentifier = identifier.trim()
+      
       if (isPhone) {
         const clean = identifier.replace(/\s/g, '')
-        if (clean.length !== 9) throw new Error('Número inválido')
+        if (clean.length !== 9) {
+           toast.error('O número deve ter 9 dígitos') // Toast de erro
+           return
+        }
         finalIdentifier = `+244${clean}`
       }
+
+      if (!password) {
+        toast.error('Introduza a sua palavra-passe')
+        return
+      }
+
       const data = await loginUser(finalIdentifier, password)
       login(data.token, data.user)
+      
+      toast.success('Acesso autorizado. Bem-vindo de volta!') // Toast de sucesso
       navigate('/home')
+      
     } catch (err: any) {
-      alert(err?.response?.data?.message || 'Erro no login')
+      // Toast bonito para erro do servidor
+      toast.error(err?.response?.data?.message || 'Falha na autenticação. Verifique os seus dados.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6 selection:bg-green-500/30">
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6 selection:bg-emerald-500/30 font-normal">
       
-      {/* Background */}
-      <div className="absolute top-0 -left-10 w-80 h-80 bg-green-900/5 rounded-full blur-[120px]"></div>
+      {/* Background Decorativo */}
+      <div className="absolute top-0 -left-10 w-80 h-80 bg-emerald-900/5 rounded-full blur-[120px]"></div>
       <div className="absolute bottom-0 -right-10 w-80 h-80 bg-emerald-900/5 rounded-full blur-[120px]"></div>
 
       <div className="w-full max-w-2xl z-10">
         
-        {/* HEADER (INALTERADO) */}
+        {/* HEADER */}
         <div className="text-center mb-10 group">
           <div className="relative inline-block mb-4">
-            <div className="relative w-24 h-24 rounded-full border-2 border-white/5 overflow-hidden bg-[#111111] flex items-center justify-center">
+            <div className="relative w-24 h-24 rounded-full border-2 border-white/5 overflow-hidden bg-[#111111] flex items-center justify-center shadow-2xl">
               <img 
                 src="/logo.png" 
                 className="w-full h-full object-contain p-1.5 rounded-full"
@@ -69,16 +84,16 @@ export default function LoginUser() {
             </div>
           </div>
           
-          <h1 className="text-4xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
+          <h1 className="text-4xl font-medium tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
             EMATEA
           </h1>
-          <p className="text-gray-500 mt-2 font-medium text-sm tracking-wide uppercase">
+          <p className="text-gray-500 mt-2 font-medium text-[10px] tracking-[0.2em] uppercase">
             A nova era da sua gestão financeira
           </p>
         </div>
 
-        {/* CARD AJUSTADO */}
-        <div className="bg-[#161616] p-6 md:p-8 rounded-3xl border border-white/5 shadow-2xl">
+        {/* CARD DE LOGIN */}
+        <div className="bg-[#161616] p-6 md:p-8 rounded-[2.5rem] border border-white/5 shadow-2xl">
           
           <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-5">
 
@@ -92,7 +107,7 @@ export default function LoginUser() {
                 value={identifier}
                 onChange={(e) => handleIdentifierChange(e.target.value)}
                 placeholder="E-mail ou Telemóvel"
-                className="w-full bg-[#1a1a1a] border border-white/5 focus:border-green-500/40 rounded-xl p-3 text-sm outline-none"
+                className="w-full bg-[#1a1a1a] border border-white/5 focus:border-emerald-500/40 rounded-2xl p-3.5 text-sm outline-none transition-all placeholder:text-gray-700"
               />
             </div>
 
@@ -102,9 +117,12 @@ export default function LoginUser() {
                 <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
                   Palavra-passe
                 </label>
-                <Link to="/reset-password" className="text-xs font-bold text-green-500 hover:text-green-400 no-underline">
-                  Recuperar
-                </Link>
+                <Link 
+  to="/reset-password" 
+  className="text-[10px] font-bold text-emerald-500 hover:text-emerald-400 no-underline uppercase tracking-wider"
+>
+  Recuperar
+</Link>
               </div>
               
               <div className="relative">
@@ -113,31 +131,31 @@ export default function LoginUser() {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full bg-[#1a1a1a] border border-white/5 focus:border-green-500/40 rounded-xl p-3 text-sm outline-none"
+                  className="w-full bg-[#1a1a1a] border border-white/5 focus:border-emerald-500/40 rounded-2xl p-3.5 text-sm outline-none transition-all placeholder:text-gray-700"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors"
                 >
-                  {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
+                  {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
-            {/* BOTÃO */}
-            <div className="md:col-span-2">
+            {/* BOTÃO ENTRAR */}
+            <div className="md:col-span-2 pt-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-white text-black hover:bg-green-500 hover:text-white py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                className="w-full bg-white text-black hover:bg-emerald-500 hover:text-white h-14 rounded-2xl font-bold text-[11px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 shadow-xl shadow-black/20"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
                 ) : (
                   <>
                     Entrar na Plataforma
-                    <ArrowRight size={18} />
+                    <ArrowRight size={18} weight="bold" />
                   </>
                 )}
               </button>
@@ -145,10 +163,10 @@ export default function LoginUser() {
 
           </form>
 
-          <div className="mt-6 pt-4 border-t border-white/5 text-center">
-            <p className="text-gray-500 text-sm font-medium">
+          <div className="mt-8 pt-6 border-t border-white/5 text-center">
+            <p className="text-gray-500 text-[11px] font-medium uppercase tracking-wider">
               Novo por aqui?{' '}
-              <Link to="/register" className="text-white font-bold hover:text-green-500 no-underline">
+              <Link to="/register" className="text-white font-bold hover:text-emerald-500 no-underline">
                 Criar conta gratuita
               </Link>
             </p>
@@ -156,11 +174,11 @@ export default function LoginUser() {
         </div>
 
         {/* FOOTER */}
-        <footer className="mt-8 text-center">
-          <div className="flex justify-center gap-6 text-[10px] font-bold uppercase tracking-[0.25em] text-gray-600">
-            <Link to="/terms" className="hover:text-white no-underline">Termos</Link>
-            <Link to="/privacy-policy" className="hover:text-white no-underline">Privacidade</Link>
-            <Link to="/about" className="hover:text-white no-underline">Suporte</Link>
+        <footer className="mt-10 text-center">
+          <div className="flex justify-center gap-6 text-[9px] font-bold uppercase tracking-[0.3em] text-gray-700">
+            <Link to="/terms" className="hover:text-white transition-colors no-underline">Termos</Link>
+            <Link to="/privacy-policy" className="hover:text-white transition-colors no-underline">Privacidade</Link>
+            <Link to="/about" className="hover:text-white transition-colors no-underline">Suporte</Link>
           </div>
         </footer>
 

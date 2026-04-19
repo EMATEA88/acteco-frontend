@@ -65,7 +65,7 @@ export default function Register() {
     }
 
     if (password !== confirmPassword) {
-      return showError('Passwords não coincidem')
+      return showError('As passwords não coincidem')
     }
 
     try {
@@ -89,7 +89,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white flex items-center justify-center px-5">
+    <div className="min-h-screen bg-[#0B0E11] text-white flex items-center justify-center px-5 selection:bg-emerald-500/30">
 
       <Toast visible={toastVisible} message={toastMessage} type={toastType} />
 
@@ -97,29 +97,29 @@ export default function Register() {
 
         {/* HEADER */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-[#111318] border border-white/5 flex items-center justify-center mb-3">
+          <div className="w-16 h-16 rounded-full bg-[#111318] border border-white/5 flex items-center justify-center mb-3 shadow-2xl">
             <img src="/logo.png" className="w-full h-full object-contain p-1.5 rounded-full" />
           </div>
 
-          <h1 className="text-lg font-semibold">Criar conta</h1>
-          <p className="text-xs text-gray-500">Registo seguro</p>
+          <h1 className="text-lg font-semibold tracking-tight">Criar conta</h1>
+          <p className="text-[10px] text-gray-500 uppercase tracking-widest">Registo seguro</p>
         </div>
 
         {/* CARD */}
-        <div className="bg-[#111318] border border-white/5 rounded-xl p-5">
+        <div className="bg-[#111318] border border-white/5 rounded-[2rem] p-6 shadow-2xl">
 
           <form onSubmit={handleSubmit} className="space-y-4">
 
             {/* PHONE */}
             <div className="flex">
-              <div className="flex items-center px-3 bg-[#0B0E11] border border-white/5 rounded-l-lg text-xs text-gray-400">
+              <div className="flex items-center px-3 bg-[#0B0E11] border border-white/5 rounded-l-2xl text-xs text-gray-500 font-bold">
                 +244
               </div>
               <input
                 value={phone}
                 onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
                 placeholder="923000000"
-                className="flex-1 h-11 bg-[#0B0E11] border border-white/5 border-l-0 rounded-r-lg px-3 text-sm outline-none"
+                className="flex-1 h-12 bg-[#0B0E11] border border-white/5 border-l-0 rounded-r-2xl px-3 text-sm outline-none focus:border-emerald-500/30 transition-colors"
               />
             </div>
 
@@ -129,26 +129,26 @@ export default function Register() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="email"
-                className="flex-1 h-11 bg-[#0B0E11] border border-white/5 rounded-lg px-3 text-sm outline-none"
+                placeholder="E-mail"
+                className="flex-1 h-12 bg-[#0B0E11] border border-white/5 rounded-2xl px-4 text-sm outline-none focus:border-emerald-500/30 transition-colors"
               />
               <button
                 type="button"
                 onClick={handleRequestOtp}
                 disabled={otpLoading || otpSent}
-                className="px-3 text-xs bg-white text-black rounded-lg disabled:opacity-50"
+                className="px-4 text-[10px] font-bold uppercase tracking-wider bg-white text-black rounded-2xl disabled:opacity-50 active:scale-95 transition-all"
               >
                 {otpSent ? 'OK' : otpLoading ? '...' : 'OTP'}
               </button>
             </div>
 
-            {/* OTP */}
+            {/* OTP CODE FIELD */}
             {otpSent && (
               <input
                 value={code}
                 onChange={e => setCode(e.target.value)}
-                placeholder="Código"
-                className="w-full h-11 bg-[#0B0E11] border border-emerald-500/30 rounded-lg px-3 text-sm text-center tracking-widest outline-none"
+                placeholder="Código de Verificação"
+                className="w-full h-12 bg-[#0B0E11] border border-emerald-500/30 rounded-2xl px-3 text-sm text-center font-mono tracking-[0.3em] outline-none"
               />
             )}
 
@@ -159,46 +159,54 @@ export default function Register() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Password"
-                className="w-full h-11 bg-[#0B0E11] border border-white/5 rounded-lg px-3 text-sm outline-none"
+                className="w-full h-12 bg-[#0B0E11] border border-white/5 rounded-2xl px-4 text-sm outline-none focus:border-emerald-500/30 transition-colors"
               />
-              <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2">
-                {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(v => !v)} 
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors"
+              >
+                {showPassword ? <EyeSlash size={20} weight="bold" /> : <Eye size={20} weight="bold" />}
               </button>
             </div>
 
-            {/* CONFIRM */}
+            {/* CONFIRM PASSWORD */}
             <div className="relative">
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 placeholder="Confirmar password"
-                className="w-full h-11 bg-[#0B0E11] border border-white/5 rounded-lg px-3 text-sm outline-none"
+                className="w-full h-12 bg-[#0B0E11] border border-white/5 rounded-2xl px-4 text-sm outline-none focus:border-emerald-500/30 transition-colors"
               />
-              <button type="button" onClick={() => setShowConfirmPassword(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2">
-                {showConfirmPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
+              <button 
+                type="button" 
+                onClick={() => setShowConfirmPassword(v => !v)} 
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors"
+              >
+                {showConfirmPassword ? <EyeSlash size={20} weight="bold" /> : <Eye size={20} weight="bold" />}
               </button>
             </div>
 
-            {/* BUTTON */}
+            {/* SUBMIT BUTTON */}
             <button
               type="submit"
               disabled={registerLoading}
-              className="w-full h-11 rounded-lg bg-white text-black text-sm font-semibold hover:bg-emerald-500 hover:text-white transition flex items-center justify-center gap-2"
+              className="w-full h-14 rounded-2xl bg-white text-black text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95 shadow-xl"
             >
               {registerLoading
-                ? <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                ? <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
                 : <>
                     Criar conta
-                    <UserPlus size={16} />
+                    <UserPlus size={18} weight="bold" />
                   </>
               }
             </button>
 
-            {/* LOGIN */}
-            <div className="text-center text-xs text-gray-500">
+            {/* LOGIN LINK */}
+            <div className="text-center text-[11px] text-gray-500 font-medium uppercase tracking-wider pt-2">
               Já tem conta?{' '}
-              <Link to="/login-user" className="text-white">
+              <Link to="/login-user" className="text-white font-bold hover:text-emerald-500 transition-colors">
                 Entrar
               </Link>
             </div>

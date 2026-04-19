@@ -16,7 +16,10 @@ import {
   SignOut,
   CaretRight,
   UserCircleGear,
-  Wallet
+  Wallet,
+  SealCheck,
+  WarningCircle,
+  Clock
 } from '@phosphor-icons/react'
 
 type User = {
@@ -25,6 +28,7 @@ type User = {
   email: string
   publicId: string
   balance: number
+  kycStatus: 'NONE' | 'PENDING' | 'VERIFIED' | 'REJECTED' 
 }
 
 export default function Profile() {
@@ -34,7 +38,8 @@ export default function Profile() {
     queryKey: ['me'],
     queryFn: async () => {
       const res = await UserService.me()
-      return res.data as User
+      // Ajuste de tipagem para evitar erro de verificação do TS
+      return res.data as any as User
     },
     staleTime: 1000 * 60 * 5
   })
@@ -42,93 +47,117 @@ export default function Profile() {
   if (isLoading) return <SkeletonPage title="Carregando perfil..." />
   if (!user) return null
 
+  const isVerified = user.kycStatus === 'VERIFIED'
+
   return (
     <div className="min-h-screen w-screen text-white flex flex-col bg-[#0B0E11]">
-      
-      <div className="flex-1 px-5 pt-10 pb-32 flex flex-col gap-6">
+      <div className="flex-1 px-5 pt-10 pb-32 flex flex-col gap-6 font-normal">
 
         {/* HEADER */}
-        <div className="glass-card p-6 rounded-[2rem] relative">
+        <div className="bg-[#161A1F] p-6 rounded-[2.5rem] relative border border-white/5 shadow-2xl">
           
           <button 
             onClick={() => navigate('/settings')}
-            className="absolute top-4 right-4 p-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500"
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/5 border border-white/10 text-emerald-500 hover:scale-110 transition-transform"
           >
             <UserCircleGear size={22} weight="fill" />
           </button>
 
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full border border-white/20 overflow-hidden bg-white/10">
-              <img src="/logo.png" className="w-full h-full object-cover" />
+            <div className="w-16 h-16 rounded-full border-2 border-white/10 overflow-hidden bg-[#0B0E11] p-1 shadow-inner">
+              <img 
+                src="/logo.png" 
+                className="w-full h-full object-contain rounded-full" 
+                alt="Logo" 
+              />
             </div>
 
             <div className="flex-1">
-              <h1 className="text-lg font-semibold">
-                {user.fullName ?? user.phone}
-              </h1>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h1 className="text-lg font-medium tracking-tight uppercase">
+                  {user.fullName ?? user.phone}
+                </h1>
 
-              <p className="text-gray-400 text-xs">{user.email}</p>
+                {isVerified && (
+                  <SealCheck 
+                    size={18} 
+                    weight="fill" 
+                    className="text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]" 
+                  />
+                )}
+              </div>
+              
+              <p className="text-gray-500 text-xs font-medium">{user.email}</p>
 
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-[10px] text-gray-500 font-mono">
+              {/* LINK DE VERIFICAÇÃO */}
+              <div className="mt-2">
+                {user.kycStatus !== 'VERIFIED' && user.kycStatus !== 'PENDING' ? (
+                  <button 
+                    onClick={() => navigate('/kyc')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 border border-red-500/20 rounded-full text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500/20 transition-all active:scale-95 shadow-sm"
+                  >
+                    <WarningCircle size={14} weight="fill" />
+                    Verificar Agora
+                  </button>
+                ) : user.kycStatus === 'PENDING' && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-full text-[10px] font-black text-yellow-500 uppercase tracking-widest animate-pulse">
+                    <Clock size={14} weight="fill" />
+                    Em Auditoria
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 mt-3">
+                <span className="text-[10px] text-gray-600 font-mono tracking-wider">
                   ID: {user.publicId}
                 </span>
-                <Copy
-                  size={14}
-                  className="text-emerald-500 cursor-pointer"
+                <button 
                   onClick={() => navigator.clipboard.writeText(user.publicId)}
-                />
+                  className="hover:opacity-70 transition-opacity"
+                >
+                  <Copy size={14} className="text-emerald-500" />
+                </button>
               </div>
             </div>
           </div>
 
+          {/* ÁREA DE SALDO */}
           <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
-            
-            {/* SALDO */}
             <div>
-              <p className="text-[10px] text-gray-500 mb-1">
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">
                 Saldo Disponível
               </p>
-              <span className="text-2xl font-semibold whitespace-nowrap">
+              <span className="text-2xl font-normal tracking-tight text-emerald-500">
                 {formatCurrencyAOA(user.balance)}
               </span>
             </div>
 
-            {/* BOTÕES COM LABEL */}
             <div className="flex items-center gap-4">
-
-              <button 
-                onClick={() => navigate('/deposit')} 
-                className="flex flex-col items-center gap-1"
-              >
-                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+              <button onClick={() => navigate('/deposit')} className="flex flex-col items-center gap-1 group">
+                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all shadow-inner">
                   <Wallet size={18} />
                 </div>
-                <span className="text-[10px] text-gray-400">Depósito</span>
+                <span className="text-[9px] font-bold uppercase text-gray-500 group-hover:text-gray-300">Depósito</span>
               </button>
 
-              <button 
-                onClick={() => navigate('/withdraw')} 
-                className="flex flex-col items-center gap-1"
-              >
-                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400">
+              <button onClick={() => navigate('/withdraw')} className="flex flex-col items-center gap-1 group">
+                <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white group-hover:bg-red-500/20 group-hover:text-red-400 transition-all shadow-inner">
                   <ArrowDown size={18} />
                 </div>
-                <span className="text-[10px] text-gray-400">Saque</span>
+                <span className="text-[9px] font-bold uppercase text-gray-500 group-hover:text-gray-300">Saque</span>
               </button>
-
             </div>
           </div>
         </div>
 
-        {/* GRID */}
+        {/* TERMINAL DE OPERAÇÕES */}
         <div>
-          <h3 className="text-[11px] font-semibold text-gray-500 uppercase mb-4">
-            Terminal
+          <h3 className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em] mb-4 ml-2 font-mono">
+            Terminal de Operações
           </h3>
 
           <div className="grid grid-cols-2 gap-4">
-            <SessionCard label="Banco" sub="Conta" icon={<Bank size={20} />} to="/bank" />
+            <SessionCard label="Banco" sub="Conta & Dados" icon={<Bank size={20} />} to="/bank" />
             <SessionCard label="Transações" sub="Histórico" icon={<ArrowsLeftRight size={20} />} to="/transactions" />
             <SessionCard label="Presente" sub="Bônus" icon={<Gift size={20} />} to="/gift" />
             <SessionCard label="Segurança" sub="Proteção" icon={<ShieldCheck size={20} />} to="/security" />
@@ -142,9 +171,9 @@ export default function Profile() {
             localStorage.clear()
             navigate('/login')
           }}
-          className="flex items-center justify-center gap-2 text-xs text-red-400 mt-6"
+          className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-red-500/60 hover:text-red-500 mt-6 transition-colors"
         >
-          <SignOut size={18} /> Sair da conta
+          <SignOut size={16} weight="bold" /> Sair da conta
         </button>
 
       </div>
@@ -152,27 +181,21 @@ export default function Profile() {
   )
 }
 
-/* =========================
-   CARD
-========================= */
 function SessionCard({ label, sub, icon, to }: any) {
   const navigate = useNavigate()
-
   return (
     <button
       onClick={() => navigate(to)}
-      className="glass-card flex items-center gap-3 p-4 rounded-xl border border-white/5 hover:border-white/10 transition"
+      className="bg-[#161A1F] flex items-center gap-3 p-4 rounded-2xl border border-white/5 hover:border-white/10 hover:bg-[#1c2127] transition-all duration-300 group shadow-lg"
     >
-      <div className="w-10 h-10 rounded-xl bg-[#0B0E11] flex items-center justify-center border border-white/5">
+      <div className="w-10 h-10 rounded-full bg-[#0B0E11] flex items-center justify-center border border-white/5 text-gray-400 group-hover:text-emerald-500 transition-colors shadow-inner">
         {icon}
       </div>
-
       <div className="flex-1 text-left">
-        <p className="text-sm font-medium">{label}</p>
-        <p className="text-[10px] text-gray-500">{sub}</p>
+        <p className="text-[13px] font-medium tracking-tight text-gray-200">{label}</p>
+        <p className="text-[9px] text-gray-600 font-medium">{sub}</p>
       </div>
-
-      <CaretRight size={14} className="text-gray-600" />
+      <CaretRight size={14} className="text-gray-700 group-hover:text-gray-400 transition-colors" />
     </button>
   )
 }

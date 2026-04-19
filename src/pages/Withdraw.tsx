@@ -23,7 +23,8 @@ export default function Withdraw() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<any>(null)
 
-  const FEE_PERCENT = 0.10
+  // AJUSTE: Taxa alterada de 10% para 3%
+  const FEE_PERCENT = 0.03 
   const MIN_WITHDRAW = 10
 
   useEffect(() => {
@@ -145,7 +146,8 @@ export default function Withdraw() {
       {numericAmount > 0 && (
         <div className="glass-card p-4 rounded-2xl mb-4 space-y-2 text-sm">
           <div className="flex justify-between text-gray-400">
-            <span>Taxa (10%)</span>
+            {/* TEXTO ATUALIZADO PARA 3% */}
+            <span>Taxa (3%)</span>
             <span>-{fee.toLocaleString()} Kz</span>
           </div>
 
