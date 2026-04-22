@@ -157,17 +157,31 @@ function DepositAOA({ onBack }: { onBack: () => void }) {
 
 function DepositUSDT({ onBack }: { onBack: () => void }) {
   const [amount, setAmount] = useState<number | ''>('')
-  const [address, setAddress] = useState('Carregando...')
+  
+  // 🟢 Pega o endereço direto da variável de ambiente do Render
+  const ENV_ADDRESS = import.meta.env.VITE_TRON_PUBLIC_ADDRESS;
+  
+  const [address, setAddress] = useState(ENV_ADDRESS || 'Carregando...')
   const [copied, setCopied] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    RechargeService.getCompanyWallet()
-      .then(res => setAddress(res.address))
-      .catch(() => setAddress("Endereço indisponível no momento"))
-  }, [])
+    if (ENV_ADDRESS) {
+      setAddress(ENV_ADDRESS);
+      return;
+    }
 
+    RechargeService.getCompanyWallet()
+      .then(res => {
+        if (res.address) setAddress(res.address);
+      })
+      .catch(() => {
+        if (!ENV_ADDRESS) setAddress("Endereço indisponível no momento");
+      })
+  }, [ENV_ADDRESS])
+
+  // 🟢 Função de copiar corrigida
   function copy() {
     navigator.clipboard.writeText(address)
     setCopied(true)
@@ -175,29 +189,28 @@ function DepositUSDT({ onBack }: { onBack: () => void }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  // 🟢 Função de enviar comprovativo corrigida
   async function sendProof() {
     if (!amount || Number(amount) <= 0) return toast.error("Introduza o valor enviado")
     if (!file) return toast.error("Selecione o comprovativo")
     
     setLoading(true)
     try {
-      // 1. Cria a recarga com o valor informado
-      const recharge = await RechargeService.create(Number(amount))
+      // Cria a recarga forçando o tipo USDT para o Admin ver corretamente
+      const recharge = await RechargeService.create(Number(amount), "USDT")
 
-      // 2. Prepara o upload com o ID gerado
       const formData = new FormData()
       formData.append('rechargeId', String(recharge.id))
       formData.append('file', file)
 
       await RechargeService.uploadProof(formData)
       
-      toast.success("Comprovativo enviado com sucesso!", {
+      toast.success("Enviado com sucesso!", {
         duration: 4000,
         icon: <CheckCircle size={24} className="text-emerald-500" />
       })
       onBack()
     } catch (err: any) {
-      console.error(err)
       toast.error("Falha ao enviar comprovativo.")
     } finally {
       setLoading(false)
@@ -279,7 +292,7 @@ function DepositUSDT({ onBack }: { onBack: () => void }) {
         <div className="flex gap-3 p-4 bg-amber-500/5 border border-amber-500/10 rounded-xl mb-4">
           <Info size={24} className="text-amber-500 shrink-0" />
           <p className="text-[10px] text-amber-200/70">
-            O seu saldo será creditado automaticamente após a nossa equipa validar o arquivo enviado acima.
+            O seu saldo será creditado automaticamente após a nossa equipa validar o comprovativo.
           </p>
         </div>
 
