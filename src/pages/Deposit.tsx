@@ -9,8 +9,7 @@ import {
   ShieldCheck,
   WhatsappLogo,
   Info,
-  CheckCircle,
-  XCircle
+  CheckCircle
 } from '@phosphor-icons/react'
 import { RechargeService } from '../services/recharge.service'
 import { UserService } from '../services/user.service'

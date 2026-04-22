@@ -18,7 +18,6 @@ interface Asset {
   isActive?: boolean
 }
 
-/* 🔥 MAPA DE IMAGENS */
 const IMAGE_MAP: Record<string, string> = {
   USDT: "/assets/otc/usdt.png",
   USDC: "/assets/otc/usdc.png",
@@ -79,9 +78,12 @@ export default function OtcDetail() {
     loadAsset()
   }, [loadAsset])
 
-  const isVerified =
-    user?.isVerified === true ||
-    user?.verification?.status === "VERIFIED"
+  // 🟢 CORREÇÃO DO ERRO DE BUILD: Verificação segura para 'verification'
+  const isVerified = useMemo(() => {
+    if (!user) return false;
+    const hasStatusVerified = (user as any)?.verification?.status === "VERIFIED";
+    return user.isVerified === true || hasStatusVerified;
+  }, [user]);
 
   const userBalance = Number(user?.balance ?? 0)
 
@@ -121,52 +123,32 @@ export default function OtcDetail() {
   }
 
   if (assetLoading) {
-  return (
-    <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 space-y-6 animate-pulse">
-
-      {/* HEADER FAKE */}
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-white/5"/>
-        <div className="w-10 h-10 rounded-full bg-white/5"/>
-        <div>
-          <div className="w-20 h-3 bg-white/5 rounded mb-2"/>
-          <div className="w-16 h-2 bg-white/5 rounded"/>
+    return (
+      <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 space-y-6 animate-pulse">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-white/5"/>
+          <div className="w-10 h-10 rounded-full bg-white/5"/>
+          <div>
+            <div className="w-20 h-3 bg-white/5 rounded mb-2"/>
+            <div className="w-16 h-2 bg-white/5 rounded"/>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500">Carregando ativo...</p>
+        <div className="glass-card p-5 rounded-2xl space-y-3">
+          <div className="h-4 w-24 bg-white/5 rounded"/>
+          <div className="h-6 w-32 bg-white/5 rounded"/>
         </div>
       </div>
-
-      {/* TEXTO */}
-      <p className="text-xs text-gray-500">
-        Carregando ativo...
-      </p>
-
-      {/* CARD FAKE */}
-      <div className="glass-card p-5 rounded-2xl space-y-3">
-        <div className="h-4 w-24 bg-white/5 rounded"/>
-        <div className="h-6 w-32 bg-white/5 rounded"/>
-      </div>
-
-      {/* INPUT FAKE */}
-      <div className="glass-card p-5 rounded-2xl space-y-3">
-        <div className="h-3 w-20 bg-white/5 rounded"/>
-        <div className="h-10 bg-white/5 rounded-xl"/>
-      </div>
-
-    </div>
-  )
-}
+    )
+  }
 
   if (!asset) return null
 
-  /* 🔥 IMAGEM DINÂMICA */
-  const image =
-    IMAGE_MAP[asset.symbol] ?? "/assets/otc/default.png"
+  const image = IMAGE_MAP[asset.symbol] ?? "/assets/otc/default.png"
 
   return (
     <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 pb-32 space-y-6">
-
-      {/* HEADER */}
       <div className="flex items-center gap-3">
-
         <button
           onClick={() => navigate(-1)}
           className="p-2 rounded-xl bg-white/5 border border-white/10"
@@ -174,7 +156,6 @@ export default function OtcDetail() {
           <ArrowLeft size={18} />
         </button>
 
-        {/* 🔥 IMAGEM */}
         <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-[#0B0E11]">
           <img
             src={image}
@@ -189,50 +170,36 @@ export default function OtcDetail() {
             {type === "BUY" ? "Compra" : "Venda"}
           </p>
         </div>
-
       </div>
 
-      {/* PREÇO */}
       <div className="glass-card p-5 rounded-2xl space-y-3">
-
         <div>
           <p className="text-xs text-gray-500">Preço atual</p>
-          <p className="text-xl font-semibold">
-            {formatMoney(price)}
-          </p>
+          <p className="text-xl font-semibold">{formatMoney(price)}</p>
         </div>
 
         <div className="flex justify-between text-xs">
-
           <div className="flex items-center gap-1 text-emerald-500">
             <TrendUp size={14} />
             {formatMoney(asset.buyPrice)}
           </div>
-
           <div className="flex items-center gap-1 text-red-500">
             {formatMoney(asset.sellPrice)}
             <TrendDown size={14} />
           </div>
-
         </div>
 
         {type === "BUY" && (
           <div className="flex justify-between text-xs pt-2 border-t border-white/5">
             <span className="text-gray-500">Saldo</span>
-            <span className="text-emerald-500 font-medium">
-              {formatMoney(userBalance)}
-            </span>
+            <span className="text-emerald-500 font-medium">{formatMoney(userBalance)}</span>
           </div>
         )}
-
       </div>
 
-      {/* INPUT */}
       <div className="glass-card p-5 rounded-2xl space-y-4">
-
         <div>
           <p className="text-xs text-gray-500 mb-1">Quantidade</p>
-
           <input
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
@@ -240,31 +207,23 @@ export default function OtcDetail() {
             className="w-full h-11 bg-[#0B0E11] border border-white/10 rounded-xl px-3 text-sm outline-none focus:border-emerald-500"
           />
         </div>
-
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">Total</span>
-          <span className="font-semibold text-emerald-500">
-            {formatMoney(total)}
-          </span>
+          <span className="font-semibold text-emerald-500">{formatMoney(total)}</span>
         </div>
-
       </div>
 
-      {/* BOTÃO */}
       <button
         onClick={createOrder}
         disabled={disabled}
         className={`w-full h-12 rounded-xl font-semibold text-sm transition
-          ${type === "BUY"
-            ? "bg-white text-black"
-            : "bg-red-600 text-white"}
+          ${type === "BUY" ? "bg-white text-black" : "bg-red-600 text-white"}
           ${disabled && "opacity-30"}
         `}
       >
         {loading ? "Processando..." : `Confirmar ${type}`}
       </button>
 
-      {/* KYC */}
       {!isVerified && (
         <div className="glass-card p-4 rounded-xl flex gap-3 text-xs text-gray-500">
           <Info size={16} />
@@ -272,12 +231,7 @@ export default function OtcDetail() {
         </div>
       )}
 
-      <Toast
-        message={toastMessage}
-        visible={toastVisible}
-        type={toastType}
-      />
-
+      <Toast message={toastMessage} visible={toastVisible} type={toastType} />
     </div>
   )
 }
