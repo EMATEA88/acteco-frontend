@@ -21,7 +21,8 @@ import {
   Wallet,
   SealCheck,
   PaperPlaneTilt,
-  UsersThree
+  UsersThree,
+  Info // Ícone para o About
 } from '@phosphor-icons/react'
 
 type User = {
@@ -32,7 +33,6 @@ type User = {
   balance: number
 }
 
-/* ✔️ NORMALIZAÇÃO KYC */
 type KYCState = {
   status: string
   isVerified: boolean
@@ -40,9 +40,7 @@ type KYCState = {
 }
 
 export default function Profile() {
-
   const navigate = useNavigate()
-
   const [kyc, setKyc] = useState<KYCState | null>(null)
 
   const { data: user, isLoading } = useQuery<User>({
@@ -54,15 +52,11 @@ export default function Profile() {
     staleTime: 1000 * 60 * 5
   })
 
-  /* ================= KYC ================= */
-
   useEffect(() => {
     async function loadKYC() {
       try {
         const res = await KYCService.status()
         const data = res.data
-
-        // 🔥 fallback robusto (funciona mesmo sem backend atualizado)
         const normalized: KYCState = {
           status: data.status,
           isVerified: data.isVerified ?? data.status === "VERIFIED",
@@ -70,14 +64,11 @@ export default function Profile() {
             data.status === "NOT_SUBMITTED" || data.status === "REJECTED"
           )
         }
-
         setKyc(normalized)
-
       } catch (err) {
         console.error("KYC ERROR:", err)
       }
     }
-
     loadKYC()
   }, [])
 
@@ -86,12 +77,10 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen w-screen text-white flex flex-col bg-[#0B0E11]">
-      
       <div className="flex-1 px-5 pt-10 pb-32 flex flex-col gap-6 font-normal">
 
         {/* HEADER */}
         <div className="bg-[#161A1F] py-4 px-6 rounded-[2rem] relative border border-white/5 shadow-2xl">
-          
           <button 
             onClick={() => navigate('/settings')}
             className="absolute top-4 right-4 p-2 rounded-full bg-white/5 border border-white/10 text-emerald-500 hover:scale-110 transition-transform"
@@ -101,11 +90,7 @@ export default function Profile() {
 
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full border-2 border-white/10 overflow-hidden bg-[#0B0E11] p-1 shadow-inner">
-              <img 
-                src="/logo.png" 
-                className="w-full h-full object-contain rounded-full" 
-                alt="Logo" 
-              />
+              <img src="/logo.png" className="w-full h-full object-contain rounded-full" alt="Logo" />
             </div>
 
             <div className="flex-1">
@@ -113,70 +98,41 @@ export default function Profile() {
                 <h1 className="text-base font-semibold tracking-normal capitalize">
                   {user.fullName?.toLowerCase() ?? user.phone}
                 </h1>
-
-                {/* ✔️ SELO DINÂMICO */}
                 {kyc?.isVerified && (
-                  <SealCheck 
-                    size={16} 
-                    weight="fill" 
-                    className="text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]" 
-                  />
+                  <SealCheck size={16} weight="fill" className="text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
                 )}
               </div>
-
               <p className="text-gray-500 text-[10px] font-medium">{user.email}</p>
-
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[10px] text-gray-600 font-mono tracking-wider">
-                  ID: {user.publicId}
-                </span>
-                <button 
-                  onClick={() => navigator.clipboard.writeText(user.publicId)}
-                  className="hover:opacity-70 transition-opacity"
-                >
+                <span className="text-[10px] text-gray-600 font-mono tracking-wider">ID: {user.publicId}</span>
+                <button onClick={() => navigator.clipboard.writeText(user.publicId)} className="hover:opacity-70 transition-opacity">
                   <Copy size={12} className="text-emerald-500" />
                 </button>
               </div>
             </div>
           </div>
 
-          {/* ✔️ BOTÃO VERIFICAR (ABAIXO DO LOGO) */}
           {kyc?.canSubmit && (
-            <button
-              onClick={() => navigate('/kyc')}
-              className="mt-3 text-[11px] font-bold uppercase tracking-widest text-red-500 hover:text-red-400 transition-colors"
-            >
+            <button onClick={() => navigate('/kyc')} className="mt-3 text-[11px] font-bold uppercase tracking-widest text-red-500 hover:text-red-400">
               Verificar
             </button>
           )}
 
-          {/* ÁREA DE SALDO */}
           <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between">
-            
             <div>
-              <p className="text-[9px] text-gray-500 uppercase tracking-widest font-bold mb-0.5">
-                Saldo Disponível
-              </p>
-              <span className="text-xl font-normal tracking-tight text-emerald-500">
-                {formatCurrencyAOA(user.balance)}
-              </span>
+              <p className="text-[9px] text-gray-500 uppercase tracking-widest font-bold mb-0.5">Saldo Disponível</p>
+              <span className="text-xl font-normal tracking-tight text-emerald-500">{formatCurrencyAOA(user.balance)}</span>
             </div>
 
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => navigate('/deposit')} 
-                className="flex flex-col items-center gap-1 group"
-              >
+              <button onClick={() => navigate('/deposit')} className="flex flex-col items-center gap-1 group">
                 <div className="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all shadow-inner">
                   <Wallet size={16} />
                 </div>
                 <span className="text-[8px] font-bold uppercase text-gray-500 group-hover:text-gray-300">Depósito</span>
               </button>
 
-              <button 
-                onClick={() => navigate('/withdraw')} 
-                className="flex flex-col items-center gap-1 group"
-              >
+              <button onClick={() => navigate('/withdraw')} className="flex flex-col items-center gap-1 group">
                 <div className="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white group-hover:bg-red-500/20 group-hover:text-red-400 transition-all shadow-inner">
                   <ArrowDown size={16} />
                 </div>
@@ -201,6 +157,10 @@ export default function Profile() {
             <SessionCard label="Segurança" sub="Proteção" icon={<ShieldCheck size={20} />} to="/security" />
             <SessionCard label="Senha" sub="Alterar" icon={<LockKey size={20} />} to="/password" />
             <SessionCard label="Aplicações" sub="Ferramentas" icon={<DownloadSimple size={20} />} to="/applications" />
+            
+            {/* 🟢 NOVOS CARDS PARA FECHAR O GRID PAR */}
+            <SessionCard label="Carteira" sub="USDT TRC20" icon={<Wallet size={20} />} to="/wallet" />
+            <SessionCard label="Sobre" sub="EMATEA v1.0" icon={<Info size={20} />} to="/about" />
           </div>
         </div>
 
@@ -221,7 +181,6 @@ export default function Profile() {
 
 function SessionCard({ label, sub, icon, to }: any) {
   const navigate = useNavigate()
-
   return (
     <button
       onClick={() => navigate(to)}
@@ -230,12 +189,10 @@ function SessionCard({ label, sub, icon, to }: any) {
       <div className="w-10 h-10 rounded-full bg-[#0B0E11] flex items-center justify-center border border-white/5 text-gray-400 group-hover:text-cyan-500 transition-colors shadow-inner">
         {icon}
       </div>
-
       <div className="flex-1 text-left">
         <p className="text-[13px] font-medium tracking-tight text-gray-200">{label}</p>
         <p className="text-[9px] text-gray-600 font-medium">{sub}</p>
       </div>
-
       <CaretRight size={14} className="text-gray-700 group-hover:text-gray-400 transition-colors" />
     </button>
   )

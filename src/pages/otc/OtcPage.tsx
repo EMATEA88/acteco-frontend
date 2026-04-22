@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react"
 import { otcService } from "../../services/otc"
+import { api } from "../../services/api"
 import { useNavigate } from "react-router-dom"
 import { 
   ArrowRight, 
   ShoppingCart, 
   CurrencyDollarSimple,  
-  ClockCounterClockwise 
+  ClockCounterClockwise,
+  Wallet 
 } from "@phosphor-icons/react"
 import toast from "react-hot-toast"
+import { SkeletonPage } from "../../components/ui/Skeleton"
 
 type Asset = {
   id: number
@@ -29,6 +32,8 @@ const IMAGE_MAP: Record<string, string> = {
 
 export default function OtcPage() {
   const [assets, setAssets] = useState<Asset[]>([])
+  // 🟢 Ajustado para refletir o schema do banco de dados (balanceUSDT)
+  const [userData, setUserData] = useState({ balance: 0, balanceUSDT: 0 })
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
@@ -38,56 +43,40 @@ export default function OtcPage() {
 
   const load = async () => {
     try {
-      const data = await otcService.listAssets()
-      const sorted = [...data].sort((a, b) =>
+      setLoading(true)
+      // Busca Ativos e Dados do Usuário (Saldos)
+      const [assetsData, userRes] = await Promise.all([
+        otcService.listAssets(),
+        api.get("/auth/me") 
+      ])
+
+      const sorted = [...assetsData].sort((a, b) =>
         ORDER.indexOf(a.symbol) - ORDER.indexOf(b.symbol)
       )
+      
       setAssets(sorted)
-    } catch {
-      toast.error("Mercado OTC offline")
+      
+      // 🟢 Garante que estamos pegando balance e balanceUSDT da resposta
+      if (userRes.data?.data) {
+        setUserData({
+          balance: userRes.data.data.balance || 0,
+          balanceUSDT: userRes.data.data.balanceUSDT || 0
+        })
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error("Erro ao carregar dados do mercado")
     } finally {
       setLoading(false)
     }
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 space-y-6 animate-pulse">
-        {/* HEADER FAKE */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-[#161A1F] rounded-xl"/>
-            <div className="w-32 h-4 bg-[#161A1F] rounded"/>
-          </div>
-          <div className="w-9 h-9 bg-[#161A1F] rounded-xl"/>
-        </div>
-
-        <p className="text-xs text-gray-500">Carregando mercado OTC...</p>
-
-        {/* LISTA FAKE */}
-        {[1,2,3].map(i => (
-          <div key={i} className="bg-[#161A1F] p-4 rounded-2xl space-y-4 border border-white/5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/5 rounded-full"/>
-                <div className="space-y-2">
-                  <div className="w-16 h-3 bg-white/5 rounded"/>
-                  <div className="w-12 h-2 bg-white/5 rounded"/>
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="h-12 bg-white/5 rounded-xl"/>
-              <div className="h-12 bg-white/5 rounded-xl"/>
-            </div>
-          </div>
-        ))}
-      </div>
-    )
+     return <SkeletonPage title="Carregando Mercado OTC..." />
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 pb-32 selection:bg-cyan-500/20">
+    <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 pb-32">
 
       {/* HEADER */}
       <div className="flex items-center justify-between mb-6">
@@ -106,30 +95,50 @@ export default function OtcPage() {
         </button>
       </div>
 
-      {/* LISTA */}
+      {/* CARD DE SALDOS (MULTI-MOEDA) */}
+      <div className="bg-gradient-to-br from-[#161A1F] to-[#0B0E11] border border-white/5 rounded-[1.75rem] p-5 mb-8 shadow-2xl">
+        <div className="flex items-center gap-2 mb-4 text-gray-400">
+          <Wallet size={16} />
+          <span className="text-[10px] font-bold uppercase tracking-widest">Meus Saldos</span>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="border-r border-white/5">
+            <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Perfil (AOA)</p>
+            <p className="text-lg font-semibold text-white">
+              {Number(userData.balance).toLocaleString()} <span className="text-[10px] text-gray-500 font-normal">Kz</span>
+            </p>
+          </div>
+          
+          <div className="text-right">
+            <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Carteira (USDT)</p>
+            <p className="text-lg font-semibold text-cyan-400">
+              {/* 🟢 Agora exibindo o saldo real de USDT do banco */}
+              {Number(userData.balanceUSDT).toFixed(2)} <span className="text-[10px] text-gray-500 font-normal">USDT</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* LISTA DE ATIVOS OTC */}
       <div className="space-y-4">
         {assets.map(asset => (
           <div
             key={asset.id}
             className="bg-[#161A1F] p-5 rounded-[1.75rem] space-y-5 border border-white/5 shadow-2xl transition group active:scale-[0.98]"
           >
-            {/* HEADER CARD */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3.5">
-                {/* LOGOTIPO CIRCULADO - RESOLVIDO */}
-                <div className="w-11 h-11 rounded-full overflow-hidden bg-[#0B0E11] border border-white/10 p-0.5 shadow-inner relative">
-                    {/* Brilho Neon Sutil no Fundo */}
-                    <div className="absolute inset-0 rounded-full border border-cyan-500/10 blur-sm scale-105" />
+                <div className="w-11 h-11 rounded-full overflow-hidden bg-[#0B0E11] border border-white/10 p-0.5 shadow-inner">
                   <img
-                    src={IMAGE_MAP[asset.symbol]}
-                    className="w-full h-full object-cover rounded-full relative z-10" // object-cover resolve o quadrado
+                    src={IMAGE_MAP[asset.symbol] || "/assets/otc/default.png"}
+                    className="w-full h-full object-cover rounded-full"
                     alt={asset.symbol}
                   />
                 </div>
-
                 <div>
                   <p className="font-medium text-sm text-white">{asset.symbol}</p>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Cotação Real</p>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Cotação em AOA</p>
                 </div>
               </div>
 
@@ -139,24 +148,24 @@ export default function OtcPage() {
               </div>
             </div>
 
-            {/* PREÇOS */}
+            {/* PREÇOS DE COMPRA E VENDA */}
             <div className="grid grid-cols-2 gap-3.5">
               <div className="bg-[#0B0E11] border border-white/5 rounded-2xl p-4 shadow-inner">
                 <p className="text-[10px] text-gray-500 mb-1.5 uppercase font-bold tracking-wider">Taxa de Compra</p>
                 <p className="text-sm font-semibold text-emerald-500">
-                  {asset.buyPrice.toLocaleString()} AOA
+                  {asset.sellPrice.toLocaleString()} AOA
                 </p>
               </div>
 
               <div className="bg-[#0B0E11] border border-white/5 rounded-2xl p-4 text-right shadow-inner">
                 <p className="text-[10px] text-gray-500 mb-1.5 uppercase font-bold tracking-wider">Taxa de Venda</p>
                 <p className="text-sm font-semibold text-white">
-                  {asset.sellPrice.toLocaleString()} AOA
+                  {asset.buyPrice.toLocaleString()} AOA
                 </p>
               </div>
             </div>
 
-            {/* BOTÕES */}
+            {/* BOTÕES DE AÇÃO */}
             <div className="flex gap-3 pt-1">
               <button
                 onClick={() => navigate(`/otc/${asset.id}/BUY`)}

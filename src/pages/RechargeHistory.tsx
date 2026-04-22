@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, ClockCounterClockwise } from '@phosphor-icons/react'
 import { RechargeService } from '../services/recharge.service'
 
 type Recharge = {
@@ -6,91 +8,76 @@ type Recharge = {
   amount: number
   status: 'PENDING' | 'APPROVED' | 'REJECTED'
   createdAt: string
-  approvedAt?: string
-}
-
-type ApiResponse = {
-  data: Recharge[]
 }
 
 export default function RechargeHistory() {
   const [items, setItems] = useState<Recharge[]>([])
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
+    let isMounted = true;
+
     async function load() {
       try {
-        const res: ApiResponse = await RechargeService.myHistory()
-        setItems(res.data || [])
+        const res = await RechargeService.myHistory()
+        // 🟢 Ajuste: Garante a extração correta independente se vem res.data ou res.data.data
+        const historyData = res.data?.data || res.data || []
+        
+        if (isMounted) {
+          setItems(Array.isArray(historyData) ? historyData : [])
+        }
       } catch (error) {
-        console.error('Erro ao carregar histórico:', error)
-        setItems([])
+        console.error('Erro no histórico:', error)
       } finally {
-        setLoading(false)
+        if (isMounted) setLoading(false)
       }
     }
 
     load()
+    return () => { isMounted = false }
   }, [])
 
-  if (loading) {
-    return (
-      <p className="p-6 text-sm opacity-60">
-        Loading history…
-      </p>
-    )
-  }
-
   return (
-    <div className="p-6 pb-24">
-      <h1 className="text-xl font-semibold mb-6">
-        Recharge History
-      </h1>
-
-      {items.length === 0 && (
-        <p className="text-sm opacity-60">
-          No recharge records found
-        </p>
-      )}
-
-      <div className="space-y-4">
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className="
-              bg-white
-              rounded-2xl
-              p-4
-              shadow
-              flex
-              justify-between
-              items-center
-            "
-          >
-            <div>
-              <p className="font-semibold">
-                {item.amount.toLocaleString()} Kz
-              </p>
-
-              <p className="text-xs text-gray-500">
-                {new Date(item.createdAt).toLocaleString()}
-              </p>
-            </div>
-
-            <span
-              className={`text-xs px-3 py-1 rounded-full font-medium ${
-                item.status === 'APPROVED'
-                  ? 'bg-green-100 text-green-700'
-                  : item.status === 'PENDING'
-                  ? 'bg-yellow-100 text-yellow-700'
-                  : 'bg-red-100 text-red-700'
-              }`}
-            >
-              {item.status}
-            </span>
-          </div>
-        ))}
+    <div className="min-h-screen bg-[#0B0E11] text-white px-5 py-6 flex flex-col">
+      <div className="flex items-center gap-3 mb-6">
+        <button onClick={() => navigate(-1)} className="p-2 bg-white/5 rounded-full">
+          <ArrowLeft size={16} />
+        </button>
+        <h1 className="text-sm font-semibold">Histórico de Recargas</h1>
       </div>
+
+      {loading ? (
+        <div className="flex-1 flex flex-col items-center justify-center opacity-30">
+          <ClockCounterClockwise size={32} className="animate-spin mb-2" />
+          <p className="text-xs">Carregando...</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {items.length === 0 ? (
+            <div className="bg-[#111318] border border-white/5 rounded-2xl p-8 text-center">
+              <p className="text-xs text-gray-500 uppercase tracking-widest">Sem registros</p>
+            </div>
+          ) : (
+            items.map((item) => (
+              <div key={item.id} className="bg-[#111318] border border-white/5 rounded-2xl p-4 flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-bold text-emerald-500">{Number(item.amount).toLocaleString()} Kz</p>
+                  <p className="text-[10px] text-gray-500 mt-1 uppercase">
+                    {new Date(item.createdAt).toLocaleDateString('pt-AO')}
+                  </p>
+                </div>
+                <div className={`px-3 py-1 rounded-lg text-[9px] font-bold uppercase ${
+                  item.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-500' :
+                  item.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-red-500/10 text-red-500'
+                }`}>
+                  {item.status === 'PENDING' ? 'Em análise' : item.status === 'APPROVED' ? 'Sucesso' : 'Rejeitado'}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   )
 }

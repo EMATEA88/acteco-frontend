@@ -43,6 +43,7 @@ import CompanyDashboard from './pages/CompanyDashboard'
 import Terms from './pages/Terms'
 import Settings from './pages/Settings'
 import { Transfer } from './pages/Transfer';
+import Wallet from './pages/Wallet';
 
 /* ===== OTC USER ===== */
 import OtcPage from "./pages/otc/OtcPage"
@@ -123,6 +124,7 @@ function App() {
           <Route path="/company-dashboard" element={<CompanyDashboard />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/transfer" element={<Transfer />} />
+          <Route path="/wallet" element={<Wallet />} />
 
           {/* OTC */}
           <Route path="otc" element={<OtcPage />} />

@@ -7,9 +7,11 @@ export interface OTCOrder {
   quantity: number
   priceUsed: number
   totalAoa: number
-  status: string
-  expiresAt: string
+  status: "PENDING" | "PAID" | "RELEASED" | "CANCELLED" | "EXPIRED" | "DISPUTED" | "COMPLETED"
+  expiresAt?: string
   createdAt: string
+  network?: string
+  walletAddress?: string
 }
 
 export const otcService = {
@@ -17,15 +19,13 @@ export const otcService = {
   // ================= ASSETS =================
   async listAssets() {
     const res = await api.get("/otc/assets")
-
     if (Array.isArray(res.data)) {
       return res.data
     }
-
     return res.data.data
   },
 
-  // ================= CREATE =================
+  // ================= CREATE (ORDEM PENDENTE - COMPRA) =================
   async createOrder(data: {
     assetId: number
     type: "BUY" | "SELL"
@@ -33,6 +33,16 @@ export const otcService = {
   }) {
     const res = await api.post("/otc/orders", data)
     return res.data.data
+  },
+
+  // ================= SELL (VENDA INSTANTÂNEA) =================
+  // Nova função para conectar com a rota que acabamos de criar
+  async sellInstant(data: {
+    assetId: number
+    quantity: number
+  }) {
+    const res = await api.post("/otc/sell", data)
+    return res.data // Retorna { success: true, message: "...", data: order }
   },
 
   // ================= MY ORDERS =================
@@ -53,6 +63,8 @@ export const otcService = {
     return res.data.data
   },
 
+  // Nota: Verifique se no seu backend a rota de release é essa mesma, 
+  // geralmente usada pelo Admin para liberar o ativo.
   async releaseOrder(id: number) {
     const res = await api.patch(`/otc/orders/${id}/release`)
     return res.data.data

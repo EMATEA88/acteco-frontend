@@ -12,7 +12,6 @@ export interface UserResponse {
   fullName?: string
   phone: string
   email: string
-  // 🟢 Novos campos de perfil e localização
   address?: string
   country?: string
   province?: string
@@ -21,11 +20,13 @@ export interface UserResponse {
   
   role: string
   balance: number
+  cryptoBalance: number // 🟢 Adicionado para refletir o saldo de USDT
+  walletAddress?: string // 🟢 Novo: Endereço da carteira USDT (Rede Tron)
+  
   inviteCode?: string
   createdAt: string
   isVerified: boolean
   
-  // 🟢 Campo para controle de segurança no frontend
   securityLockoutUntil?: string | null
 
   verification: {
@@ -42,7 +43,6 @@ export interface UserResponse {
   } | null
 }
 
-// Interface para os dados de atualização
 export interface UpdateProfileDTO {
   fullName?: string
   email?: string
@@ -51,7 +51,8 @@ export interface UpdateProfileDTO {
   province?: string
   neighborhood?: string
   bio?: string
-  otp?: string // Código enviado por e-mail
+  walletAddress?: string // 🟢 Novo: Campo para salvar o endereço TRC20
+  otp?: string 
 }
 
 export const UserService = {
@@ -61,13 +62,15 @@ export const UserService = {
     return response
   },
 
-  // 🟢 Novo: Enviar os dados atualizados para o servidor
   async updateProfile(data: UpdateProfileDTO): Promise<any> {
+    // 🟢 Validação simples: se houver endereço de carteira, deve começar com "T"
+    if (data.walletAddress && !data.walletAddress.startsWith('T')) {
+      throw new Error("Endereço inválido. A plataforma aceita apenas a rede Tron (TRC20).")
+    }
     const response = await api.put('/users/profile', data)
     return response.data
   },
 
-  // 🟢 Novo: Solicitar o código OTP para o e-mail atual
   async requestEmailChangeOTP(): Promise<{ message: string }> {
     const response = await api.post('/users/request-email-otp')
     return response.data
