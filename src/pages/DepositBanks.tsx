@@ -12,35 +12,42 @@ export default function DepositBanks() {
   const location = useLocation()
   const navigate = useNavigate()
   
-  const id = params.id || location.pathname.split('/').pop()
-  
+  // 🔥 CORREÇÃO: garantir ID válido
+  const rawId = params.id || location.pathname.split('/').pop()
+  const rechargeId = Number(rawId)
+
   const [banks, setBanks] = useState<BankType[]>([])
   const [copied, setCopied] = useState<number | null>(null)
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
-  const [isDone, setIsDone] = useState(false) // Estado para finalizar sem mudar de rota
+  const [isDone, setIsDone] = useState(false)
 
   useEffect(() => {
     api.get('/bank').then(res => setBanks(res.data)).catch(() => {})
   }, [])
 
   async function handleDirectUpload() {
-    if (!file || !id || id === 'banks') return toast.error("ID de depósito não encontrado.")
+    // 🔥 VALIDAÇÃO FORTE
+    if (!file) return toast.error("Selecione o comprovativo")
+    if (!rechargeId || isNaN(rechargeId)) {
+      return toast.error("ID de depósito inválido")
+    }
     
     setUploading(true)
+
     const formData = new FormData()
-    formData.append('rechargeId', String(id))
+    formData.append('rechargeId', String(rechargeId))
     formData.append('file', file)
 
     try {
       await RechargeService.uploadProof(formData)
+
       toast.success("Enviado com sucesso!")
-      setIsDone(true) // Ativa a visão de conclusão
+      setIsDone(true)
+
     } catch (error: any) {
-      // O seu terminal backend mostra sucesso, então se cair aqui
-      // é apenas uma falha de leitura da resposta JSON.
-      console.error("Erro na resposta:", error.response?.data)
-      toast.error("Erro ao processar resposta do servidor.")
+      console.error("Erro:", error.response?.data)
+      toast.error("Erro ao enviar comprovativo")
     } finally {
       setUploading(false)
     }
@@ -48,11 +55,10 @@ export default function DepositBanks() {
 
   const handleWhatsAppSupport = () => {
     const phoneNumber = "244928270636"
-    const message = `Olá! Enviei o comprovativo para o Depósito ID: ${id}`;
+    const message = `Olá! Enviei o comprovativo para o Depósito ID: ${rechargeId}`
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank')
   }
 
-  // Tela de Sucesso (Substitui o redirecionamento problemático)
   if (isDone) {
     return (
       <div className="min-h-screen bg-[#0B0E11] text-white flex flex-col items-center justify-center px-10 text-center">
@@ -61,7 +67,7 @@ export default function DepositBanks() {
         </div>
         <h2 className="text-xl font-bold mb-2">Envio Concluído!</h2>
         <p className="text-sm text-gray-400 mb-8">
-          O seu comprovativo foi recebido e está em fase de validação.
+          O seu comprovativo foi recebido e está em validação.
         </p>
         <button 
           onClick={() => navigate('/')} 
@@ -84,7 +90,6 @@ export default function DepositBanks() {
         <h1 className="text-sm font-semibold">Finalizar Depósito</h1>
       </div>
 
-      {/* Listagem de Bancos */}
       <div className="space-y-3 mb-6">
         {banks.map(b => (
           <div key={b.id} className="bg-[#111318] border border-white/5 rounded-xl p-4">
@@ -92,18 +97,20 @@ export default function DepositBanks() {
             <div className="flex items-center justify-between bg-[#0B0E11] border border-white/5 rounded-lg px-3 py-2">
               <span className="text-[11px] font-mono text-cyan-400">{b.iban}</span>
               <button onClick={() => { 
-                navigator.clipboard.writeText(b.iban); 
-                setCopied(b.id); 
-                setTimeout(() => setCopied(null), 2000) 
+                navigator.clipboard.writeText(b.iban)
+                setCopied(b.id)
+                setTimeout(() => setCopied(null), 2000)
               }}>
-                {copied === b.id ? <CheckCircle size={18} className="text-emerald-500" /> : <Copy size={18} className="text-gray-400" />}
+                {copied === b.id 
+                  ? <CheckCircle size={18} className="text-emerald-500" /> 
+                  : <Copy size={18} className="text-gray-400" />
+                }
               </button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Área de Upload */}
       <div className="bg-[#111318] border-2 border-dashed border-white/10 rounded-2xl p-5 mb-4 text-center">
         <input 
           type="file" 
@@ -118,14 +125,14 @@ export default function DepositBanks() {
             <CloudArrowUp size={32} className={file ? "text-emerald-500" : "text-gray-500"} />
           </div>
           <p className="text-[10px] text-gray-400 mt-2">
-            {file ? `Arquivo: ${file.name}` : "Toque para anexar o comprovativo fotográfico"}
+            {file ? `Arquivo: ${file.name}` : "Toque para anexar o comprovativo"}
           </p>
         </label>
 
         {file && !uploading && (
           <button 
             onClick={handleDirectUpload} 
-            className="w-full mt-4 h-12 bg-emerald-500 text-white font-bold rounded-xl text-xs active:scale-95"
+            className="w-full mt-4 h-12 bg-emerald-500 text-white font-bold rounded-xl text-xs"
           >
             CONFIRMAR DEPÓSITO
           </button>

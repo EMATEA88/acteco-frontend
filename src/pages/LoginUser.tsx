@@ -1,12 +1,11 @@
 import { useState, useContext } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Eye, EyeSlash, ArrowRight } from '@phosphor-icons/react'
 import { loginUser } from '../services/api'
 import { AuthContext } from '../contexts/AuthContext'
-import { toast } from 'sonner' // Importado o toast
+import { toast } from 'sonner'
 
 export default function LoginUser() {
-  const navigate = useNavigate()
   const { login } = useContext(AuthContext)
 
   const [identifier, setIdentifier] = useState('')
@@ -31,6 +30,8 @@ export default function LoginUser() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (loading) return
+
     try {
       setLoading(true)
       let finalIdentifier = identifier.trim()
@@ -38,33 +39,57 @@ export default function LoginUser() {
       if (isPhone) {
         const clean = identifier.replace(/\s/g, '')
         if (clean.length !== 9) {
-           toast.error('O número deve ter 9 dígitos') // Toast de erro
+           toast.error('O número deve ter 9 dígitos')
+           setLoading(false)
            return
         }
         finalIdentifier = `+244${clean}`
       }
 
+      if (!finalIdentifier) {
+        toast.error('Introduza o seu e-mail ou telefone')
+        setLoading(false)
+        return
+      }
+
       if (!password) {
         toast.error('Introduza a sua palavra-passe')
+        setLoading(false)
         return
       }
 
       const data = await loginUser(finalIdentifier, password)
-      login(data.token, data.user)
       
-      toast.success('Acesso autorizado. Bem-vindo de volta!') // Toast de sucesso
-      navigate('/home')
+      // Salva os dados no contexto
+      await login(data.token, data.user)
+      
+      toast.success('Acesso autorizado. Bem-vindo de volta!')
+
+      // Pequeno delay para o toast ser lido e então força o refresh total
+      // para garantir que os dados da conta (saldo, etc) sejam atualizados
+      setTimeout(() => {
+        window.location.href = '/home'
+      }, 800)
       
     } catch (err: any) {
-      // Toast bonito para erro do servidor
-      toast.error(err?.response?.data?.message || 'Falha na autenticação. Verifique os seus dados.')
+      const status = err?.response?.status
+      const message = err?.response?.data?.message
+
+      // Tratamento de erro profissional e específico
+      if (status === 404) {
+        toast.error('E-mail ou telefone inexistente na nossa base de dados.')
+      } else if (status === 401) {
+        toast.error('Palavra-passe errada. Tente novamente ou recupere-a.')
+      } else {
+        toast.error(message || 'Falha na autenticação. Verifique os seus dados.')
+      }
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6 selection:bg-emerald-500/30 font-normal">
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6 selection:bg-emerald-500/30 font-normal relative overflow-hidden">
       
       {/* Background Decorativo */}
       <div className="absolute top-0 -left-10 w-80 h-80 bg-emerald-900/5 rounded-full blur-[120px]"></div>
@@ -118,11 +143,11 @@ export default function LoginUser() {
                   Palavra-passe
                 </label>
                 <Link 
-  to="/reset-password" 
-  className="text-[10px] font-bold text-emerald-500 hover:text-emerald-400 no-underline uppercase tracking-wider"
->
-  Recuperar
-</Link>
+                  to="/reset-password" 
+                  className="text-[10px] font-bold text-emerald-500 hover:text-emerald-400 no-underline uppercase tracking-wider"
+                >
+                  Recuperar
+                </Link>
               </div>
               
               <div className="relative">

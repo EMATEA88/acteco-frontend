@@ -20,8 +20,9 @@ export interface UserResponse {
   
   role: string
   balance: number
-  cryptoBalance: number // 🟢 Adicionado para refletir o saldo de USDT
-  walletAddress?: string // 🟢 Novo: Endereço da carteira USDT (Rede Tron)
+  balanceUSDT: number // 🔥 CORRETO
+  cryptoBalance?: number // opcional (compatibilidade)
+  walletAddress?: string
   
   inviteCode?: string
   createdAt: string

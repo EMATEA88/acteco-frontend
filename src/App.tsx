@@ -44,6 +44,8 @@ import Terms from './pages/Terms'
 import Settings from './pages/Settings'
 import { Transfer } from './pages/Transfer';
 import Wallet from './pages/Wallet';
+import WithdrawUSDT from './pages/WithdrawUSDT'
+import WithdrawAOA from './pages/WithdrawAOA'
 
 /* ===== OTC USER ===== */
 import OtcPage from "./pages/otc/OtcPage"
@@ -125,6 +127,8 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/transfer" element={<Transfer />} />
           <Route path="/wallet" element={<Wallet />} />
+          <Route path="/withdraw/usdt" element={<WithdrawUSDT />} />
+          <Route path="/withdraw/aoa" element={<WithdrawAOA />} />
 
           {/* OTC */}
           <Route path="otc" element={<OtcPage />} />

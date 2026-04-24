@@ -1,46 +1,32 @@
 import { api } from './api'
 
 export class RechargeService {
-  // Cria uma intenção de depósito (Bancário ou USDT)
-  static async create(amount: number, description?: string) {
-    const { data } = await api.post('/recharges', { 
-      amount, 
-      description 
-    })
-    return data
+
+  static async create(data: {
+    amount: number
+    currency: 'AOA' | 'USDT'
+    method: 'BANK' | 'CRYPTO'
+    txHash?: string
+  }) {
+    const response = await api.post('/recharges', data)
+    return response.data
   }
 
   static async uploadProof(formData: FormData) {
     const { data } = await api.post('/recharges/upload-proof', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    return data;
+    })
+    return data
   }
 
-  /**
-   * 🟢 CORREÇÃO DO ERRO 404 (Endereço Indisponível)
-   * Em vez de chamar uma rota que não existe no backend, 
-   * usamos a variável de ambiente definida no Render.
-   */
-  static async getCompanyWallet() {
-    try {
-      // Tenta buscar da API primeiro (caso você a crie no futuro)
-      const { data } = await api.get('/recharges/company-wallet')
-      return data 
-    } catch (error) {
-      // Se der 404, retorna o endereço configurado no ambiente
-      const fallbackAddress = import.meta.env.VITE_TRON_PUBLIC_ADDRESS;
-      return { address: fallbackAddress || "Endereço não configurado" }
-    }
+  // 🔥 NOVO (CORRETO)
+  static async getUserWallet() {
+    const { data } = await api.get('/auth/me')
+    return data.data.walletAddress
   }
 
-  /**
-   * 🟢 CORREÇÃO CRÍTICA DO ERRO 404
-   * Garante que o frontend use a rota correta: '/recharges/my'.
-   */
   static async myHistory() {
-    const { data } = await api.get('/recharges/my')
-    return { data } 
+    return api.get('/recharges/my')
   }
 
   static async listAll() {
@@ -49,12 +35,12 @@ export class RechargeService {
   }
 
   static async approve(id: number) {
-    const { data } = await api.post(`/recharges/${id}/approve`)
+    const { data } = await api.patch(`/recharges/${id}/approve`)
     return data
   }
 
   static async reject(id: number) {
-    const { data } = await api.post(`/recharges/${id}/reject`)
+    const { data } = await api.patch(`/recharges/${id}/reject`)
     return data
   }
 }

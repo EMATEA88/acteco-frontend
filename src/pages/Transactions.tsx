@@ -12,42 +12,41 @@ import {
   Funnel,
   PaperPlaneTilt,
   UsersThree,
-  Clock, // Ícone de fallback
+  Clock,
 } from '@phosphor-icons/react'
 
 type Transaction = {
   id: number
   type: string
   amount: number
+  currency: 'AOA' | 'USDT'
   createdAt: string
 }
 
 const CACHE_KEY = 'transactions-cache'
 
-// Adicionado suporte para INTERNAL_TRANSFER e KIXIKILA
+// CONFIGURAÇÃO DE CORES: Emerald para Entradas, Rose para Saídas
 const TYPE_META: Record<string, any> = {
   RECHARGE: { label: 'Recarga', icon: Wallet, color: 'text-emerald-500', sign: '+', category: 'IN' },
-  WITHDRAW: { label: 'Levantamento', icon: ArrowUpRight, color: 'text-white', sign: '-', category: 'OUT' },
-  BUY_DEBIT: { label: 'Compra OTC', icon: ArrowUpRight, color: 'text-white', sign: '-', category: 'OUT' },
+  WITHDRAW: { label: 'Levantamento', icon: ArrowUpRight, color: 'text-rose-500', sign: '-', category: 'OUT' },
+  BUY_DEBIT: { label: 'Compra OTC', icon: ArrowUpRight, color: 'text-rose-500', sign: '-', category: 'OUT' },
   SELL_CREDIT: { label: 'Venda OTC', icon: ArrowDownLeft, color: 'text-emerald-500', sign: '+', category: 'IN' },
-  SERVICE_DEBIT: { label: 'Serviço', icon: Receipt, color: 'text-white', sign: '-', category: 'OUT' },
+  SERVICE_DEBIT: { label: 'Serviço', icon: Receipt, color: 'text-rose-500', sign: '-', category: 'OUT' },
   REFUND: { label: 'Reembolso', icon: ArrowDownLeft, color: 'text-emerald-500', sign: '+', category: 'IN' },
   COMMISSION: { label: 'Comissão', icon: Coins, color: 'text-emerald-500', sign: '+', category: 'IN' },
-  GIFT: { label: 'Presente', icon: Gift, color: 'text-white', sign: '-', category: 'OUT' },
-  INVESTMENT_DEBIT: { label: 'Investimento', icon: ArrowUpRight, color: 'text-white', sign: '-', category: 'OUT' },
+  GIFT: { label: 'Presente', icon: Gift, color: 'text-rose-500', sign: '-', category: 'OUT' },
+  INVESTMENT_DEBIT: { label: 'Investimento', icon: ArrowUpRight, color: 'text-rose-500', sign: '-', category: 'OUT' },
   INVESTMENT_CREDIT: { label: 'Lucro', icon: ArrowDownLeft, color: 'text-emerald-500', sign: '+', category: 'IN' },
   TASK_REWARD: { label: 'Tarefa', icon: Coins, color: 'text-emerald-500', sign: '+', category: 'IN' },
   
-  // NOVOS TIPOS REGISTRADOS AQUI:
-  INTERNAL_TRANSFER_IN: { label: 'Transf. Recebida', icon: ArrowDownLeft, color: 'text-cyan-400', sign: '+', category: 'IN' },
-  INTERNAL_TRANSFER_OUT: { label: 'Transf. Enviada', icon: PaperPlaneTilt, color: 'text-white', sign: '-', category: 'OUT' },
+  INTERNAL_TRANSFER_IN: { label: 'Transf. Recebida', icon: ArrowDownLeft, color: 'text-emerald-500', sign: '+', category: 'IN' },
+  INTERNAL_TRANSFER_OUT: { label: 'Transf. Enviada', icon: PaperPlaneTilt, color: 'text-rose-500', sign: '-', category: 'OUT' },
   KIXIKILA_IN: { label: 'Kixikila Recebida', icon: UsersThree, color: 'text-emerald-500', sign: '+', category: 'IN' },
-  KIXIKILA_OUT: { label: 'Kixikila Enviada', icon: UsersThree, color: 'text-white', sign: '-', category: 'OUT' }
+  KIXIKILA_OUT: { label: 'Kixikila Enviada', icon: UsersThree, color: 'text-rose-500', sign: '-', category: 'OUT' }
 }
 
 export default function Transactions() {
   const navigate = useNavigate()
-
   const cached = localStorage.getItem(CACHE_KEY)
   const initial = cached ? JSON.parse(cached) : []
 
@@ -65,12 +64,15 @@ export default function Transactions() {
       .finally(() => setLoading(false))
   }, [])
 
+  function formatCurrency(amount: number, currency: string) {
+    return currency === 'USDT' ? `${amount.toFixed(2)} USDT` : `${amount.toLocaleString()} Kz`
+  }
+
   const filtered = useMemo(() => {
     return items.filter(tx => {
       const meta = TYPE_META[tx.type]
-      if (!meta) return filter === 'ALL' // Se não encontrar meta, só mostra em "Todos"
-      if (filter === 'ALL') return true
-      return meta.category === filter
+      if (!meta) return filter === 'ALL'
+      return filter === 'ALL' || meta.category === filter
     })
   }, [items, filter])
 
@@ -97,102 +99,94 @@ export default function Transactions() {
   }, [filtered])
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 pb-32 space-y-6">
-
-      {/* HEADER */}
-      <div className="flex items-center justify-between">
-        <button onClick={() => navigate(-1)} className="p-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
-          <ArrowLeft size={18} />
+    <div className="min-h-screen bg-[#0B0E11] text-white">
+      {/* HEADER FIXO */}
+      <div className="sticky top-0 z-10 bg-[#0B0E11]/80 backdrop-blur-md px-5 py-6 flex items-center justify-between border-b border-white/5">
+        <button onClick={() => navigate(-1)} className="p-2 bg-white/5 rounded-xl">
+          <ArrowLeft size={18} weight="bold" />
         </button>
-
-        <h1 className="text-lg font-semibold uppercase tracking-tighter italic">Transações</h1>
-
-        <Funnel size={18} className="text-gray-500" />
+        <h1 className="text-sm font-black uppercase tracking-widest italic">Histórico</h1>
+        <Funnel size={18} weight="fill" className="text-gray-500" />
       </div>
 
-      {/* RESUMO */}
-      <div className="bg-[#161A1F] border border-white/5 p-5 rounded-[2rem] space-y-4 shadow-2xl">
-        <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Saldo total</p>
+      <div className="px-5 py-8 space-y-8 pb-20">
+        {/* CARD DE RESUMO */}
+        <div className="bg-[#161A1F] border border-white/5 p-6 rounded-[2rem] shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-[50px]" />
+          <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-2">Balanço do Período</p>
+          <h2 className={`text-3xl font-mono font-bold ${summary.balance >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+            {summary.balance.toLocaleString()} <span className="text-xs">Kz</span>
+          </h2>
 
-        <h2 className="text-3xl text-emerald-500 font-normal">
-          {summary.balance.toLocaleString()} <span className="text-sm">Kz</span>
-        </h2>
-
-        <div className="flex justify-between text-[10px] font-bold pt-3 border-t border-white/5">
-          <span className="text-emerald-500 uppercase">Entradas: +{summary.totalIn.toLocaleString()}</span>
-          <span className="text-gray-500 uppercase">Saídas: -{summary.totalOut.toLocaleString()}</span>
-        </div>
-      </div>
-
-      {/* FILTROS */}
-      <div className="flex gap-2">
-        {(['ALL', 'IN', 'OUT'] as const).map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`flex-1 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-wider transition-all ${
-              filter === f
-                ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.3)]'
-                : 'bg-[#161A1F] text-gray-500 border border-white/5'
-            }`}
-          >
-            {f === 'ALL' ? 'Todos' : f === 'IN' ? 'Entradas' : 'Saídas'}
-          </button>
-        ))}
-      </div>
-
-      {/* LISTA */}
-      <div className="space-y-6">
-        {loading && <p className="text-center text-gray-500 text-xs animate-pulse">Sincronizando registros...</p>}
-
-        {!loading && Object.entries(grouped).length === 0 && (
-          <div className="flex flex-col items-center gap-2 pt-10 opacity-20">
-             <Receipt size={48} />
-             <p className="text-xs uppercase font-bold">Nenhuma atividade encontrada</p>
+          <div className="flex justify-between items-center pt-5 mt-5 border-t border-white/5">
+            <div className="text-left">
+              <p className="text-[9px] text-gray-500 uppercase font-bold">Total Entradas</p>
+              <p className="text-emerald-500 font-bold text-xs">+{summary.totalIn.toLocaleString()} Kz</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[9px] text-gray-500 uppercase font-bold">Total Saídas</p>
+              <p className="text-rose-500 font-bold text-xs">-{summary.totalOut.toLocaleString()} Kz</p>
+            </div>
           </div>
-        )}
+        </div>
 
-        {!loading && Object.entries(grouped).map(([date, txs]: any) => (
-          <div key={date} className="space-y-3">
-            <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest ml-2">{date}</p>
+        {/* FILTROS DE ESTADO */}
+        <div className="flex gap-2 bg-[#161A1F] p-1.5 rounded-2xl border border-white/5">
+          {(['ALL', 'IN', 'OUT'] as const).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                filter === f ? 'bg-white text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              {f === 'ALL' ? 'Todos' : f === 'IN' ? 'Entradas' : 'Saídas'}
+            </button>
+          ))}
+        </div>
 
-            {txs.map((tx: Transaction) => {
-              // PROTEÇÃO: Caso o tipo não exista no meta, usa o fallback
-              const meta = TYPE_META[tx.type] || { 
-                label: tx.type, 
-                icon: Clock, 
-                color: 'text-gray-400', 
-                sign: '', 
-                category: 'ALL' 
-              }
-              const Icon = meta.icon
+        {/* LISTAGEM AGRUPADA */}
+        <div className="space-y-8">
+          {loading ? (
+            <p className="text-center text-[10px] text-gray-500 animate-pulse tracking-widest">SINCRONIZANDO BLOCKCHAIN...</p>
+          ) : Object.entries(grouped).map(([date, txs]: any) => (
+            <div key={date} className="space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-gray-600 font-black uppercase tracking-[0.2em]">{date}</span>
+                <div className="h-[1px] flex-1 bg-white/5" />
+              </div>
 
-              return (
-                <div
-                  key={tx.id}
-                  className="bg-[#161A1F] border border-white/5 p-4 rounded-2xl flex justify-between items-center hover:bg-[#1c2127] transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 bg-[#0B0E11] rounded-full flex items-center justify-center border border-white/5 ${meta.color}`}>
-                      <Icon size={18} weight="bold" />
+              {txs.map((tx: Transaction) => {
+                const meta = TYPE_META[tx.type] || { label: tx.type, icon: Clock, color: 'text-gray-400', sign: '', category: 'ALL' }
+                const Icon = meta.icon
+                const isOut = meta.category === 'OUT'
+
+                return (
+                  <div key={tx.id} className="group flex justify-between items-center p-4 bg-[#161A1F]/40 border border-white/5 rounded-2xl hover:bg-[#161A1F] transition-all">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center border border-white/5 shadow-inner transition-colors ${isOut ? 'bg-rose-500/5 text-rose-500' : 'bg-emerald-500/5 text-emerald-500'}`}>
+                        <Icon size={20} weight={isOut ? "fill" : "duotone"} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-gray-100">{meta.label}</p>
+                        <p className="text-[10px] text-gray-600 font-mono mt-0.5">
+                          {new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
                     </div>
 
-                    <div>
-                      <p className="text-sm font-medium text-gray-200">{meta.label}</p>
-                      <p className="text-[10px] text-gray-600 font-mono">
-                        {new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    <div className="text-right">
+                      <p className={`text-sm font-mono font-bold ${meta.color}`}>
+                        {meta.sign}{formatCurrency(Number(tx.amount), tx.currency)}
                       </p>
+                      <p className="text-[8px] text-gray-700 font-black uppercase tracking-tighter mt-1">{tx.currency}</p>
                     </div>
                   </div>
-
-                  <span className={`text-sm font-bold ${meta.color}`}>
-                    {meta.sign}{tx.amount.toLocaleString()} <span className="text-[10px]">Kz</span>
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        ))}
+                )
+              })}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

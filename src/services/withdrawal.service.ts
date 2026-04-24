@@ -1,36 +1,48 @@
 import { api } from './api'
 
-export interface WithdrawalResponse {
+/* ================= TYPES ================= */
+
+// 🔥 HISTÓRICO (LISTAGEM)
+export interface WithdrawalHistory {
   id: number
+  type: 'AOA' | 'USDT'
   amount: number
   fee: number
-  status: 'PENDING' | 'APPROVED' | 'SUCCESS' | 'REJECTED'
+  status: string
   createdAt: string
+  txHash?: string
 }
 
-// Exportamos como interface para garantir a tipagem no Frontend
+// 🔥 RESPOSTA DO SAQUE USDT
+export interface WithdrawUSDTResponse {
+  success: boolean
+  txHash: string
+}
+
+// 🔥 ERRO PADRÃO
 export interface WithdrawalError {
   error?: string
   message?: string
 }
 
+/* ================= SERVICE ================= */
+
 export const WithdrawalService = {
-  /**
-   * Cria um novo pedido de levantamento
-   * @param amount Valor bruto do saque
-   */
-  async create(amount: number): Promise<WithdrawalResponse> {
+
+  /* ================= AOA ================= */
+
+  async create(amount: number) {
     try {
       const response = await api.post('/withdrawals', {
         amount
       })
 
       return response.data
+
     } catch (err: any) {
-      // ✅ Captura o erro estruturado vindo do WithdrawalController do Backend
+
       const errorData = err.response?.data as WithdrawalError
 
-      // Lança o objeto de erro padronizado para ser lido pelo handleError da página
       throw {
         error: errorData?.error || 'INTERNAL_ERROR',
         message: errorData?.message || 'Erro ao processar levantamento'
@@ -38,15 +50,50 @@ export const WithdrawalService = {
     }
   },
 
-  /**
-   * Lista o histórico de levantamentos do utilizador
-   */
-  async list(): Promise<WithdrawalResponse[]> {
+  /* ================= USDT ================= */
+
+  async withdrawUSDT(
+    amount: number,
+    address: string,
+    otp: string,
+    email: string
+  ) {
+    try {
+      const response = await api.post('/withdrawals/usdt', {
+        amount,
+        address,
+        otp,
+        email
+      })
+
+      return response.data
+
+    } catch (err: any) {
+
+      const errorData = err.response?.data
+
+      throw {
+        error: errorData?.error || 'INTERNAL_ERROR',
+        message: errorData?.message || 'Erro ao processar saque USDT'
+      }
+    }
+  }, // ✅ CORREÇÃO AQUI
+
+  /* ================= LIST ================= */
+
+  async list(): Promise<WithdrawalHistory[]> {
     try {
       const response = await api.get('/withdrawals')
       return response.data
-    } catch (err) {
-      throw new Error('Erro ao carregar histórico de levantamentos')
+    } catch (err: any) {
+
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        'Erro ao carregar histórico de levantamentos'
+
+      throw new Error(message)
     }
-  }
+  },
+
 }

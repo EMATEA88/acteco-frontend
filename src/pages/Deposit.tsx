@@ -5,16 +5,13 @@ import {
   ArrowLeft,
   Bank,
   CurrencyCircleDollar,
+  CheckCircle,
   Copy,
-  ShieldCheck,
-  WhatsappLogo,
   Info,
-  CheckCircle
+  ClockCounterClockwise
 } from '@phosphor-icons/react'
 import { RechargeService } from '../services/recharge.service'
 import { UserService } from '../services/user.service'
-
-const QUICK = [6000, 15000, 30000, 50000]
 
 type Method = 'AOA' | 'USDT' | null
 
@@ -22,105 +19,199 @@ export default function Deposit() {
   const [method, setMethod] = useState<Method>(null)
 
   return (
-    <>
-      <Toaster 
-        position="top-center" 
-        toastOptions={{
-          style: { background: '#111318', color: '#fff', border: '1px solid rgba(255,255,255,0.05)' }
-        }} 
-      />
-      
+    <div className="min-h-screen bg-[#0B0E11] text-white">
+      <Toaster position="top-center" />
       {!method && <SelectMethod onSelect={setMethod} />}
       {method === 'AOA' && <DepositAOA onBack={() => setMethod(null)} />}
       {method === 'USDT' && <DepositUSDT onBack={() => setMethod(null)} />}
-    </>
-  )
-}
-
-/* ================= COMPONENTES DE SUPORTE ================= */
-
-function Header({ onBack, title }: any) {
-  return (
-    <div className="flex items-center gap-3 mb-6">
-      <button onClick={onBack} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition">
-        <ArrowLeft size={16} />
-      </button>
-      <h1 className="text-sm font-semibold">{title}</h1>
     </div>
   )
 }
 
-function PrimaryButton({ children, onClick, loading }: any) {
+/* ================= COMPONENTES BASE ================= */
+
+function Header({ onBack, title, rightAction }: any) {
+  return (
+    <div className="flex items-center justify-between px-5 py-6 border-b border-white/5 bg-[#0B0E11]/80 backdrop-blur-md sticky top-0 z-10">
+      <div className="flex items-center gap-4">
+        <button onClick={onBack} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors">
+          <ArrowLeft size={18} weight="bold" />
+        </button>
+        <h1 className="text-lg font-bold">{title}</h1>
+      </div>
+      {rightAction && rightAction}
+    </div>
+  )
+}
+
+function PrimaryButton({ children, onClick, loading, disabled }: any) {
   return (
     <button
       onClick={onClick}
-      disabled={loading}
-      className="w-full h-11 rounded-xl bg-white text-black text-sm font-bold hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-50"
+      disabled={loading || disabled}
+      className="w-full h-12 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-[#0B0E11] font-bold text-sm transition-all disabled:opacity-50 active:scale-[0.98]"
     >
-      {loading ? 'A processar...' : children}
+      {loading ? (
+        <div className="flex items-center justify-center gap-2">
+          <div className="w-4 h-4 border-2 border-[#0B0E11]/30 border-t-[#0B0E11] rounded-full animate-spin" />
+          Processando...
+        </div>
+      ) : children}
     </button>
   )
+}
+
+function Skeleton({ className }: { className: string }) {
+  return <div className={`animate-pulse bg-white/5 rounded ${className}`} />
 }
 
 /* ================= SELEÇÃO DE MÉTODO ================= */
 
-function SelectMethod({ onSelect }: { onSelect: (m: Method) => void }) {
+function SelectMethod({ onSelect }: any) {
+  const navigate = useNavigate()
+
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white px-5 py-6">
-      <h1 className="text-lg font-bold mb-6">Método de Depósito</h1>
-      <div className="space-y-4">
-        <MethodCard 
-          title="Transferência Bancária (AOA)" 
-          desc="Iban e Contas Nacionais"
-          icon={<Bank size={24} weight="fill" />} 
-          onClick={() => onSelect('AOA')} 
-        />
-        <MethodCard 
-          title="Criptomoeda USDT (TRC20)" 
-          desc="Rede Tron (Blockchain)"
-          icon={<CurrencyCircleDollar size={24} weight="fill" />} 
-          onClick={() => onSelect('USDT')} 
-        />
+    <>
+      <div className="flex items-center justify-between px-5 py-6 border-b border-white/5">
+        <h1 className="text-xl font-bold">Depositar</h1>
+        <button 
+          onClick={() => navigate('/recharge-history')}
+          className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-90 border border-white/5 group"
+        >
+          <ClockCounterClockwise 
+            size={20} 
+            weight="bold" 
+            className="text-gray-400 group-hover:text-cyan-400 transition-colors" 
+          />
+        </button>
       </div>
-    </div>
+
+      <div className="px-5 py-8">
+        <p className="text-gray-400 text-sm mb-8">Escolha como deseja recarregar sua conta</p>
+
+        <div className="grid gap-4">
+          <button 
+            onClick={() => onSelect('AOA')} 
+            className="flex items-center justify-between w-full p-5 bg-[#161A1E] border border-white/5 rounded-2xl hover:bg-[#1C2127] transition-all group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-cyan-500/10 text-cyan-500 rounded-xl group-hover:scale-110 transition-transform">
+                <Bank size={24} weight="duotone" />
+              </div>
+              <div className="text-left">
+                <p className="font-bold">Kwanza (AOA)</p>
+                <p className="text-xs text-gray-500">Transferência bancária local</p>
+              </div>
+            </div>
+          </button>
+
+          <button 
+            onClick={() => onSelect('USDT')} 
+            className="flex items-center justify-between w-full p-5 bg-[#161A1E] border border-white/5 rounded-2xl hover:bg-[#1C2127] transition-all group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-green-500/10 text-green-500 rounded-xl group-hover:scale-110 transition-transform">
+                <CurrencyCircleDollar size={24} weight="duotone" />
+              </div>
+              <div className="text-left">
+                <p className="font-bold">USDT (TRC20)</p>
+                <p className="text-xs text-gray-500">Recarga via Blockchain</p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </>
   )
 }
 
-function MethodCard({ title, desc, icon, onClick }: any) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full bg-[#111318] border border-white/5 rounded-2xl p-5 flex items-center gap-4 active:scale-[0.98] transition-all text-left"
-    >
-      <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-500">{icon}</div>
-      <div>
-        <p className="font-bold text-sm">{title}</p>
-        <p className="text-[10px] text-gray-500 uppercase tracking-tighter">{desc}</p>
-      </div>
-    </button>
-  )
-}
+/* ================= FLUXO AOA ================= */
 
-/* ================= DEPÓSITO AOA ================= */
-
-function DepositAOA({ onBack }: { onBack: () => void }) {
+function DepositAOA({ onBack }: any) {
   const navigate = useNavigate()
   const [amount, setAmount] = useState<number | ''>('')
-  const [balance, setBalance] = useState(0)
+  const [balance, setBalance] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    UserService.me().then(r => setBalance(r.data.balance)).catch(() => {})
+    UserService.me().then(r => setBalance(r.data.balance))
   }, [])
 
   async function submit() {
-    if (!amount) return toast.error("Introduza um valor válido")
+    if (!amount || amount <= 0) return toast.error("Insira um valor válido")
     setLoading(true)
     try {
-      const res = await RechargeService.create(Number(amount))
-      toast.success("Solicitação criada!")
+      const res = await RechargeService.create({ amount: Number(amount), currency: 'AOA', method: 'BANK' })
       navigate(`/deposit/banks/${res.id}`)
-    } catch (error) {
+    } catch {
+      toast.error("Erro ao iniciar depósito")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <Header onBack={onBack} title="Depósito Bancário" />
+      <div className="px-5 py-6">
+        <div className="bg-[#161A1E] p-4 rounded-2xl mb-6 flex justify-between items-center border border-white/5">
+          <span className="text-gray-400 text-sm">Saldo Atual</span>
+          <span className="font-mono font-bold text-cyan-400">
+            {balance !== null ? `${balance.toLocaleString()} Kz` : <Skeleton className="w-20 h-5" />}
+          </span>
+        </div>
+
+        <label className="block text-xs text-gray-500 uppercase font-bold mb-2 ml-1">Valor a depositar (AOA)</label>
+        <input
+          type="number"
+          value={amount}
+          onChange={e => setAmount(Number(e.target.value) || '')}
+          className="w-full h-14 bg-[#161A1E] border border-white/5 rounded-xl px-4 text-lg font-bold focus:border-cyan-500 outline-none transition-all mb-8 text-white"
+          placeholder="0.00"
+        />
+
+        <PrimaryButton onClick={submit} loading={loading}>
+          Continuar para Dados Bancários
+        </PrimaryButton>
+      </div>
+    </>
+  )
+}
+
+/* ================= FLUXO USDT ================= */
+
+function DepositUSDT({ onBack }: any) {
+  const [amount, setAmount] = useState<number | ''>('')
+  const [address, setAddress] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+  RechargeService.getUserWallet().then(address => setAddress(address))
+}, [])
+
+  const handleCopy = () => {
+    if (!address) return
+    navigator.clipboard.writeText(address)
+    setCopied(true)
+    toast.success("Endereço copiado!")
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  async function submit() {
+    if (!amount || amount <= 0) return toast.error("Insira o valor enviado")
+    
+    setLoading(true)
+    try {
+      await RechargeService.create({ 
+        amount: Number(amount), 
+        currency: 'USDT', 
+        method: 'CRYPTO' 
+      })
+      
+      toast.success("Solicitação enviada! Aguarde a validação.")
+      onBack()
+    } catch (err: any) {
       toast.error("Erro ao processar depósito")
     } finally {
       setLoading(false)
@@ -128,182 +219,78 @@ function DepositAOA({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white px-5 py-6">
-      <Header onBack={onBack} title="Depósito AOA" />
-      <div className="bg-[#111318] border border-white/5 rounded-xl p-4 mb-4">
-        <p className="text-xs text-gray-500">Saldo Atual</p>
-        <p className="text-lg text-emerald-500">{balance.toLocaleString()} Kz</p>
-      </div>
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        {QUICK.map(v => (
-          <button key={v} onClick={() => setAmount(v)} className="h-10 bg-[#111318] border border-white/5 rounded-lg text-xs">
-            {v.toLocaleString()} Kz
-          </button>
-        ))}
-      </div>
-      <input
-        type="number"
-        value={amount}
-        onChange={e => setAmount(Number(e.target.value) || '')}
-        placeholder="Introduza o valor"
-        className="w-full h-11 bg-[#111318] border border-white/5 rounded-xl px-4 mb-4 outline-none focus:border-emerald-500 transition"
-      />
-      <PrimaryButton onClick={submit} loading={loading}>Confirmar Depósito</PrimaryButton>
-    </div>
-  )
-}
-
-/* ================= DEPÓSITO USDT ================= */
-
-function DepositUSDT({ onBack }: { onBack: () => void }) {
-  const [amount, setAmount] = useState<number | ''>('')
-  
-  // 🟢 Pega o endereço direto da variável de ambiente do Render
-  const ENV_ADDRESS = import.meta.env.VITE_TRON_PUBLIC_ADDRESS;
-  
-  const [address, setAddress] = useState(ENV_ADDRESS || 'Carregando...')
-  const [copied, setCopied] = useState(false)
-  const [file, setFile] = useState<File | null>(null)
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    if (ENV_ADDRESS) {
-      setAddress(ENV_ADDRESS);
-      return;
-    }
-
-    RechargeService.getCompanyWallet()
-      .then(res => {
-        if (res.address) setAddress(res.address);
-      })
-      .catch(() => {
-        if (!ENV_ADDRESS) setAddress("Endereço indisponível no momento");
-      })
-  }, [ENV_ADDRESS])
-
-  // 🟢 Função de copiar corrigida
-  function copy() {
-    navigator.clipboard.writeText(address)
-    setCopied(true)
-    toast.success("Copiado!", { icon: '📋' })
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  // 🟢 Função de enviar comprovativo corrigida
-  async function sendProof() {
-    if (!amount || Number(amount) <= 0) return toast.error("Introduza o valor enviado")
-    if (!file) return toast.error("Selecione o comprovativo")
-    
-    setLoading(true)
-    try {
-      // Cria a recarga forçando o tipo USDT para o Admin ver corretamente
-      const recharge = await RechargeService.create(Number(amount), "USDT")
-
-      const formData = new FormData()
-      formData.append('rechargeId', String(recharge.id))
-      formData.append('file', file)
-
-      await RechargeService.uploadProof(formData)
+    <>
+      <Header onBack={onBack} title="Recarga USDT (TRC20)" />
       
-      toast.success("Enviado com sucesso!", {
-        duration: 4000,
-        icon: <CheckCircle size={24} className="text-emerald-500" />
-      })
-      onBack()
-    } catch (err: any) {
-      toast.error("Falha ao enviar comprovativo.")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div className="min-h-screen bg-[#0B0E11] text-white px-5 py-6 flex flex-col">
-      <Header onBack={onBack} title="Depósito USDT (TRC20)" />
-
-      <div className="mb-4">
-        <p className="text-[10px] text-gray-500 mb-2 uppercase font-bold tracking-widest text-center">Quanto você enviou? (USDT)</p>
-        <input
-          type="number"
-          value={amount}
-          onChange={e => setAmount(Number(e.target.value) || '')}
-          placeholder="Ex: 10"
-          className="w-full h-11 bg-[#111318] border border-white/10 rounded-xl px-4 outline-none focus:border-cyan-500 transition text-center text-cyan-400 font-bold"
-        />
-      </div>
-
-      <div className="bg-[#111318] border border-white/5 rounded-2xl p-6 mb-6 text-center">
-        <div className="flex justify-center mb-4 text-cyan-400">
-          <ShieldCheck size={48} weight="duotone" />
-        </div>
-        <p className="text-xs text-gray-400 mb-6 px-4 leading-relaxed">
-          Envie apenas USDT pela rede **TRON (TRC20)**. O envio por outras redes resultará em perda permanente.
-        </p>
-
-        <div className="bg-[#0B0E11] border border-white/10 rounded-xl p-4 font-mono text-[10px] break-all text-cyan-400 mb-4">
-          {address}
-        </div>
-
-        <button 
-          onClick={copy}
-          className="w-full h-11 bg-white text-black rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition active:scale-95"
-        >
-          <Copy size={16} /> {copied ? 'Copiado!' : 'Copiar Endereço Tron'}
-        </button>
-      </div>
-
-      <div className="bg-[#111318] border border-white/5 rounded-2xl p-5 mb-6">
-        <p className="text-[10px] text-gray-500 mb-4 uppercase font-bold tracking-widest text-center">
-          Passo 2: Anexar Comprovativo
-        </p>
-        
-        <input 
-          type="file" 
-          id="proof-input" 
-          hidden 
-          accept="image/*" 
-          onChange={(e) => setFile(e.target.files?.[0] || null)} 
-        />
-        
-        <label 
-          htmlFor="proof-input"
-          className={`w-full h-24 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${
-            file ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-white/10 hover:border-cyan-500/30'
-          }`}
-        >
-          <span className="text-[10px] text-gray-400 px-4 text-center">
-            {file ? `Arquivo selecionado` : "Clique aqui para anexar o comprovativo"}
-          </span>
-          {file && <p className="text-[9px] text-emerald-500 font-bold uppercase">{file.name}</p>}
-        </label>
-
-        {file && (
-          <button 
-            onClick={sendProof}
-            disabled={loading}
-            className="w-full mt-4 h-11 bg-emerald-500 text-black font-bold rounded-xl text-xs active:scale-95 transition disabled:opacity-50 shadow-lg shadow-emerald-500/10"
-          >
-            {loading ? "ENVIANDO..." : "CONFIRMAR PAGAMENTO NO SISTEMA"}
-          </button>
-        )}
-      </div>
-
-      <div className="mt-auto">
-        <div className="flex gap-3 p-4 bg-amber-500/5 border border-amber-500/10 rounded-xl mb-4">
-          <Info size={24} className="text-amber-500 shrink-0" />
-          <p className="text-[10px] text-amber-200/70">
-            O seu saldo será creditado automaticamente após a nossa equipa validar o comprovativo.
+      <div className="px-5 py-6 max-w-md mx-auto">
+        <div className="bg-yellow-500/5 border border-yellow-500/20 p-4 rounded-2xl mb-8 flex gap-3 text-yellow-500/90 leading-tight">
+          <Info size={20} weight="fill" className="shrink-0 mt-0.5" />
+          <p className="text-[11px] font-medium italic">
+            Atenção: Use apenas a rede **TRON (TRC20)**. O sistema identifica seu depósito automaticamente após o envio para o endereço abaixo.
           </p>
         </div>
 
-        <button
-          className="w-full bg-[#25D366] text-black font-extrabold py-4 rounded-2xl flex items-center justify-center gap-2"
-          onClick={() => window.open('https://wa.me/244928270636', '_blank')}
-        >
-          <WhatsappLogo weight="fill" size={24} />
-          SUPORTE VIA WHATSAPP
-        </button>
+        <div className="space-y-8">
+          <div>
+            <label className="block text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3 ml-1">
+              Quanto você enviou? (USDT)
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={amount}
+                onChange={e => setAmount(Number(e.target.value) || '')}
+                placeholder="0.00"
+                className="w-full h-16 bg-[#161A1E] border border-white/5 rounded-2xl px-5 text-2xl font-mono font-bold outline-none focus:border-cyan-500/50 focus:bg-[#1c2127] transition-all text-white placeholder:text-white/10"
+              />
+              <div className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-xs">USDT</div>
+            </div>
+          </div>
+
+          <div className="bg-[#161A1E] border border-white/5 rounded-3xl p-6 relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-500" />
+            
+            <div className="text-[10px] text-gray-500 uppercase font-black tracking-[0.2em] mb-5 text-center">
+              Endereço de Destino
+            </div>
+            
+            <div className="flex flex-col items-center gap-6">
+              <div className="w-full py-4 px-4 bg-black/30 rounded-xl border border-white/5">
+                <div className="text-sm font-mono break-all text-center text-cyan-400 leading-relaxed tracking-tight min-h-[20px] flex items-center justify-center">
+                  {address ? address : <Skeleton className="w-48 h-4 mx-auto" />}
+                </div>
+              </div>
+              
+              <button 
+                onClick={handleCopy}
+                disabled={!address}
+                className={`
+                  flex items-center gap-2 px-8 py-3 rounded-xl text-[11px] font-black transition-all active:scale-95
+                  ${copied 
+                    ? 'bg-green-500 text-white shadow-[0_0_20px_rgba(34,197,94,0.3)]' 
+                    : 'bg-white text-black hover:bg-cyan-50'
+                  }
+                  disabled:opacity-20
+                `}
+              >
+                {copied ? <CheckCircle size={18} weight="bold" /> : <Copy size={18} weight="bold" />}
+                {copied ? 'COPIADO COM SUCESSO' : 'COPIAR ENDEREÇO TRON'}
+              </button>
+            </div>
+          </div>
+
+          <div className="pt-4 flex flex-col items-center gap-4">
+            <PrimaryButton onClick={submit} loading={loading}>
+              Já realizei o envio
+            </PrimaryButton>
+            
+            <div className="flex items-center gap-2 opacity-40">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-[10px] font-medium tracking-wide">VARREDURA BLOCKCHAIN ATIVA</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

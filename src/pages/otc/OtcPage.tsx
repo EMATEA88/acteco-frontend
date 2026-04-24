@@ -46,23 +46,21 @@ export default function OtcPage() {
       setLoading(true)
       // Busca Ativos e Dados do Usuário (Saldos)
       const [assetsData, userRes] = await Promise.all([
-        otcService.listAssets(),
-        api.get("/auth/me") 
-      ])
+  otcService.listAssets(),
+  api.get("/users/me") // 🔥 endpoint correto
+])
 
-      const sorted = [...assetsData].sort((a, b) =>
-        ORDER.indexOf(a.symbol) - ORDER.indexOf(b.symbol)
-      )
-      
-      setAssets(sorted)
-      
-      // 🟢 Garante que estamos pegando balance e balanceUSDT da resposta
-      if (userRes.data?.data) {
-        setUserData({
-          balance: userRes.data.data.balance || 0,
-          balanceUSDT: userRes.data.data.balanceUSDT || 0
-        })
-      }
+const sorted = [...assetsData].sort((a, b) =>
+  ORDER.indexOf(a.symbol) - ORDER.indexOf(b.symbol)
+)
+
+setAssets(sorted)
+
+// 🔥 resposta correta (SEM .data)
+setUserData({
+  balance: userRes.data.balance || 0,
+  balanceUSDT: userRes.data.balanceUSDT || 0
+})
     } catch (err) {
       console.error(err)
       toast.error("Erro ao carregar dados do mercado")

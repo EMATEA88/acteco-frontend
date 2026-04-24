@@ -1,192 +1,83 @@
-// src/pages/Withdraw.tsx
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { 
-  ArrowLeft, 
-  ClockCounterClockwise, 
-  Wallet, 
-  Info, 
-  CheckCircle, 
-  WarningCircle,
-  PlusCircle,
-  CircleNotch
-} from '@phosphor-icons/react'
-import { UserService } from '../services/user.service'
-import { WithdrawalService } from '../services/withdrawal.service'
+import { ArrowLeft, Bank, CurrencyCircleDollar, CaretRight, ClockCounterClockwise } from '@phosphor-icons/react'
 
 export default function Withdraw() {
   const navigate = useNavigate()
 
-  const [amount, setAmount] = useState('')
-  const [balance, setBalance] = useState(0)
-  const [hasBank, setHasBank] = useState(true)
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<any>(null)
-
-  // AJUSTE: Taxa alterada de 10% para 3%
-  const FEE_PERCENT = 0.03 
-  const MIN_WITHDRAW = 10
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const res = await UserService.me()
-        setBalance(res.data.balance)
-        const bankData = res.data.bank
-        setHasBank(!!(bankData && (bankData.accountNumber || bankData.id)))
-      } catch {
-        setBalance(0)
-      }
-    }
-    loadData()
-  }, [])
-
-  const numericAmount = Number(amount)
-  const fee = numericAmount * FEE_PERCENT
-  const netAmount = numericAmount - fee
-
-  function handleError(err: any) {
-    const errorCode = err.error || err.response?.data?.error
-
-    switch (errorCode) {
-      case 'BANK_REQUIRED': return 'Conta bancária obrigatória.'
-      case 'MIN_WITHDRAW_NOT_MET': return `Mínimo: ${MIN_WITHDRAW} Kz`
-      case 'WITHDRAW_PENDING_EXISTS': return 'Já existe um levantamento pendente.'
-      case 'INSUFFICIENT_BALANCE': return 'Saldo insuficiente.'
-      case 'USER_BLOCKED': return 'Conta bloqueada.'
-      default: return 'Erro ao processar.'
-    }
-  }
-
-  async function handleWithdraw() {
-    setMessage(null)
-
-    if (!hasBank) return setMessage({ type: 'error', text: 'Adicione conta bancária' })
-    if (!numericAmount || numericAmount <= 0) return setMessage({ type: 'error', text: 'Valor inválido' })
-    if (numericAmount < MIN_WITHDRAW) return setMessage({ type: 'error', text: `Mínimo ${MIN_WITHDRAW} Kz` })
-    if (numericAmount > balance) return setMessage({ type: 'error', text: 'Saldo insuficiente' })
-
-    try {
-      setLoading(true)
-      await WithdrawalService.create(numericAmount)
-      setMessage({ type: 'success', text: 'Pedido enviado' })
-      setAmount('')
-      const me = await UserService.me()
-      setBalance(me.data.balance)
-    } catch (err: any) {
-      setMessage({ type: 'error', text: handleError(err) })
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-8 pb-28">
-
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-[#0B0E11] text-white">
+      {/* HEADER AJUSTADO COM BOTÃO DE HISTÓRICO */}
+      <div className="flex items-center justify-between px-5 py-6 border-b border-white/5 bg-[#0B0E11]/80 backdrop-blur-md sticky top-0 z-10">
+        <div className="flex items-center gap-4">
           <button 
-            onClick={() => navigate(-1)}
-            className="p-2 rounded-full bg-white/5 border border-white/10"
+            onClick={() => navigate(-1)} 
+            className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={18} weight="bold" />
           </button>
-          <h1 className="text-base font-semibold">Levantamento</h1>
+          <h1 className="text-lg font-bold">Método de Saque</h1>
         </div>
 
-        <button
-          onClick={() => navigate('/withdraw-history')}
-          className="p-2 rounded-full bg-white/5 border border-white/10"
-        >
-          <ClockCounterClockwise size={18} />
-        </button>
+        {/* Substitua o botão de histórico por este: */}
+<button 
+  onClick={() => navigate('/withdraw-history')} // <-- Corrigido para usar hífen
+  className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl transition-all active:scale-90 border border-white/5 flex items-center justify-center group"
+>
+  <ClockCounterClockwise 
+    size={20} 
+    weight="bold" 
+    className="text-gray-400 group-hover:text-cyan-400 transition-colors" 
+  />
+</button>
       </div>
 
-      {/* SALDO + INPUT NA MESMA LINHA */}
-      <div className="glass-card p-4 rounded-2xl flex items-center justify-between mb-4">
+      <div className="px-5 py-8 max-w-md mx-auto">
+        <h2 className="text-2xl font-bold mb-2">Levantar Fundos</h2>
+        <p className="text-gray-400 text-sm mb-8">Selecione a moeda que deseja retirar da sua conta.</p>
 
-        <div>
-          <p className="text-xs text-gray-400">Saldo</p>
-          <p className="text-lg font-semibold">{balance.toLocaleString()} Kz</p>
-        </div>
-
-        <div className="w-[140px] relative">
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0"
-            className="w-full h-10 bg-[#0A0D10] border border-white/10 rounded-xl px-3 text-sm outline-none"
-          />
-          <Wallet size={16} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500" />
-        </div>
-
-      </div>
-
-      {/* BANCO */}
-      {!hasBank && (
-        <div className="glass-card p-4 rounded-2xl mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-red-400">
-            <WarningCircle size={16} />
-            Conta bancária não vinculada
-          </div>
-
-          <button
-            onClick={() => navigate('/bank')}
-            className="flex items-center gap-1 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs"
+        <div className="grid gap-4">
+          {/* OPÇÃO KWANZA */}
+          <button 
+            onClick={() => navigate('/withdraw/aoa')}
+            className="flex items-center justify-between w-full p-5 bg-[#161A1E] border border-white/5 rounded-2xl hover:bg-[#1C2127] hover:border-emerald-500/30 transition-all group shadow-lg"
           >
-            <PlusCircle size={14} />
-            Adicionar
+            <div className="flex items-center gap-4 text-left">
+              <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl group-hover:scale-110 transition-transform">
+                <Bank size={24} weight="duotone" />
+              </div>
+              <div>
+                <p className="font-bold text-white">Kwanza (AOA)</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider">Transferência Bancária</p>
+              </div>
+            </div>
+            <CaretRight size={20} className="text-gray-600 group-hover:text-white transition-colors" />
+          </button>
+
+          {/* OPÇÃO USDT */}
+          <button 
+            onClick={() => navigate('/withdraw/usdt')}
+            className="flex items-center justify-between w-full p-5 bg-[#161A1E] border border-white/5 rounded-2xl hover:bg-[#1C2127] hover:border-cyan-500/30 transition-all group shadow-lg"
+          >
+            <div className="flex items-center gap-4 text-left">
+              <div className="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl group-hover:scale-110 transition-transform">
+                <CurrencyCircleDollar size={24} weight="duotone" />
+              </div>
+              <div>
+                <p className="font-bold text-white">Tether (USDT)</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-wider">Rede TRC20 / Cripto</p>
+              </div>
+            </div>
+            <CaretRight size={20} className="text-gray-600 group-hover:text-white transition-colors" />
           </button>
         </div>
-      )}
 
-      {/* RESUMO */}
-      {numericAmount > 0 && (
-        <div className="glass-card p-4 rounded-2xl mb-4 space-y-2 text-sm">
-          <div className="flex justify-between text-gray-400">
-            {/* TEXTO ATUALIZADO PARA 3% */}
-            <span>Taxa (3%)</span>
-            <span>-{fee.toLocaleString()} Kz</span>
-          </div>
-
-          <div className="flex justify-between font-semibold">
-            <span>Recebe</span>
-            <span className="text-emerald-400">{netAmount.toLocaleString()} Kz</span>
-          </div>
+        {/* NOTA DE RODAPÉ ESTILIZADA */}
+        <div className="mt-12 p-4 rounded-2xl bg-white/5 border border-white/5">
+          <p className="text-[10px] text-gray-500 text-center leading-relaxed">
+            Certifique-se de que os seus dados de pagamento estão atualizados no perfil antes de solicitar o levantamento.
+          </p>
         </div>
-      )}
-
-      {/* MENSAGEM */}
-      {message && (
-        <div className={`mb-4 p-3 rounded-xl text-sm flex items-center gap-2 ${
-          message.type === 'success'
-            ? 'bg-emerald-500/10 text-emerald-400'
-            : 'bg-red-500/10 text-red-400'
-        }`}>
-          {message.type === 'success'
-            ? <CheckCircle size={16} />
-            : <WarningCircle size={16} />}
-          {message.text}
-        </div>
-      )}
-
-      {/* BOTÃO */}
-      <button
-        onClick={handleWithdraw}
-        disabled={loading || !numericAmount || !hasBank}
-        className="w-full h-11 rounded-full bg-emerald-500 text-black text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-40"
-      >
-        {loading ? <CircleNotch size={18} className="animate-spin" /> : 'Confirmar Saque'}
-      </button>
-
-      {/* INFO */}
-      <div className="mt-6 text-xs text-gray-500 flex items-start gap-2">
-        <Info size={14} />
-        Processamento entre 5 min e 24h úteis.
       </div>
-
     </div>
   )
 }
