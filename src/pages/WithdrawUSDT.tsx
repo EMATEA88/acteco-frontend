@@ -33,18 +33,22 @@ export default function WithdrawUSDT() {
   // ----------------------
 
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await UserService.me()
-        setAddress(res.data.walletAddress || '')
-        setEmail(res.data.email || '')
-        setBalance(Number(res.data.balanceUSDT ?? res.data.cryptoBalance ?? 0))
-      } catch {
-        toast.error("Erro ao carregar dados")
-      }
+  async function load() {
+    try {
+      const res = await UserService.me()
+
+      // ❌ NÃO preencher endereço automaticamente
+      setAddress('')
+
+      setEmail(res.data.email || '')
+      setBalance(Number(res.data.balanceUSDT ?? res.data.cryptoBalance ?? 0))
+
+    } catch {
+      toast.error("Erro ao carregar dados")
     }
-    load()
-  }, [])
+  }
+  load()
+}, [])
 
   useEffect(() => {
     if (timer <= 0) return
