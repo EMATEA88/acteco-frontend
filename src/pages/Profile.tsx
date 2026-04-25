@@ -47,7 +47,7 @@ export default function Profile() {
     queryKey: ['me'],
     queryFn: async () => {
       const res = await UserService.me()
-      return res.data as User
+      return res as User
     },
     staleTime: 1000 * 60 * 5
   })

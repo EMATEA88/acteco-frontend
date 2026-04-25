@@ -12,22 +12,25 @@ export interface UserResponse {
   fullName?: string
   phone: string
   email: string
+
   address?: string
   country?: string
   province?: string
   neighborhood?: string
   bio?: string
-  
+
   role: string
   balance: number
-  balanceUSDT: number // 🔥 CORRETO
-  cryptoBalance?: number // opcional (compatibilidade)
-  walletAddress?: string
-  
+  balanceUSDT: number
+  cryptoBalance?: number
+
+  // 🔥 SEPARAÇÃO CORRETA
+  depositWalletAddress?: string
+  withdrawWalletAddress?: string
+
   inviteCode?: string
   createdAt: string
   isVerified: boolean
-  
   securityLockoutUntil?: string | null
 
   verification: {
@@ -52,22 +55,31 @@ export interface UpdateProfileDTO {
   province?: string
   neighborhood?: string
   bio?: string
-  walletAddress?: string // 🟢 Novo: Campo para salvar o endereço TRC20
-  otp?: string 
+  withdrawWalletAddress?: string
+  otp?: string
 }
 
 export const UserService = {
 
-  async me(): Promise<{ data: UserResponse }> {
+  async me(): Promise<UserResponse> {
     const response = await api.get<UserResponse>('/users/me')
-    return response
+    return response.data
   },
 
   async updateProfile(data: UpdateProfileDTO): Promise<any> {
-    // 🟢 Validação simples: se houver endereço de carteira, deve começar com "T"
-    if (data.walletAddress && !data.walletAddress.startsWith('T')) {
-      throw new Error("Endereço inválido. A plataforma aceita apenas a rede Tron (TRC20).")
+
+    if (data.withdrawWalletAddress) {
+      const addr = data.withdrawWalletAddress.trim()
+
+      const tronRegex = /^T[a-zA-Z0-9]{33}$/
+
+      if (!tronRegex.test(addr)) {
+        throw new Error("Endereço TRC20 inválido.")
+      }
+
+      data.withdrawWalletAddress = addr
     }
+
     const response = await api.put('/users/profile', data)
     return response.data
   },

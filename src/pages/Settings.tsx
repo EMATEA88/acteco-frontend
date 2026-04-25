@@ -39,7 +39,7 @@ export default function Settings() {
     async function load() {
       try {
         const res = await UserService.me()
-        const user = res.data
+        const user = res
 
         setForm({
           fullName: user.fullName || '',

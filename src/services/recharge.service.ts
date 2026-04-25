@@ -20,10 +20,13 @@ export class RechargeService {
   }
 
   // 🔥 NOVO (CORRETO)
-  static async getUserWallet() {
-    const { data } = await api.get('/auth/me')
-    return data.data.walletAddress
-  }
+static async getUserWallet(): Promise<string> {
+  // Adicionamos um params para garantir que o backend receba o que precisa
+  const res = await api.get('/recharges/wallet', {
+    params: { currency: 'USDT' } // Ajuste se o seu backend esperar outro nome de parâmetro
+  })
+  return res.data.address
+}
 
   static async myHistory() {
     return api.get('/recharges/my')

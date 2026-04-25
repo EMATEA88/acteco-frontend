@@ -39,7 +39,7 @@ export default function Applications() {
         UserService.me()
       ])
       setItems(appData)
-      setBalance(userData.data.balance)
+      setBalance(userData.balance)
     } catch {
       toast.error('Erro ao sincronizar dados')
     } finally {

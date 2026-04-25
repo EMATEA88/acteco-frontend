@@ -13,21 +13,28 @@ export default function Wallet() {
 
   // Carrega o endereço salvo no banco de dados assim que o componente monta
   useEffect(() => {
-    if (user?.walletAddress) {
-      setAddress(user.walletAddress);
+    if (user?.withdrawWalletAddress) {
+      setAddress(user.withdrawWalletAddress);
     }
   }, [user]);
 
   const handleSave = async () => {
+
+    if (!address.trim()) {
+  return toast.error("Informe um endereço")
+}
+
     // Validação da rede Tron TRC20
-    if (!address.startsWith("T") || address.length < 34) {
-      return toast.error("Endereço TRC20 inválido!");
-    }
+    const cleanAddress = address.trim()
+
+if (!cleanAddress.startsWith("T") || cleanAddress.length < 34) {
+  return toast.error("Endereço TRC20 inválido!")
+}
 
     setSaving(true);
     try {
       // Chama o serviço para atualizar o perfil no backend
-      await UserService.updateProfile({ walletAddress: address });
+      await UserService.updateProfile({ withdrawWalletAddress: cleanAddress });
       
       // Atualiza o contexto global para refletir os novos dados
       await refreshUser(); 

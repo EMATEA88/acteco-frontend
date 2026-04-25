@@ -2,7 +2,6 @@ import { api } from './api'
 
 /* ================= TYPES ================= */
 
-// 🔥 HISTÓRICO (LISTAGEM)
 export interface WithdrawalHistory {
   id: number
   type: 'AOA' | 'USDT'
@@ -13,13 +12,11 @@ export interface WithdrawalHistory {
   txHash?: string
 }
 
-// 🔥 RESPOSTA DO SAQUE USDT
 export interface WithdrawUSDTResponse {
   success: boolean
   txHash: string
 }
 
-// 🔥 ERRO PADRÃO
 export interface WithdrawalError {
   error?: string
   message?: string
@@ -33,14 +30,13 @@ export const WithdrawalService = {
 
   async create(amount: number) {
     try {
-      const response = await api.post('/withdrawals', {
+      const { data } = await api.post('/withdrawals', {
         amount
       })
 
-      return response.data
+      return data
 
     } catch (err: any) {
-
       const errorData = err.response?.data as WithdrawalError
 
       throw {
@@ -52,39 +48,34 @@ export const WithdrawalService = {
 
   /* ================= USDT ================= */
 
-  async withdrawUSDT(
-    amount: number,
-    address: string,
-    otp: string,
+  async withdrawUSDT(data: {
+    amount: number
+    address: string
+    otp: string
     email: string
-  ) {
-    try {
-      const response = await api.post('/withdrawals/usdt', {
-        amount,
-        address,
-        otp,
-        email
-      })
+  }): Promise<WithdrawUSDTResponse> {
 
+    try {
+      const response = await api.post('/withdrawals/usdt', data)
       return response.data
 
     } catch (err: any) {
 
-      const errorData = err.response?.data
+      const errorData = err.response?.data as WithdrawalError
 
       throw {
         error: errorData?.error || 'INTERNAL_ERROR',
         message: errorData?.message || 'Erro ao processar saque USDT'
-      }
+      } as WithdrawalError
     }
-  }, // ✅ CORREÇÃO AQUI
+  },
 
   /* ================= LIST ================= */
 
   async list(): Promise<WithdrawalHistory[]> {
     try {
-      const response = await api.get('/withdrawals')
-      return response.data
+      const { data } = await api.get('/withdrawals')
+      return data
     } catch (err: any) {
 
       const message =
@@ -94,6 +85,6 @@ export const WithdrawalService = {
 
       throw new Error(message)
     }
-  },
+  }
 
 }

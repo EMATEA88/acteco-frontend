@@ -1,32 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowsLeftRight, CaretLeft, CheckCircle } from '@phosphor-icons/react';
 import { TransferService } from '../services/transferService';
+import { UserService } from '../services/user.service'; // Importe seu service de usuário
+import toast, { Toaster } from 'react-hot-toast';
 
 export function Transfer() {
   const navigate = useNavigate();
 
   const [targetId, setTargetId] = useState('');
   const [amount, setAmount] = useState('');
-  const [currency, setCurrency] = useState<'AOA' | 'USDT'>('AOA'); // 🔥 NOVO
+  const [currency, setCurrency] = useState<'AOA' | 'USDT'>('AOA');
   const [loading, setLoading] = useState(false);
+  
+  // 🔥 Estados para o saldo real
+  const [balances, setBalances] = useState({ aoa: 0, usdt: 0 });
+
+  // 🔥 Busca o saldo ao carregar a página
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const res = await UserService.me();
+        setBalances({
+          aoa: Number(res.balance || 0),
+          usdt: Number(res.balanceUSDT || 0)
+        });
+      } catch (err) {
+        console.error("Erro ao carregar saldos");
+      }
+    }
+    loadData();
+  }, []);
 
   async function handleTransfer(e: React.FormEvent) {
     e.preventDefault();
 
+    const amountNum = Number(amount);
+    const currentBalance = currency === 'AOA' ? balances.aoa : balances.usdt;
+
+    // Validação básica de saldo antes de enviar
+    if (amountNum > currentBalance) {
+      return toast.error('Saldo insuficiente para esta operação');
+    }
+
     setLoading(true);
+    const loadToast = toast.loading('Processando transferência...');
+
     try {
       await TransferService.internal(
         targetId,
-        Number(amount),
-        currency // 🔥 ENVIA MOEDA
+        amountNum,
+        currency
       );
 
-      alert('Transferência realizada com sucesso!');
-      navigate('/profile');
+      toast.success('Transferência realizada!', { id: loadToast });
+      
+      // Delay leve para o usuário ver o sucesso antes de navegar
+      setTimeout(() => navigate('/profile'), 1500);
 
     } catch (err: any) {
-      alert(err.message || 'Erro ao processar transferência');
+      toast.error(err.response?.data?.message || 'Erro ao processar transferência', { id: loadToast });
     } finally {
       setLoading(false);
     }
@@ -34,6 +67,7 @@ export function Transfer() {
 
   return (
     <div className="min-h-screen bg-[#080E11] text-white p-6 font-sans">
+      <Toaster position="top-center" reverseOrder={false} />
 
       {/* HEADER */}
       <div className="flex items-center gap-4 mb-8">
@@ -47,6 +81,22 @@ export function Transfer() {
         <h1 className="text-xl font-bold italic tracking-wider">
           TRANSFERIR FUNDOS
         </h1>
+      </div>
+
+      {/* 🔥 DISPLAY DE SALDO ATUAL */}
+      <div className="max-w-md mx-auto mb-6 grid grid-cols-2 gap-3">
+        <div className={`p-4 rounded-2xl border transition-all ${currency === 'AOA' ? 'bg-cyan-500/10 border-cyan-500/50' : 'bg-[#161A1F] border-white/5'}`}>
+           <p className="text-[9px] text-gray-500 uppercase font-black mb-1">Saldo Kwanza</p>
+           <p className={`text-lg font-mono font-bold ${currency === 'AOA' ? 'text-cyan-400' : 'text-white'}`}>
+             {balances.aoa.toLocaleString('pt-AO')} <small className="text-[10px]">AOA</small>
+           </p>
+        </div>
+        <div className={`p-4 rounded-2xl border transition-all ${currency === 'USDT' ? 'bg-cyan-500/10 border-cyan-500/50' : 'bg-[#161A1F] border-white/5'}`}>
+           <p className="text-[9px] text-gray-500 uppercase font-black mb-1">Saldo USDT</p>
+           <p className={`text-lg font-mono font-bold ${currency === 'USDT' ? 'text-cyan-400' : 'text-white'}`}>
+             {balances.usdt.toFixed(2)} <small className="text-[10px]">USDT</small>
+           </p>
+        </div>
       </div>
 
       {/* FORM */}
@@ -76,30 +126,30 @@ export function Transfer() {
             <button
               type="button"
               onClick={() => setCurrency('AOA')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold ${
+              className={`flex-1 py-2 rounded-xl text-xs font-black transition-all ${
                 currency === 'AOA'
-                  ? 'bg-cyan-500 text-black'
-                  : 'bg-white/5 text-gray-400'
+                  ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20'
+                  : 'bg-white/5 text-gray-500'
               }`}
             >
-              AOA
+              KWANZA (AOA)
             </button>
 
             <button
               type="button"
               onClick={() => setCurrency('USDT')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold ${
+              className={`flex-1 py-2 rounded-xl text-xs font-black transition-all ${
                 currency === 'USDT'
-                  ? 'bg-cyan-500 text-black'
-                  : 'bg-white/5 text-gray-400'
+                  ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/20'
+                  : 'bg-white/5 text-gray-500'
               }`}
             >
-              USDT
+              DOLLAR (USDT)
             </button>
           </div>
 
           <label className="text-[10px] text-gray-500 uppercase font-bold mb-2 block tracking-widest">
-            Valor a enviar ({currency === 'USDT' ? 'USDT' : 'Kz'})
+            Valor a enviar ({currency})
           </label>
 
           <input
@@ -117,7 +167,7 @@ export function Transfer() {
         <button
           type="submit"
           disabled={loading || !targetId || !amount}
-          className="w-full py-4 bg-cyan-500 hover:bg-cyan-600 disabled:opacity-50 disabled:grayscale text-black font-black rounded-2xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.2)] active:scale-95"
+          className="w-full py-4 bg-cyan-500 hover:bg-cyan-600 disabled:opacity-20 disabled:grayscale text-black font-black rounded-2xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.2)] active:scale-95"
         >
           {loading ? 'PROCESSANDO...' : (
             <>

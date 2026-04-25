@@ -21,7 +21,7 @@ export default function WithdrawAOA() {
     async function load() {
       try {
         const res = await UserService.me()
-        setBalance(res.data.balance || 0)
+        setBalance(res.balance || 0)
       } catch {
         toast.error("Erro ao carregar saldo")
       }
@@ -42,7 +42,7 @@ export default function WithdrawAOA() {
       setAmount('')
       
       const me = await UserService.me()
-      setBalance(me.data.balance || 0)
+      setBalance(me.balance || 0)
       navigate('/profile')
     } catch (err: any) {
       toast.error(err.message || "Erro ao solicitar saque")

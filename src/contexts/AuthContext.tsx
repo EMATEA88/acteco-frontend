@@ -7,7 +7,8 @@ interface User {
   fullName?: string
   balance?: number
   cryptoBalance?: number //
-  walletAddress?: string //
+  depositWalletAddress?: string
+  withdrawWalletAddress?: string
   isVerified?: boolean
 }
 

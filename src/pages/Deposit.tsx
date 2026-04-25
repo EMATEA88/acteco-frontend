@@ -134,7 +134,7 @@ function DepositAOA({ onBack }: any) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    UserService.me().then(r => setBalance(r.data.balance))
+    UserService.me().then(r => setBalance(r.balance))
   }, [])
 
   async function submit() {
