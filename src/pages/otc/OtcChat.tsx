@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { otcChat } from "../../services/otcChat"
-import { connectSocket } from "../../services/socket"
-import { 
-  Clock, 
+import { getSocket } from "../../services/socket" 
+// CORREÇÃO DOS IMPORTS (Removido o espaço e chaves extras que causavam o erro)
+import {   
   ImageSquare, 
   ArrowLeft, 
   PaperPlaneRight, 
   ShieldCheck,
-  WarningCircle
+  Check,
 } from "@phosphor-icons/react"
 
 export default function OtcChat() {
@@ -18,229 +18,229 @@ export default function OtcChat() {
 
   const [messages, setMessages] = useState<any[]>([])
   const [status, setStatus] = useState("")
-  const [expiresAt, setExpiresAt] = useState("")
   const [typing, setTyping] = useState(false)
-  const [online, setOnline] = useState(true)
-  // 🟢 Removido lastSeen para eliminar o aviso de variável não utilizada
+  const [online, setOnline] = useState(false) 
   const [text, setText] = useState("")
   const [uploading, setUploading] = useState(false)
-  const [preview, setPreview] = useState<string | null>(null)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const socketRef = useRef<any>(null)
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isClosed = ["RELEASED", "CANCELLED", "EXPIRED"].includes(status)
 
-  /* ================= LOAD ================= */
   useEffect(() => {
     async function load() {
       try {
         const data = await otcChat.get(id)
-        setMessages(data.conversation?.messages ?? [])
-        setStatus(data.orderStatus ?? "")
-        setExpiresAt(data.expiresAt ?? "")
-      } catch (err) {
-        console.error("Erro ao carregar chat")
+        if (!data) return
+        setMessages(data?.conversation?.messages ?? [])
+        setStatus(data?.status ?? "")
+      } catch (err) { 
+        console.error("Erro ao carregar chat", err) 
       }
     }
     if (id && !isNaN(id)) load()
   }, [id])
 
-  /* ================= SOCKET ================= */
   useEffect(() => {
     if (!id || isNaN(id)) return
-    const token = localStorage.getItem("token")
-    if (!token) return
 
-    const socket = connectSocket(token)
+    const socket = getSocket()
+    if (!socket) return
     socketRef.current = socket
+
     socket.emit("otc:join", id)
+    socket.emit("otc:request-presence", id)
+    socket.emit("otc:read", id)
 
-    socket.on("otc:new-message", (msg: any) => {
-      setMessages(prev => [...prev, msg])
+    const onMessage = (msg: any) => {
+      setMessages(prev => {
+        if (prev.find(m => m.id === msg.id)) return prev
+        return [...prev, msg]
+      })
       socket.emit("otc:read", id)
-    })
+    }
 
-    socket.on("otc:status-update", (data: any) => {
-      if (data.orderId === id) setStatus(data.status)
-    })
+    const onStatus = (data: any) => {
+      if (Number(data.orderId) === id) setStatus(data.status)
+    }
 
+    const onPresence = (data: { userId: number, isOnline: boolean }) => {
+      setOnline(data.isOnline)
+    }
+
+    const onRead = () => {
+      setMessages(prev => prev.map(m => ({ ...m, readAt: m.readAt || new Date() })))
+    }
+
+    socket.on("otc:new-message", onMessage)
+    socket.on("otc:status-update", onStatus)
     socket.on("otc:typing", () => setTyping(true))
     socket.on("otc:stop-typing", () => setTyping(false))
-
-    socket.on("presence:update", (data: any) => {
-      if (!data) return
-      setOnline(data.isOnline)
-      // 🟢 Removido o setLastSeen que causava o aviso
-    })
+    socket.on("presence:update", onPresence)
+    socket.on("otc:messages-read", onRead)
 
     return () => {
-      socket.off("otc:new-message"); socket.off("otc:status-update")
-      socket.off("otc:typing"); socket.off("otc:stop-typing"); socket.off("presence:update")
+      socket.off("otc:new-message", onMessage)
+      socket.off("otc:status-update", onStatus)
+      socket.off("otc:typing")
+      socket.off("otc:stop-typing")
+      socket.off("presence:update", onPresence)
+      socket.off("otc:messages-read", onRead)
     }
   }, [id])
 
-  /* ================= AUTO SCROLL ================= */
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  /* ================= TIMER ================= */
-  const timeLeft = expiresAt ? Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000)) : 0
-  const minutes = Math.floor(timeLeft / 60)
-  const seconds = timeLeft % 60
-
-  /* ================= SEND ================= */
-  const send = () => {
+  const send = async () => {
     if (!text.trim() || isClosed) return
-    socketRef.current?.emit("otc:message", { orderId: id, message: text.trim() })
-    setText("")
+    const messageContent = text.trim()
+    
+    try {
+      socketRef.current?.emit("otc:message", { 
+        orderId: id, 
+        message: messageContent 
+      })
+      socketRef.current?.emit("otc:stop-typing", id)
+      setText("")
+    } catch (err) {
+      console.error("Falha ao enviar", err)
+    }
   }
 
-  /* ================= IMAGE UPLOAD ================= */
+  const handleTyping = (val: string) => {
+    setText(val)
+    if (!socketRef.current) return
+    socketRef.current.emit("otc:typing", id)
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+    typingTimeoutRef.current = setTimeout(() => {
+      socketRef.current?.emit("otc:stop-typing", id)
+    }, 2000)
+  }
+
   const upload = async (file: File) => {
     if (!file || isClosed) return
     try {
       setUploading(true)
-      setPreview(URL.createObjectURL(file))
       await otcChat.uploadImage(id, file)
-    } catch (err) {
-      console.error("Erro no upload")
-    } finally {
-      setPreview(null); setUploading(false)
-    }
+    } catch (err) { console.error(err) } finally { setUploading(false) }
   }
 
-  const onlineLabel = typing ? "escrevendo..." : online ? "Online" : "Offline"
-
-  const statusStyle = {
-    PENDING: "bg-orange-500/10 text-orange-500 border-orange-500/20",
-    PAID: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    RELEASED: "bg-green-500/10 text-green-500 border-green-500/20",
-    CANCELLED: "bg-red-500/10 text-red-500 border-red-500/20",
-    EXPIRED: "bg-white/5 text-gray-500 border-white/5"
-  }[status] || "bg-white/5 text-gray-500"
+  const statusMap: any = {
+    PENDING: { label: "Aguardando Pagamento", color: "text-yellow-500 bg-yellow-500/10" },
+    PAID: { label: "Pago - Verificando", color: "text-blue-500 bg-blue-500/10" },
+    RELEASED: { label: "Ordem Concluída", color: "text-emerald-500 bg-emerald-500/10" },
+    CANCELLED: { label: "Cancelada", color: "text-red-500 bg-red-500/10" },
+  }
 
   return (
-    <div className="flex flex-col h-screen bg-[#0a0a0a] text-white font-sans overflow-hidden">
-      
-      {/* HEADER */}
-      <header className="bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 px-6 py-4 flex justify-between items-center z-50">
-        <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-all">
-            <ArrowLeft size={20} weight="bold" />
+    <div className="fixed inset-0 h-[100dvh] flex flex-col bg-[#0B0E11] text-[#EAECEF] overflow-hidden">
+      <header className="h-16 flex-shrink-0 flex items-center justify-between px-4 bg-[#181A20] border-b border-[#2B3139] z-50">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="p-1 hover:text-yellow-500">
+            <ArrowLeft size={22} weight="bold" />
           </button>
-          <div className="flex items-center gap-3">
+          
+          <div className="flex items-center gap-2.5">
             <div className="relative">
-              <img src="/logo.png" className="w-10 h-10 rounded-full border border-white/10 p-0.5 bg-[#111]" />
-              <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#0a0a0a] ${online ? 'bg-green-500' : 'bg-gray-600'}`}></div>
+              <div className="w-10 h-10 rounded-full border-2 border-yellow-500/20 bg-[#1e2329] flex items-center justify-center overflow-hidden">
+                <img src="/logo.png" className="w-full h-full object-cover" alt="Logo" />
+              </div>
+              <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[#181A20] transition-colors duration-500 ${online ? 'bg-[#02C076]' : 'bg-gray-600'}`} />
             </div>
             <div>
-              <p className="text-sm font-black tracking-tight uppercase">Suporte EMATEA</p>
-              <p className={`text-[10px] font-bold uppercase tracking-widest ${typing ? 'text-green-500 animate-pulse' : 'text-gray-500'}`}>
-                {onlineLabel}
-              </p>
+              <h1 className="text-sm font-bold leading-tight">Suporte OTC</h1>
+              <div className="text-[10px] font-medium tracking-wide uppercase">
+                {typing ? (
+                  <span className="text-[#02C076] animate-pulse">Digitando...</span>
+                ) : (
+                  <span className={online ? "text-[#02C076]" : "text-[#848E9C]"}>
+                    {online ? 'Online' : 'Offline'}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1">
-          <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${statusStyle}`}>
-            {status}
-          </span>
-          {status === "PENDING" && (
-            <div className="flex items-center gap-1.5 text-orange-500 text-[10px] font-black italic">
-              <Clock size={12} weight="fill" />
-              {minutes}:{seconds.toString().padStart(2, "0")}
-            </div>
-          )}
+        <div className="flex items-center gap-3">
+          <div className={`flex px-2.5 py-1 rounded text-[11px] font-bold ${statusMap[status]?.color || 'bg-white/5'}`}>
+            {statusMap[status]?.label || status || "CARREGANDO..."}
+          </div>
         </div>
       </header>
 
-      {/* CHAT AREA */}
-      <main className="flex-1 overflow-y-auto px-6 py-8 space-y-6 no-scrollbar bg-[#0a0a0a]">
-        <div className="bg-[#111] border border-white/5 p-4 rounded-2xl flex items-center gap-3 opacity-60 max-w-sm mx-auto mb-4">
-          <ShieldCheck size={20} weight="duotone" className="text-green-500" />
-          <p className="text-[10px] font-medium uppercase tracking-tight text-center">
-            Chat encriptado. Não partilhe dados sensíveis.
+      <main className="flex-1 overflow-y-auto bg-[#0B0E11] p-4 space-y-6 scroll-smooth custom-scrollbar">
+        <div className="mx-auto max-w-2xl bg-[#1E2329] border border-[#2B3139] p-3 rounded-lg flex items-start gap-3">
+          <ShieldCheck size={20} className="text-[#02C076] shrink-0" weight="fill" />
+          <p className="text-[11px] text-[#848E9C] leading-relaxed">
+            <strong className="text-[#EAECEF]">Segurança:</strong> Transação protegida por custódia inteligente. O suporte está monitorando esta negociação.
           </p>
         </div>
 
-        {messages.map((m) => (
-          <div key={m.id} className={`flex ${m.isAdmin ? "justify-start" : "justify-end"} animate-in fade-in slide-in-from-bottom-2`}>
-            <div className={`relative px-5 py-3 rounded-3xl max-w-[85%] text-sm shadow-2xl ${
-              m.isAdmin
-                ? "bg-[#111] border border-white/5 text-gray-200 rounded-bl-none"
-                : "bg-white text-black font-medium rounded-br-none"
-            }`}>
-              {m.type === "IMAGE" ? (
-                <div className="p-1">
-                  <img src={m.content} className="rounded-2xl max-w-full" alt="Envio de prova" />
+        {messages.map((m) => {
+          const isMe = !m.isAdmin;
+          return (
+            <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"} animate-in fade-in duration-300`}>
+              <div className={`max-w-[80%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                <div className={`px-4 py-2.5 text-[13px] leading-relaxed shadow-sm
+                  ${isMe 
+                    ? "bg-[#FCD535] text-[#181A20] rounded-2xl rounded-tr-none font-medium" 
+                    : "bg-[#2B3139] text-[#EAECEF] rounded-2xl rounded-tl-none"}
+                `}>
+                  {m.type === "IMAGE" ? (
+                    <img src={m.content} className="rounded-lg max-w-full" alt="Evidência" />
+                  ) : m.content}
                 </div>
-              ) : (
-                <p className="leading-relaxed">{m.content}</p>
-              )}
-              <span className={`text-[8px] mt-1 block opacity-40 font-bold uppercase ${m.isAdmin ? 'text-left' : 'text-right'}`}>
-                {new Date(m.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
+                
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-[9px] text-[#848E9C]">
+                    {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  {isMe && (
+                    <div className="flex items-center">
+                      <Check size={10} weight="bold" className={m.readAt ? "text-blue-500" : "text-[#848E9C]"} />
+                      {m.readAt && <Check size={10} weight="bold" className="text-blue-500 -ml-1.5" />}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
-
-        {preview && (
-          <div className="flex justify-end animate-pulse">
-            <div className="bg-white/10 p-2 rounded-3xl border border-white/5">
-              <img src={preview} className="rounded-2xl max-w-[200px] opacity-40 grayscale" alt="Preview" />
-            </div>
-          </div>
-        )}
+          );
+        })}
         <div ref={bottomRef} />
       </main>
 
-      {/* INPUT AREA */}
-      {!isClosed ? (
-        <footer className="bg-[#0a0a0a] border-t border-white/5 px-6 py-6 backdrop-blur-xl">
-          <div className="max-w-xl mx-auto flex items-center gap-3">
-            <label className="p-3 bg-[#111] rounded-2xl border border-white/5 text-gray-400 hover:text-white transition-colors cursor-pointer active:scale-95">
-              <ImageSquare size={24} weight="duotone" />
-              <input 
-                type="file" 
-                hidden 
-                accept="image/*" 
-                onChange={(e) => e.target.files && upload(e.target.files[0])} 
-              />
-            </label>
+      <div className="px-4 py-4 bg-[#0B0E11] flex-shrink-0 border-t border-white/5">
+        <div className="max-w-4xl mx-auto relative flex items-center gap-2 bg-[#1E2329] border border-[#2B3139] rounded-xl px-3 py-1.5 focus-within:border-yellow-500 transition-all">
+          <label className="p-2 text-[#848E9C] hover:text-white cursor-pointer">
+            <ImageSquare size={24} />
+            <input type="file" hidden accept="image/*" onChange={(e) => e.target.files && upload(e.target.files[0])} />
+          </label>
 
-            <div className="flex-1 relative flex items-center">
-              <input
-                value={text}
-                onChange={(e) => {
-                  setText(e.target.value)
-                  socketRef.current?.emit("otc:typing", id)
-                }}
-                onBlur={() => socketRef.current?.emit("otc:stop-typing", id)}
-                onKeyDown={(e) => e.key === "Enter" && send()}
-                placeholder="Escreva para o operador..."
-                className="w-full bg-[#111] border border-white/5 px-6 py-4 rounded-[2rem] outline-none text-sm placeholder:text-gray-700 focus:border-green-500/30 transition-all font-medium"
-              />
-            </div>
+          <input
+            value={text}
+            onChange={(e) => handleTyping(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && send()}
+            placeholder={isClosed ? "Chat encerrado" : "Digite aqui..."}
+            disabled={isClosed}
+            className="flex-1 bg-transparent border-none outline-none text-sm text-[#EAECEF] py-2"
+          />
 
-            <button
-              onClick={send}
-              disabled={uploading || !text.trim()}
-              className="w-14 h-14 bg-white text-black rounded-2xl flex items-center justify-center hover:bg-green-500 hover:text-white transition-all active:scale-90 disabled:opacity-20 shadow-xl"
-            >
-              <PaperPlaneRight size={24} weight="fill" />
-            </button>
-          </div>
-        </footer>
-      ) : (
-        <footer className="bg-[#111] p-6 text-center border-t border-white/5">
-          <div className="flex items-center justify-center gap-2 text-gray-500">
-            <WarningCircle size={20} weight="duotone" />
-            <p className="text-xs font-black uppercase tracking-widest italic">Protocolo Encerrado</p>
-          </div>
-        </footer>
+          <button onClick={send} disabled={!text.trim() || uploading || isClosed} className="p-2 text-yellow-500 disabled:text-[#474D57]">
+            <PaperPlaneRight size={24} weight="fill" />
+          </button>
+        </div>
+      </div>
+
+      {uploading && (
+        <div className="absolute inset-0 bg-[#0B0E11]/80 backdrop-blur-sm z-[200] flex flex-col items-center justify-center">
+          <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin mb-2"></div>
+          <p className="text-[10px] font-bold text-yellow-500 uppercase">Enviando...</p>
+        </div>
       )}
     </div>
   )

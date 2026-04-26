@@ -136,6 +136,7 @@ function App() {
           <Route path="otc/orders/:orderId" element={<OtcChat />} />
           <Route path="otc/order/:orderId" element={<OtcOrder />} />
           <Route path="otc/orders" element={<OtcMyOrders />} />
+          <Route path="/otc/chat/:orderId" element={<OtcChat />} />
 
           {/* FINANCIAL */}
           <Route path="deposit" element={<Deposit />} />

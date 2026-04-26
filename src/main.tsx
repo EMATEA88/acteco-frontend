@@ -27,10 +27,21 @@ ReactDOM.createRoot(
         <NotificationProvider>
           <App />
           <Toaster
-            position="top-right"
-            richColors
-            theme="dark"
-          />
+  position="top-center"
+  richColors
+  theme="dark"
+  // Na Sonner, usamos o 'style' direto para o container global
+  style={{ 
+    marginTop: '3.5rem',
+    zIndex: 99999 
+  }}
+  toastOptions={{
+    // Isso garante que o card interno do toast também herde o estilo se necessário
+    style: { 
+      textAlign: 'center' 
+    },
+  }}
+/>
         </NotificationProvider>
       </BrowserRouter>
     </QueryClientProvider>

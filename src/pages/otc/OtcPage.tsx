@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { otcService } from "../../services/otc"
 import { api } from "../../services/api"
 import { useNavigate } from "react-router-dom"
@@ -9,7 +9,7 @@ import {
   ClockCounterClockwise,
   Wallet 
 } from "@phosphor-icons/react"
-import toast from "react-hot-toast"
+import { toast } from "sonner" // Alterado para Sonner conforme sua configuração global
 import { SkeletonPage } from "../../components/ui/Skeleton"
 
 type Asset = {
@@ -32,42 +32,40 @@ const IMAGE_MAP: Record<string, string> = {
 
 export default function OtcPage() {
   const [assets, setAssets] = useState<Asset[]>([])
-  // 🟢 Ajustado para refletir o schema do banco de dados (balanceUSDT)
   const [userData, setUserData] = useState({ balance: 0, balanceUSDT: 0 })
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    load()
-  }, [])
-
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true)
-      // Busca Ativos e Dados do Usuário (Saldos)
       const [assetsData, userRes] = await Promise.all([
-  otcService.listAssets(),
-  api.get("/users/me") // 🔥 endpoint correto
-])
+        otcService.listAssets(),
+        api.get("/users/me")
+      ])
 
-const sorted = [...assetsData].sort((a, b) =>
-  ORDER.indexOf(a.symbol) - ORDER.indexOf(b.symbol)
-)
+      const assetsArray = assetsData?.data ?? assetsData;
 
-setAssets(sorted)
+      const sorted = [...assetsArray].sort((a, b) =>
+        ORDER.indexOf(a.symbol) - ORDER.indexOf(b.symbol)
+      )
 
-// 🔥 resposta correta (SEM .data)
-setUserData({
-  balance: userRes.data.balance || 0,
-  balanceUSDT: userRes.data.balanceUSDT || 0
-})
+      setAssets(sorted)
+      setUserData({
+        balance: userRes.data.balance || 0,
+        balanceUSDT: userRes.data.balanceUSDT || 0
+      })
     } catch (err) {
       console.error(err)
       toast.error("Erro ao carregar dados do mercado")
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
 
   if (loading) {
      return <SkeletonPage title="Carregando Mercado OTC..." />
@@ -93,7 +91,7 @@ setUserData({
         </button>
       </div>
 
-      {/* CARD DE SALDOS (MULTI-MOEDA) */}
+      {/* CARD DE SALDOS - ATUALIZADO */}
       <div className="bg-gradient-to-br from-[#161A1F] to-[#0B0E11] border border-white/5 rounded-[1.75rem] p-5 mb-8 shadow-2xl">
         <div className="flex items-center gap-2 mb-4 text-gray-400">
           <Wallet size={16} />
@@ -102,16 +100,16 @@ setUserData({
         
         <div className="grid grid-cols-2 gap-4">
           <div className="border-r border-white/5">
-            <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Perfil (AOA)</p>
+            {/* Alterado para Saldo Disponível conforme solicitado */}
+            <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Saldo Disponível (AOA)</p>
             <p className="text-lg font-semibold text-white">
-              {Number(userData.balance).toLocaleString()} <span className="text-[10px] text-gray-500 font-normal">Kz</span>
+              {Number(userData.balance).toLocaleString('pt-AO')} <span className="text-[10px] text-gray-500 font-normal">Kz</span>
             </p>
           </div>
           
           <div className="text-right">
             <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Carteira (USDT)</p>
             <p className="text-lg font-semibold text-cyan-400">
-              {/* 🟢 Agora exibindo o saldo real de USDT do banco */}
               {Number(userData.balanceUSDT).toFixed(2)} <span className="text-[10px] text-gray-500 font-normal">USDT</span>
             </p>
           </div>
@@ -146,35 +144,49 @@ setUserData({
               </div>
             </div>
 
-            {/* PREÇOS DE COMPRA E VENDA */}
             <div className="grid grid-cols-2 gap-3.5">
               <div className="bg-[#0B0E11] border border-white/5 rounded-2xl p-4 shadow-inner">
-                <p className="text-[10px] text-gray-500 mb-1.5 uppercase font-bold tracking-wider">Taxa de Compra</p>
+                <p className="text-[10px] text-gray-500 mb-1.5 uppercase font-bold tracking-wider">Você Paga</p>
                 <p className="text-sm font-semibold text-emerald-500">
-                  {asset.sellPrice.toLocaleString()} AOA
+                  {asset.sellPrice.toLocaleString('pt-AO')} AOA
                 </p>
               </div>
 
               <div className="bg-[#0B0E11] border border-white/5 rounded-2xl p-4 text-right shadow-inner">
-                <p className="text-[10px] text-gray-500 mb-1.5 uppercase font-bold tracking-wider">Taxa de Venda</p>
+                <p className="text-[10px] text-gray-500 mb-1.5 uppercase font-bold tracking-wider">Você vende</p>
                 <p className="text-sm font-semibold text-white">
-                  {asset.buyPrice.toLocaleString()} AOA
+                  {asset.buyPrice.toLocaleString('pt-AO')} AOA
                 </p>
               </div>
             </div>
 
-            {/* BOTÕES DE AÇÃO */}
             <div className="flex gap-3 pt-1">
               <button
-                onClick={() => navigate(`/otc/${asset.id}/BUY`)}
-                className="flex-1 h-12 bg-white text-black rounded-xl font-medium text-xs flex items-center justify-center gap-2 transition-opacity active:opacity-80 active:scale-95 shadow-lg"
+                onClick={() => {
+                  if (userData.balance <= 0) {
+                    toast.error("Saldo AOA insuficiente para comprar")
+                    return
+                  }
+                  navigate(`/otc/${asset.id}/BUY`, {
+                    state: { asset, type: "BUY", balanceAOA: userData.balance }
+                  })
+                }}
+                className="flex-1 h-12 bg-white text-black rounded-xl font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition shadow-lg"
               >
                 Comprar <ArrowRight size={16} weight="bold" />
               </button>
 
               <button
-                onClick={() => navigate(`/otc/${asset.id}/SELL`)}
-                className="flex-1 h-12 bg-white/5 border border-white/10 rounded-xl text-xs font-medium text-gray-300 flex items-center justify-center gap-2 active:bg-white/10 transition active:scale-95"
+                onClick={() => {
+                  if (userData.balanceUSDT <= 0) {
+                    toast.error("Saldo de ativos insuficiente para vender")
+                    return
+                  }
+                  navigate(`/otc/${asset.id}/SELL`, {
+                    state: { asset, type: "SELL", balanceCrypto: userData.balanceUSDT }
+                  })
+                }}
+                className="flex-1 h-12 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-gray-300 flex items-center justify-center gap-2 active:bg-white/10 transition active:scale-95"
               >
                 Vender <ShoppingCart size={16} weight="bold" />
               </button>

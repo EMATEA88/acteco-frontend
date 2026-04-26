@@ -3,10 +3,10 @@ import { useParams, useNavigate } from "react-router-dom"
 import { otcService } from "../../services/otc"
 import { useAuth } from "../../contexts/AuthContext"
 import { 
-  ArrowLeft,  
-  TrendUp, 
-  TrendDown,
-  Info
+  ArrowLeft,   
+  Info,
+  Wallet,
+  Coins
 } from "@phosphor-icons/react"
 import Toast from "../../components/ui/Toast"
 
@@ -46,7 +46,7 @@ export default function OtcDetail() {
   const MIN_QUANTITY = 0.0001
 
   const formatMoney = (value: number) =>
-    new Intl.NumberFormat("pt-AO").format(value) + " Kz"
+    new Intl.NumberFormat("pt-AO").format(value) + " AOA"
 
   const triggerToast = (msg: string, type: "success" | "error" = "error") => {
     setToastMessage(msg)
@@ -65,7 +65,6 @@ export default function OtcDetail() {
         navigate("/otc")
         return
       }
-
       setAsset(found)
     } catch {
       triggerToast("Erro ao carregar ativo")
@@ -78,14 +77,15 @@ export default function OtcDetail() {
     loadAsset()
   }, [loadAsset])
 
-  // 🟢 CORREÇÃO DO ERRO DE BUILD: Verificação segura para 'verification'
   const isVerified = useMemo(() => {
     if (!user) return false;
     const hasStatusVerified = (user as any)?.verification?.status === "VERIFIED";
     return user.isVerified === true || hasStatusVerified;
   }, [user]);
 
+  // 🔥 1. ADICIONA balanceUSDT
   const userBalance = Number(user?.balance ?? 0)
+  const userUSDT = Number(user?.balanceUSDT ?? 0)
 
   const price = useMemo(() => {
     if (!asset) return 0
@@ -96,25 +96,28 @@ export default function OtcDetail() {
   const total = qty * price
 
   const isValid = qty >= MIN_QUANTITY
-  const hasBalance = type === "BUY" ? userBalance >= total : true
 
+  // 🔥 2. CORRIGE VALIDAÇÃO (Valida AOA na compra e USDT na venda)
+  const hasBalance =
+    type === "BUY"
+      ? userBalance >= total
+      : userUSDT >= qty
+
+  // 🔥 3. CORRIGE BOTÃO DISABLED
   const disabled = loading || !isValid || !isVerified || !hasBalance
 
   const createOrder = async () => {
     if (disabled) return
-
     try {
       setLoading(true)
-
       const res = await otcService.createOrder({
         assetId,
         type,
         quantity: qty
       })
-
-      const order = res?.data ?? res
+      // 🔥 4. CORRIGE createOrder (Passa a resposta direta)
+      const order = res
       navigate(`/otc/order/${order.id}`)
-
     } catch {
       triggerToast("Erro ao criar ordem")
     } finally {
@@ -122,114 +125,117 @@ export default function OtcDetail() {
     }
   }
 
-  if (assetLoading) {
-    return (
-      <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 space-y-6 animate-pulse">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white/5"/>
-          <div className="w-10 h-10 rounded-full bg-white/5"/>
-          <div>
-            <div className="w-20 h-3 bg-white/5 rounded mb-2"/>
-            <div className="w-16 h-2 bg-white/5 rounded"/>
-          </div>
-        </div>
-        <p className="text-xs text-gray-500">Carregando ativo...</p>
-        <div className="glass-card p-5 rounded-2xl space-y-3">
-          <div className="h-4 w-24 bg-white/5 rounded"/>
-          <div className="h-6 w-32 bg-white/5 rounded"/>
-        </div>
-      </div>
-    )
-  }
-
+  if (assetLoading) return <div className="min-h-screen bg-[#0B0E11] animate-pulse" />
   if (!asset) return null
 
   const image = IMAGE_MAP[asset.symbol] ?? "/assets/otc/default.png"
 
   return (
     <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 pb-32 space-y-6">
-      <div className="flex items-center gap-3">
+      
+      {/* HEADER */}
+      <div className="flex items-center gap-4">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-xl bg-white/5 border border-white/10"
+          className="p-2.5 rounded-2xl bg-[#161A1F] border border-white/5 active:scale-95 transition"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={20} />
         </button>
 
-        <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 bg-[#0B0E11]">
-          <img
-            src={image}
-            alt={asset.symbol}
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        <div>
-          <h1 className="text-lg font-semibold">{asset.symbol}</h1>
-          <p className="text-xs text-gray-500">
-            {type === "BUY" ? "Compra" : "Venda"}
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-full border border-white/10 p-0.5 bg-gradient-to-b from-white/10 to-transparent">
+            <img src={image} alt={asset.symbol} className="w-full h-full object-cover rounded-full" />
+          </div>
+          <div>
+            <h1 className="text-base font-bold leading-tight">{asset.symbol}</h1>
+            <p className={`text-[10px] font-bold uppercase tracking-widest ${type === 'BUY' ? 'text-emerald-500' : 'text-cyan-400'}`}>
+              Solicitar {type === "BUY" ? "Compra" : "Venda"}
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="glass-card p-5 rounded-2xl space-y-3">
-        <div>
-          <p className="text-xs text-gray-500">Preço atual</p>
-          <p className="text-xl font-semibold">{formatMoney(price)}</p>
-        </div>
-
-        <div className="flex justify-between text-xs">
-          <div className="flex items-center gap-1 text-emerald-500">
-            <TrendUp size={14} />
-            {formatMoney(asset.buyPrice)}
+      {/* CARD DE PREÇO E SALDO */}
+      <div className="bg-[#161A1F] p-6 rounded-[2rem] border border-white/5 shadow-2xl space-y-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Cotação Atual</p>
+            <p className="text-2xl font-bold tracking-tight text-white">{formatMoney(price)}</p>
           </div>
-          <div className="flex items-center gap-1 text-red-500">
-            {formatMoney(asset.sellPrice)}
-            <TrendDown size={14} />
+          <div className={`p-2 rounded-xl ${type === 'BUY' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-cyan-500/10 text-cyan-400'}`}>
+            <Coins size={24} weight="duotone" />
           </div>
         </div>
 
+        {/* 🟢 MOSTRAR SALDO AOA (Se for compra) */}
         {type === "BUY" && (
-          <div className="flex justify-between text-xs pt-2 border-t border-white/5">
-            <span className="text-gray-500">Saldo</span>
-            <span className="text-emerald-500 font-medium">{formatMoney(userBalance)}</span>
+          <div className="flex items-center justify-between pt-4 border-t border-white/5">
+            <div className="flex items-center gap-2 text-gray-500">
+              <Wallet size={14} />
+              <span className="text-[10px] font-bold uppercase">Saldo Disponível</span>
+            </div>
+            <span className="text-xs font-bold text-emerald-500">{formatMoney(userBalance)}</span>
+          </div>
+        )}
+
+        {/* 🔥 5. MOSTRAR SALDO USDT (Se for venda) */}
+        {type === "SELL" && (
+          <div className="flex items-center justify-between pt-4 border-t border-white/5">
+            <div className="flex items-center gap-2 text-gray-500">
+              <Wallet size={14} />
+              <span className="text-[10px] font-bold uppercase">{asset.symbol} Disponível</span>
+            </div>
+            <span className="text-xs font-bold text-cyan-400">
+              {userUSDT.toFixed(2)} {asset.symbol}
+            </span>
           </div>
         )}
       </div>
 
-      <div className="glass-card p-5 rounded-2xl space-y-4">
+      {/* INPUT DE QUANTIDADE */}
+      <div className="bg-[#161A1F] p-6 rounded-[2rem] border border-white/5 shadow-2xl space-y-6">
         <div>
-          <p className="text-xs text-gray-500 mb-1">Quantidade</p>
+          <div className="flex justify-between mb-2">
+            <label className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Quantidade ({asset.symbol})</label>
+            <span className="text-[10px] text-gray-600 font-bold">MIN: {MIN_QUANTITY}</span>
+          </div>
           <input
+            type="number"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
-            placeholder={`Min: ${MIN_QUANTITY}`}
-            className="w-full h-11 bg-[#0B0E11] border border-white/10 rounded-xl px-3 text-sm outline-none focus:border-emerald-500"
+            placeholder="0.00"
+            className="w-full h-14 bg-[#0B0E11] border border-white/10 rounded-2xl px-4 text-lg font-bold outline-none focus:border-emerald-500 transition-all placeholder:text-gray-800"
           />
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Total</span>
-          <span className="font-semibold text-emerald-500">{formatMoney(total)}</span>
+
+        <div className="flex justify-between items-center py-4 border-t border-dashed border-white/10">
+          <span className="text-xs text-gray-500 font-bold uppercase">Total Estimado</span>
+          <span className={`text-xl font-black ${type === 'BUY' ? 'text-emerald-500' : 'text-cyan-400'}`}>
+            {formatMoney(total)}
+          </span>
         </div>
       </div>
 
-      <button
-        onClick={createOrder}
-        disabled={disabled}
-        className={`w-full h-12 rounded-xl font-semibold text-sm transition
-          ${type === "BUY" ? "bg-white text-black" : "bg-red-600 text-white"}
-          ${disabled && "opacity-30"}
-        `}
-      >
-        {loading ? "Processando..." : `Confirmar ${type}`}
-      </button>
-
-      {!isVerified && (
-        <div className="glass-card p-4 rounded-xl flex gap-3 text-xs text-gray-500">
-          <Info size={16} />
-          Conta não verificada (KYC necessário)
-        </div>
-      )}
+      {/* BOTÃO DE AÇÃO */}
+      <div className="fixed bottom-8 left-5 right-5">
+        <button
+          onClick={createOrder}
+          disabled={disabled}
+          className={`w-full h-16 rounded-[1.5rem] font-bold text-sm shadow-2xl transition-all active:scale-[0.98]
+            ${type === "BUY" ? "bg-white text-black" : "bg-red-600 text-white"}
+            ${disabled ? "opacity-20 grayscale cursor-not-allowed" : "opacity-100"}
+          `}
+        >
+          {loading ? "Processando Ordem..." : `Confirmar Ordem de ${type === 'BUY' ? 'Compra' : 'Venda'}`}
+        </button>
+        
+        {!isVerified && (
+          <div className="mt-4 flex items-center justify-center gap-2 text-red-400 animate-bounce">
+            <Info size={14} weight="bold" />
+            <span className="text-[10px] font-bold uppercase tracking-tighter">Verificação KYC Necessária</span>
+          </div>
+        )}
+      </div>
 
       <Toast message={toastMessage} visible={toastVisible} type={toastType} />
     </div>

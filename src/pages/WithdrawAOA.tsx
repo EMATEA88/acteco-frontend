@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Wallet, Info } from '@phosphor-icons/react'
+import { ArrowLeft, Wallet, Info, Receipt } from '@phosphor-icons/react'
 import toast from 'react-hot-toast'
 import { WithdrawalService } from '../services/withdrawal.service'
 import { UserService } from '../services/user.service'
@@ -17,6 +17,9 @@ export default function WithdrawAOA() {
   const [balance, setBalance] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
 
+  // Configuração da Taxa
+  const WITHDRAWAL_FEE_PERCENT = 0.03 // 3%
+
   useEffect(() => {
     async function load() {
       try {
@@ -29,15 +32,22 @@ export default function WithdrawAOA() {
     load()
   }, [])
 
+  // CÁLCULOS EM TEMPO REAL
+  const stats = useMemo(() => {
+    const gross = Number(amount) || 0
+    const fee = gross * WITHDRAWAL_FEE_PERCENT
+    const net = gross - fee
+    return { gross, fee, net }
+  }, [amount])
+
   async function handleWithdraw() {
     if (!amount) return toast.error("Insira o valor do saque")
-    const value = Number(amount)
-    if (value <= 0) return toast.error("Valor inválido")
-    if (balance !== null && value > balance) return toast.error("Saldo insuficiente")
+    if (stats.gross <= 0) return toast.error("Valor inválido")
+    if (balance !== null && stats.gross > balance) return toast.error("Saldo insuficiente")
 
     try {
       setLoading(true)
-      await WithdrawalService.create(value)
+      await WithdrawalService.create(stats.gross)
       toast.success("Levantamento solicitado com sucesso!")
       setAmount('')
       
@@ -51,9 +61,11 @@ export default function WithdrawAOA() {
     }
   }
 
+  const format = (v: number) => v.toLocaleString('pt-AO', { minimumFractionDigits: 2 })
+
   return (
     <div className="min-h-screen bg-[#0B0E11] text-white">
-      {/* HEADER PROFISSIONAL */}
+      {/* HEADER */}
       <div className="flex items-center gap-4 px-5 py-6 border-b border-white/5">
         <button 
           onClick={() => navigate(-1)} 
@@ -67,7 +79,7 @@ export default function WithdrawAOA() {
       <div className="px-5 py-8 max-w-md mx-auto">
         
         {/* CARD DE SALDO */}
-        <div className="bg-[#161A1E] border border-white/5 rounded-2xl p-5 mb-8 flex items-center justify-between relative overflow-hidden group">
+        <div className="bg-[#161A1E] border border-white/5 rounded-2xl p-5 mb-8 flex items-center justify-between relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500" />
           <div className="flex items-center gap-4">
             <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl">
@@ -87,7 +99,7 @@ export default function WithdrawAOA() {
         </div>
 
         <div className="space-y-6">
-          {/* CAMPO DE INPUT ESTILIZADO */}
+          {/* INPUT */}
           <div>
             <label className="block text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3 ml-1">
               Quanto deseja levantar?
@@ -98,32 +110,54 @@ export default function WithdrawAOA() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full h-16 bg-[#161A1E] border border-white/5 rounded-2xl px-5 text-2xl font-mono font-bold outline-none focus:border-emerald-500/50 focus:bg-[#1c2127] transition-all text-white placeholder:text-white/5"
+                className="w-full h-16 bg-[#161A1E] border border-white/5 rounded-2xl px-5 text-2xl font-mono font-bold outline-none focus:border-emerald-500/50 transition-all text-white placeholder:text-white/5"
               />
               <div className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-xs uppercase">Kz</div>
             </div>
           </div>
 
+          {/* DETALHAMENTO DE TAXAS (Só aparece se tiver valor) */}
+          {stats.gross > 0 && (
+            <div className="bg-[#161A1E]/50 border border-white/5 rounded-2xl p-5 space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Receipt size={16} className="text-emerald-500" />
+                <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">Resumo do Saque</span>
+              </div>
+              
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Valor Bruto</span>
+                <span className="font-mono text-gray-300">{format(stats.gross)} Kz</span>
+              </div>
+
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Taxa Administrativa (3%)</span>
+                <span className="font-mono text-red-500">-{format(stats.fee)} Kz</span>
+              </div>
+
+              <div className="pt-2 border-t border-white/5 flex justify-between items-center">
+                <span className="text-[10px] font-black uppercase text-emerald-500">Valor Líquido</span>
+                <span className="text-lg font-mono font-black text-emerald-400">{format(stats.net)} Kz</span>
+              </div>
+            </div>
+          )}
+
           {/* BOX DE INFORMAÇÕES */}
           <div className="bg-white/5 border border-white/5 rounded-xl p-4 flex gap-3 items-center">
             <Info size={20} className="text-gray-400 shrink-0" />
             <div className="text-[11px] text-gray-400 leading-tight">
-              Uma taxa administrativa de **3%** será aplicada ao valor bruto solicitado.
+              O valor líquido será o montante depositado na sua conta bancária após a dedução da taxa.
             </div>
           </div>
 
-          {/* BOTÃO DE ACÇÃO BONITO */}
+          {/* BOTÃO */}
           <div className="pt-4">
             <button
               onClick={handleWithdraw}
-              disabled={loading || !amount}
+              disabled={loading || !amount || stats.gross <= 0}
               className="w-full h-14 bg-white hover:bg-gray-100 text-[#0B0E11] font-black rounded-2xl transition-all active:scale-[0.98] disabled:opacity-20 flex items-center justify-center gap-2 shadow-lg shadow-white/5"
             >
               {loading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                  PROCESSANDO...
-                </>
+                <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
               ) : (
                 "CONFIRMAR LEVANTAMENTO"
               )}

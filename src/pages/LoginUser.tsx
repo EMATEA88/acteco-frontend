@@ -61,7 +61,7 @@ export default function LoginUser() {
       const data = await loginUser(finalIdentifier, password)
       
       // Salva os dados no contexto
-      await login(data.token, data.user)
+      await login(data.token)
       
       toast.success('Acesso autorizado. Bem-vindo de volta!')
 

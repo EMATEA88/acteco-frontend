@@ -3,29 +3,41 @@ import { api } from "../services/api"
 export interface OTCOrder {
   id: number
   assetId: number
+
+  asset?: {
+    id: number
+    symbol: string
+    buyPrice: number
+    sellPrice: number
+  }
+
   type: "BUY" | "SELL"
   quantity: number
   priceUsed: number
   totalAoa: number
-  status: "PENDING" | "PAID" | "RELEASED" | "CANCELLED" | "EXPIRED" | "DISPUTED" | "COMPLETED"
-  expiresAt?: string
+
+  status:
+    | "PENDING"
+    | "PAID"
+    | "RELEASED"
+    | "COMPLETED"
+    | "CANCELLED"
+    | "EXPIRED"
+    | "DISPUTED"
+
   createdAt: string
-  network?: string
-  walletAddress?: string
+  completedAt?: string
 }
 
 export const otcService = {
 
-  // ================= ASSETS =================
+  /* ================= ASSETS ================= */
   async listAssets() {
     const res = await api.get("/otc/assets")
-    if (Array.isArray(res.data)) {
-      return res.data
-    }
     return res.data.data
   },
 
-  // ================= CREATE (ORDEM PENDENTE - COMPRA) =================
+  /* ================= CREATE ORDER ================= */
   async createOrder(data: {
     assetId: number
     type: "BUY" | "SELL"
@@ -35,43 +47,31 @@ export const otcService = {
     return res.data.data
   },
 
-  // ================= SELL (VENDA INSTANTÂNEA) =================
-  // Nova função para conectar com a rota que acabamos de criar
+  /* ================= SELL INSTANT ================= */
   async sellInstant(data: {
     assetId: number
     quantity: number
   }) {
     const res = await api.post("/otc/sell", data)
-    return res.data // Retorna { success: true, message: "...", data: order }
+    return res.data.data
   },
 
-  // ================= MY ORDERS =================
+  /* ================= MY ORDERS ================= */
   async myOrders() {
     const res = await api.get("/otc/my-orders")
     return res.data.data
   },
 
-  // ================= GET ORDER =================
+  /* ================= GET ORDER ================= */
   async getOrder(id: number) {
     const res = await api.get(`/otc/orders/${id}`)
     return res.data.data
   },
 
-  // ================= ACTIONS =================
+  /* ================= ACTIONS ================= */
+
   async cancelOrder(id: number) {
     const res = await api.patch(`/otc/orders/${id}/cancel`)
-    return res.data.data
-  },
-
-  // Nota: Verifique se no seu backend a rota de release é essa mesma, 
-  // geralmente usada pelo Admin para liberar o ativo.
-  async releaseOrder(id: number) {
-    const res = await api.patch(`/otc/orders/${id}/release`)
-    return res.data.data
-  },
-
-  async disputeOrder(id: number) {
-    const res = await api.patch(`/otc/orders/${id}/dispute`)
     return res.data.data
   },
 
