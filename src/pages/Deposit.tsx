@@ -178,17 +178,16 @@ function DepositAOA({ onBack }: any) {
   )
 }
 
-/* ================= FLUXO USDT ================= */
+/* ================= FLUXO USDT (CORRIGIDO: AUTOMÁTICO) ================= */
 
 function DepositUSDT({ onBack }: any) {
-  const [amount, setAmount] = useState<number | ''>('')
   const [address, setAddress] = useState('')
-  const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-  RechargeService.getUserWallet().then(address => setAddress(address))
-}, [])
+    // Busca o endereço da carteira do usuário
+    RechargeService.getUserWallet().then(address => setAddress(address))
+  }, [])
 
   const handleCopy = () => {
     if (!address) return
@@ -198,60 +197,26 @@ function DepositUSDT({ onBack }: any) {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  async function submit() {
-    if (!amount || amount <= 0) return toast.error("Insira o valor enviado")
-    
-    setLoading(true)
-    try {
-      await RechargeService.create({ 
-        amount: Number(amount), 
-        currency: 'USDT', 
-        method: 'CRYPTO' 
-      })
-      
-      toast.success("Solicitação enviada! Aguarde a validação.")
-      onBack()
-    } catch (err: any) {
-      toast.error("Erro ao processar depósito")
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <>
       <Header onBack={onBack} title="Recarga USDT (TRC20)" />
       
       <div className="px-5 py-6 max-w-md mx-auto">
+        {/* Banner de Aviso */}
         <div className="bg-yellow-500/5 border border-yellow-500/20 p-4 rounded-2xl mb-8 flex gap-3 text-yellow-500/90 leading-tight">
           <Info size={20} weight="fill" className="shrink-0 mt-0.5" />
           <p className="text-[11px] font-medium italic">
-            Atenção: Use apenas a rede **TRON (TRC20)**. O sistema identifica seu depósito automaticamente após o envio para o endereço abaixo.
+            Atenção: Use apenas a rede **TRON (TRC20)**. O sistema identifica seu depósito automaticamente. Assim que a transação for confirmada na rede, seu saldo será atualizado.
           </p>
         </div>
 
         <div className="space-y-8">
-          <div>
-            <label className="block text-[10px] text-gray-500 uppercase font-black tracking-widest mb-3 ml-1">
-              Quanto você enviou? (USDT)
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                value={amount}
-                onChange={e => setAmount(Number(e.target.value) || '')}
-                placeholder="0.00"
-                className="w-full h-16 bg-[#161A1E] border border-white/5 rounded-2xl px-5 text-2xl font-mono font-bold outline-none focus:border-cyan-500/50 focus:bg-[#1c2127] transition-all text-white placeholder:text-white/10"
-              />
-              <div className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-xs">USDT</div>
-            </div>
-          </div>
-
+          {/* Card do Endereço */}
           <div className="bg-[#161A1E] border border-white/5 rounded-3xl p-6 relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-500" />
             
             <div className="text-[10px] text-gray-500 uppercase font-black tracking-[0.2em] mb-5 text-center">
-              Endereço de Destino
+              Endereço de Destino (Rede Tron)
             </div>
             
             <div className="flex flex-col items-center gap-6">
@@ -279,13 +244,19 @@ function DepositUSDT({ onBack }: any) {
             </div>
           </div>
 
+          {/* Status de Varredura */}
           <div className="pt-4 flex flex-col items-center gap-4">
-            <PrimaryButton onClick={submit} loading={loading}>
-              Já realizei o envio
-            </PrimaryButton>
+            <div className="flex flex-col items-center gap-3 bg-white/5 p-4 rounded-2xl w-full">
+               <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-[10px] font-bold tracking-widest text-green-500 uppercase">Aguardando Transação</span>
+               </div>
+               <p className="text-[10px] text-gray-400 text-center px-4">
+                 Não é necessário enviar comprovante. O saldo cairá em sua conta em até 5 minutos após a confirmação na rede.
+               </p>
+            </div>
             
             <div className="flex items-center gap-2 opacity-40">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               <span className="text-[10px] font-medium tracking-wide">VARREDURA BLOCKCHAIN ATIVA</span>
             </div>
           </div>
