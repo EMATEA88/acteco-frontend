@@ -9,7 +9,7 @@ import {
   ClockCounterClockwise,
   Wallet 
 } from "@phosphor-icons/react"
-import { toast } from "sonner" // Alterado para Sonner conforme sua configuração global
+import { toast } from "sonner"
 import { SkeletonPage } from "../../components/ui/Skeleton"
 
 type Asset = {
@@ -19,13 +19,12 @@ type Asset = {
   sellPrice: number
 }
 
-const ORDER = ["USDT", "USDC", "TRX", "EUR", "BNB", "BTC"]
+// 🔥 1. REMOVIDO TRX E EUR (AJUSTADO CONFORME SOLICITADO)
+const ORDER = ["USDT", "USDC", "BNB", "BTC"]
 
 const IMAGE_MAP: Record<string, string> = {
   USDT: "/assets/otc/usdt.png",
   USDC: "/assets/otc/usdc.png",
-  TRX: "/assets/otc/trx.png",
-  EUR: "/assets/otc/eur.png",
   BNB: "/assets/otc/bnb.png",
   BTC: "/assets/otc/btc.png",
 }
@@ -44,17 +43,32 @@ export default function OtcPage() {
         api.get("/users/me")
       ])
 
-      const assetsArray = assetsData?.data ?? assetsData;
+      // 🔵 4. EVITAR CRASH NO MAP (VERIFICAÇÃO DE ARRAY)
+      const assetsArray = Array.isArray(assetsData?.data)
+        ? assetsData.data
+        : Array.isArray(assetsData)
+        ? assetsData
+        : []
 
-      const sorted = [...assetsArray].sort((a, b) =>
-        ORDER.indexOf(a.symbol) - ORDER.indexOf(b.symbol)
-      )
+      // 🔴 2. SORT PROFISSIONAL (TRATA INDEX -1)
+      const sorted = [...assetsArray].sort((a, b) => {
+        const indexA = ORDER.indexOf(a.symbol)
+        const indexB = ORDER.indexOf(b.symbol)
+        
+        const posA = indexA === -1 ? 999 : indexA
+        const posB = indexB === -1 ? 999 : indexB
+        
+        return posA - posB
+      })
 
       setAssets(sorted)
+
+      // 🔴 3. BALANCE USDT COM FALLBACK SEGURO
       setUserData({
         balance: userRes.data.balance || 0,
-        balanceUSDT: userRes.data.balanceUSDT || 0
+        balanceUSDT: userRes.data.balanceUSDT ?? userRes.data.usdtBalance ?? 0
       })
+
     } catch (err) {
       console.error(err)
       toast.error("Erro ao carregar dados do mercado")
@@ -68,7 +82,7 @@ export default function OtcPage() {
   }, [load])
 
   if (loading) {
-     return <SkeletonPage title="Carregando Mercado OTC..." />
+    return <SkeletonPage title="Carregando Mercado OTC..." />
   }
 
   return (
@@ -91,7 +105,7 @@ export default function OtcPage() {
         </button>
       </div>
 
-      {/* CARD DE SALDOS - ATUALIZADO */}
+      {/* CARD DE SALDOS */}
       <div className="bg-gradient-to-br from-[#161A1F] to-[#0B0E11] border border-white/5 rounded-[1.75rem] p-5 mb-8 shadow-2xl">
         <div className="flex items-center gap-2 mb-4 text-gray-400">
           <Wallet size={16} />
@@ -100,7 +114,6 @@ export default function OtcPage() {
         
         <div className="grid grid-cols-2 gap-4">
           <div className="border-r border-white/5">
-            {/* Alterado para Saldo Disponível conforme solicitado */}
             <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Saldo Disponível (AOA)</p>
             <p className="text-lg font-semibold text-white">
               {Number(userData.balance).toLocaleString('pt-AO')} <span className="text-[10px] text-gray-500 font-normal">Kz</span>
@@ -108,7 +121,7 @@ export default function OtcPage() {
           </div>
           
           <div className="text-right">
-            <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Carteira (USDT)</p>
+            <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Carteira (Ativos)</p>
             <p className="text-lg font-semibold text-cyan-400">
               {Number(userData.balanceUSDT).toFixed(2)} <span className="text-[10px] text-gray-500 font-normal">USDT</span>
             </p>
@@ -179,7 +192,7 @@ export default function OtcPage() {
               <button
                 onClick={() => {
                   if (userData.balanceUSDT <= 0) {
-                    toast.error("Saldo de ativos insuficiente para vender")
+                    toast.error("Saldo insuficiente para vender")
                     return
                   }
                   navigate(`/otc/${asset.id}/SELL`, {

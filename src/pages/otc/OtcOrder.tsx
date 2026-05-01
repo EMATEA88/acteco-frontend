@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useMemo } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { otcService } from "../../services/otc"
 import {  
@@ -12,31 +12,23 @@ import Toast from "../../components/ui/Toast"
 interface Order {
   id: number
   type: "BUY" | "SELL"
-  status: string
+  status: "PENDING" | "PAID" | "COMPLETED" | "CANCELLED" | "EXPIRED" | "DISPUTED"
   quantity: number
   priceUsed: number
   totalAoa: number
   completedAt?: string
   unreadMessages?: number
-  asset?: { symbol: string } // Interface corrigida (Optional)
+  asset?: { symbol: string }
 }
 
-/* ================= HELPER PROFISSIONAL ================= */
 function money(v: any) {
   return Number(v || 0).toLocaleString('pt-AO')
 }
 
 export default function OtcOrder() {
   const { orderId } = useParams()
-const navigate = useNavigate()
-
-const id = Number(orderId)
-
-useEffect(() => {
-  if (!orderId || isNaN(Number(orderId))) {
-    navigate("/otc")
-  }
-}, [orderId, navigate])
+  const navigate = useNavigate()
+  const id = Number(orderId)
 
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
@@ -53,6 +45,26 @@ useEffect(() => {
     setTimeout(() => setToastVisible(false), 2500)
   }
 
+  // ✅ MELHORIA #1: MAPEAMENTO DE CORES PROFISSIONAL
+  const statusConfig = useMemo(() => {
+    if (!order) return { color: "gray", label: "..." }
+    
+    const configs: Record<string, { color: string; label: string }> = {
+      PENDING: { color: "amber", label: "Pendente" },
+      PAID: { color: "blue", label: "Pago" },
+      COMPLETED: { color: "emerald", label: "Concluído" },
+      CANCELLED: { color: "red", label: "Cancelado" },
+      EXPIRED: { color: "gray", label: "Expirado" },
+      DISPUTED: { color: "orange", label: "Em Disputa" }
+    }
+    
+    return configs[order.status] || { color: "gray", label: order.status }
+  }, [order])
+
+  const isClosed = useMemo(() => 
+    order ? ["COMPLETED", "CANCELLED", "EXPIRED"].includes(order.status) : false
+  , [order])
+
   const load = useCallback(async () => {
     try {
       const res = await otcService.getOrder(id)
@@ -64,23 +76,14 @@ useEffect(() => {
     }
   }, [id])
 
+  // ✅ MELHORIA #2: POLLING CONTROLADO (Para se estiver fechada)
   useEffect(() => {
     load()
+    if (isClosed) return
+
     const interval = setInterval(load, 5000)
     return () => clearInterval(interval)
-  }, [load])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0B0E11] flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"/>
-      </div>
-    )
-  }
-
-  if (!order) return null
-
-  const isClosed = ["COMPLETED", "CANCELLED"].includes(order.status)
+  }, [load, isClosed])
 
   const safeAction = async (fn: () => Promise<any>, msg: string) => {
     if (processing || isClosed) return
@@ -96,10 +99,20 @@ useEffect(() => {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0B0E11] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"/>
+      </div>
+    )
+  }
+
+  if (!order) return null
+
   return (
     <div className="min-h-screen bg-[#0B0E11] text-white px-5 pt-10 pb-32 space-y-6">
 
-      {/* HEADER - BOTÃO DE CHAT ADICIONADO AQUI */}
+      {/* HEADER */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button 
@@ -108,7 +121,6 @@ useEffect(() => {
           >
             <ArrowLeft size={18} />
           </button>
-
           <div>
             <h1 className="text-base font-semibold">Ordem #{order.id}</h1>
             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
@@ -117,12 +129,16 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* BOTÃO TRANSFERIDO DO ARQUIVO ANTERIOR */}
         <button
           onClick={() => navigate(`/otc/chat/${order.id}`)}
-          className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 transition-all active:scale-90"
+          className="relative p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 transition-all active:scale-90"
         >
           <ChatTeardropText size={18} weight="fill" />
+          {Number(order.unreadMessages) > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] flex items-center justify-center rounded-full font-bold">
+              {order.unreadMessages}
+            </span>
+          )}
         </button>
       </div>
 
@@ -142,12 +158,9 @@ useEffect(() => {
           </div>
 
           <div className="text-right">
-            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${
-              order.status === 'PENDING' ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' : 
-              order.status === 'PAID' ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' :
-              'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'
-            }`}>
-              {order.status}
+            {/* ✅ CORREÇÃO VISUAL DINÂMICA */}
+            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border border-${statusConfig.color}-500/20 bg-${statusConfig.color}-500/10 text-${statusConfig.color}-500`}>
+              {statusConfig.label}
             </span>
           </div>
         </div>
@@ -155,33 +168,45 @@ useEffect(() => {
         <div className="space-y-4">
           <Detail label="Quantidade" value={`${order.quantity} ${order.asset?.symbol || "USDT"}`} />
           <Detail label="Cotação" value={`${money(order.priceUsed)} AOA`} />
-          <Detail label="Total a pagar" value={`${money(order.totalAoa)} AOA`} highlight />
+          <Detail label="Total" value={`${money(order.totalAoa)} AOA`} highlight />
         </div>
 
+        {/* ✅ FEEDBACK DE SUCESSO OU ESPERA */}
         {order.status === "PAID" && (
           <div className="pt-2">
-            <p className="text-[11px] text-amber-500 text-center font-medium bg-amber-500/5 py-2 rounded-lg border border-amber-500/10">
-              Aguardando aprovação da empresa...
+            <p className="text-[11px] text-blue-400 text-center font-medium bg-blue-500/5 py-2 rounded-lg border border-blue-500/10">
+              Aguardando aprovação da administração...
+            </p>
+          </div>
+        )}
+
+        {order.status === "COMPLETED" && (
+          <div className="pt-2">
+            <p className="text-[11px] text-emerald-500 text-center font-bold bg-emerald-500/5 py-2 rounded-lg border border-emerald-500/10">
+              Ordem concluída com sucesso!
             </p>
           </div>
         )}
       </div>
 
-      {/* AÇÕES */}
-      {!isClosed && order.status === "PENDING" && order.type === "BUY" && (
+      {/* AÇÕES (Bloqueadas se closed ou processing) */}
+      {!isClosed && order.status === "PENDING" && (
         <div className="space-y-3">
           <button
-            onClick={() => safeAction(() => otcService.markAsPaid(order.id), "Pagamento confirmado")}
-            disabled={processing}
-            className="w-full h-14 bg-white text-black rounded-2xl font-black text-sm active:scale-95 transition-all shadow-xl"
+            onClick={() => {
+              const action = order.type === "BUY" ? otcService.markAsPaid : otcService.markSellPaid;
+              safeAction(() => action(order.id), "Enviado para análise")
+            }}
+            disabled={processing || isClosed}
+            className="w-full h-14 bg-white text-black rounded-2xl font-black text-sm active:scale-95 transition-all shadow-xl disabled:opacity-50"
           >
-            {processing ? "Processando..." : "Confirmar pagamento"}
+            {processing ? "Processando..." : order.type === "BUY" ? "Já realizei o pagamento" : "Já enviei o ativo"}
           </button>
 
           <button
-            onClick={() => safeAction(() => otcService.cancelOrder(order.id), "Cancelado")}
-            disabled={processing}
-            className="w-full h-12 bg-transparent border border-white/10 rounded-2xl text-gray-500 text-[10px] font-black uppercase tracking-widest active:bg-white/5 transition-all"
+            onClick={() => safeAction(() => otcService.cancelOrder(order.id), "Ordem cancelada")}
+            disabled={processing || isClosed}
+            className="w-full h-12 bg-transparent border border-white/10 rounded-2xl text-gray-500 text-[10px] font-black uppercase tracking-widest active:bg-white/5 transition-all disabled:opacity-30"
           >
             Cancelar operação
           </button>
@@ -192,7 +217,7 @@ useEffect(() => {
       <div className="bg-white/5 p-4 rounded-2xl flex gap-3 border border-white/5">
         <ShieldCheck size={20} className="text-gray-500 shrink-0"/>
         <p className="text-[11px] text-gray-500 leading-relaxed">
-          Para sua segurança, não marque como pago sem ter realizado a transferência real. Todas as transações são monitoradas.
+          Proteção Escrow ativa. Os ativos estão retidos com segurança até a confirmação de ambas as partes.
         </p>
       </div>
 

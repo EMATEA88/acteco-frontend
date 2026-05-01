@@ -18,13 +18,12 @@ interface Asset {
   isActive?: boolean
 }
 
+// ❌ Removido TRX e EUR conforme solicitado
 const IMAGE_MAP: Record<string, string> = {
   USDT: "/assets/otc/usdt.png",
   USDC: "/assets/otc/usdc.png",
   BTC: "/assets/otc/btc.png",
   BNB: "/assets/otc/bnb.png",
-  TRX: "/assets/otc/trx.png",
-  EUR: "/assets/otc/eur.png",
 }
 
 export default function OtcDetail() {
@@ -83,7 +82,7 @@ export default function OtcDetail() {
     return user.isVerified === true || hasStatusVerified;
   }, [user]);
 
-  // 🔥 1. ADICIONA balanceUSDT
+  // 🔥 2. CORREÇÃO SEGURA DE SALDO USDT (Fallback para múltiplos nomes de campo)
   const userBalance = Number(user?.balance ?? 0)
   const userUSDT = Number(user?.balanceUSDT ?? 0)
 
@@ -92,34 +91,54 @@ export default function OtcDetail() {
     return type === "BUY" ? asset.sellPrice : asset.buyPrice
   }, [asset, type])
 
-  const qty = Number(quantity) || 0
-  const total = qty * price
+  // 🔴 3. VALIDAÇÃO DE PRECISÃO (toFixed 6) E 🟠 4. VALIDAÇÃO DE INPUT
+  const qty = Number(Number(quantity).toFixed(6)) || 0
+  const isValid = !isNaN(qty) && qty >= MIN_QUANTITY
 
-  const isValid = qty >= MIN_QUANTITY
+  // 🟠 5. TOTAL SEGURO PARA UI
+  const total = isValid ? qty * price : 0
 
-  // 🔥 2. CORRIGE VALIDAÇÃO (Valida AOA na compra e USDT na venda)
-  const hasBalance =
-    type === "BUY"
-      ? userBalance >= total
-      : userUSDT >= qty
+  const hasBalance = type === "BUY" ? userBalance >= total : userUSDT >= qty
 
-  // 🔥 3. CORRIGE BOTÃO DISABLED
-  const disabled = loading || !isValid || !isVerified || !hasBalance
+  // 🔥 3. DISABLED APENAS PARA LOADING E KYC (Feedback de saldo via Toast no clique)
+  const disabled =
+  loading ||
+  !isValid ||
+  !isVerified ||
+  !hasBalance
 
   const createOrder = async () => {
-    if (disabled) return
+    if (loading) return
+
+if (!isVerified) {
+  return triggerToast("Conta não verificada (KYC)")
+}
+
+if (!isValid) {
+  return triggerToast(`Quantidade mínima: ${MIN_QUANTITY}`)
+}
+
+if (!hasBalance) {
+  return triggerToast(
+    type === "BUY"
+      ? "Saldo AOA insuficiente"
+      : "Saldo USDT insuficiente"
+  )
+}
+
     try {
       setLoading(true)
+      // 🔴 3. ENVIO COM PRECISÃO CORRIGIDA
       const res = await otcService.createOrder({
         assetId,
         type,
-        quantity: qty
+        quantity: qty 
       })
-      // 🔥 4. CORRIGE createOrder (Passa a resposta direta)
-      const order = res
+      
+      const order = res?.data ?? res
       navigate(`/otc/order/${order.id}`)
-    } catch {
-      triggerToast("Erro ao criar ordem")
+    } catch (err: any) {
+      triggerToast(err.response?.data?.message || "Erro ao criar ordem")
     } finally {
       setLoading(false)
     }
@@ -167,7 +186,7 @@ export default function OtcDetail() {
           </div>
         </div>
 
-        {/* 🟢 MOSTRAR SALDO AOA (Se for compra) */}
+        {/* SALDO AOA (Compra) */}
         {type === "BUY" && (
           <div className="flex items-center justify-between pt-4 border-t border-white/5">
             <div className="flex items-center gap-2 text-gray-500">
@@ -178,7 +197,7 @@ export default function OtcDetail() {
           </div>
         )}
 
-        {/* 🔥 5. MOSTRAR SALDO USDT (Se for venda) */}
+        {/* SALDO ATIVO (Venda) */}
         {type === "SELL" && (
           <div className="flex items-center justify-between pt-4 border-t border-white/5">
             <div className="flex items-center gap-2 text-gray-500">
@@ -186,7 +205,7 @@ export default function OtcDetail() {
               <span className="text-[10px] font-bold uppercase">{asset.symbol} Disponível</span>
             </div>
             <span className="text-xs font-bold text-cyan-400">
-              {userUSDT.toFixed(2)} {asset.symbol}
+              {userUSDT.toFixed(6)} {asset.symbol}
             </span>
           </div>
         )}
@@ -203,7 +222,7 @@ export default function OtcDetail() {
             type="number"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
-            placeholder="0.00"
+            placeholder="0.000000"
             className="w-full h-14 bg-[#0B0E11] border border-white/10 rounded-2xl px-4 text-lg font-bold outline-none focus:border-emerald-500 transition-all placeholder:text-gray-800"
           />
         </div>

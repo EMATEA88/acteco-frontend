@@ -1,5 +1,7 @@
 import { api } from './api'
 
+/* ================= TYPES ================= */
+
 export type VerificationStatus =
   | 'NOT_SUBMITTED'
   | 'PENDING'
@@ -20,11 +22,13 @@ export interface UserResponse {
   bio?: string
 
   role: string
+
+  // 💰 SALDOS
   balance: number
   balanceUSDT: number
   cryptoBalance?: number
 
-  // 🔥 SEPARAÇÃO CORRETA
+  // 🔐 WALLETS
   depositWalletAddress?: string
   withdrawWalletAddress?: string
 
@@ -47,6 +51,8 @@ export interface UserResponse {
   } | null
 }
 
+/* ================= DTO ================= */
+
 export interface UpdateProfileDTO {
   fullName?: string
   email?: string
@@ -59,22 +65,27 @@ export interface UpdateProfileDTO {
   otp?: string
 }
 
+/* ================= SERVICE ================= */
+
 export const UserService = {
 
+  /* ================= GET PROFILE ================= */
   async me(): Promise<UserResponse> {
     const response = await api.get<UserResponse>('/users/me')
     return response.data
   },
 
+  /* ================= UPDATE PROFILE ================= */
   async updateProfile(data: UpdateProfileDTO): Promise<any> {
 
     if (data.withdrawWalletAddress) {
       const addr = data.withdrawWalletAddress.trim()
 
-      const tronRegex = /^T[a-zA-Z0-9]{33}$/
+      // 🔥 VALIDAÇÃO BSC / EVM
+      const evmRegex = /^0x[a-fA-F0-9]{40}$/
 
-      if (!tronRegex.test(addr)) {
-        throw new Error("Endereço TRC20 inválido.")
+      if (!evmRegex.test(addr)) {
+        throw new Error("Endereço BEP20 inválido.")
       }
 
       data.withdrawWalletAddress = addr
@@ -84,6 +95,7 @@ export const UserService = {
     return response.data
   },
 
+  /* ================= OTP ================= */
   async requestEmailChangeOTP(): Promise<{ message: string }> {
     const response = await api.post('/users/request-email-otp')
     return response.data

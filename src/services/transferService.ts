@@ -7,6 +7,11 @@ export interface TransferResponse {
   amount: number
   currency: 'AOA' | 'USDT'
   recipient: string
+
+  method: 'BANK' | 'CRYPTO'
+
+  // 🔥 IMPORTANTE PARA CRYPTO
+  txHash?: string
 }
 
 /* ================= SERVICE ================= */
@@ -14,7 +19,7 @@ export interface TransferResponse {
 export const TransferService = {
 
   /**
-   * Transferência interna multi-moeda
+   * 🔥 Transferência interna multi-moeda
    */
   async internal(
     recipientPublicId: string,
@@ -27,7 +32,8 @@ export const TransferService = {
       const res = await api.post('/transfer/internal', {
         recipientPublicId,
         amount,
-        currency // 🔥 AGORA ENVIA
+        currency
+        // ❌ NÃO envia method
       })
 
       return res.data

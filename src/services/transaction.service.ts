@@ -4,18 +4,31 @@ import { api } from './api'
 
 export type Transaction = {
   id: number
-  type: 'DEPOSIT' | 'WITHDRAW'
+
+  // 🔥 ALINHADO COM BACKEND
+  type: 'RECHARGE' | 'WITHDRAW'
+
   amount: number
   currency: 'AOA' | 'USDT'
+
+  method?: 'BANK' | 'CRYPTO'
+
+  // 🔥 CRYPTO
+  network?: string
+  token?: string
+  txHash?: string
+
   status: string
+
   description?: string
   reference?: string
+
   createdAt: string
   processedAt?: string
 }
 
 export type TransactionFilter = {
-  type?: 'DEPOSIT' | 'WITHDRAW'
+  type?: 'RECHARGE' | 'WITHDRAW'
   category?: 'IN' | 'OUT'
   page?: number
   limit?: number
@@ -30,7 +43,37 @@ export const TransactionService = {
   async list(): Promise<Transaction[]> {
     try {
       const res = await api.get('/transactions')
-      return res.data
+
+      // 🔥 NORMALIZAÇÃO (CRÍTICO)
+      return res.data.map((tx: any) => {
+
+        const isCrypto = tx.method === 'CRYPTO'
+
+        return {
+          id: tx.id,
+          type: tx.type,
+
+          amount: isCrypto
+            ? Number(tx.amount)
+            : Number(tx.amount),
+
+          currency: tx.currency,
+          method: tx.method,
+
+          network: tx.network || null,
+          token: tx.token || null,
+          txHash: tx.txHash || null,
+
+          status: tx.status,
+
+          description: tx.description,
+          reference: tx.reference,
+
+          createdAt: tx.createdAt,
+          processedAt: tx.processedAt
+        }
+      })
+
     } catch (err: any) {
       throw new Error(
         err.response?.data?.message ||

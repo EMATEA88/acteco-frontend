@@ -1,36 +1,61 @@
 import { api } from './api'
 
+/* ================= TYPES ================= */
+
+export interface WalletResponse {
+  address: string
+  network: string
+  token: string
+}
+
+export interface RechargeHistory {
+  id: number
+  amount: number
+  currency: string
+  status: string
+  createdAt: string
+}
+
+/* ================= SERVICE ================= */
+
 export class RechargeService {
 
-  static async create(data: {
-    amount: number
-    currency: 'AOA' | 'USDT'
-    method: 'BANK' | 'CRYPTO'
-    txHash?: string
-  }) {
-    const response = await api.post('/recharges', data)
+  /* ================= AOA (FIAT ONLY) ================= */
+
+  static async create(amount: number) {
+    const response = await api.post('/recharges', {
+      amount,
+      method: 'BANK'
+    })
+
     return response.data
   }
+
+  /* ================= UPLOAD PROOF ================= */
 
   static async uploadProof(formData: FormData) {
     const { data } = await api.post('/recharges/upload-proof', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
+
     return data
   }
 
-  // 🔥 NOVO (CORRETO)
-static async getUserWallet(): Promise<string> {
-  // Adicionamos um params para garantir que o backend receba o que precisa
-  const res = await api.get('/recharges/wallet', {
-    params: { currency: 'USDT' } // Ajuste se o seu backend esperar outro nome de parâmetro
-  })
-  return res.data.address
-}
+  /* ================= WALLET (CRYPTO) ================= */
 
-  static async myHistory() {
-    return api.get('/recharges/my')
+  static async getUserWallet(): Promise<WalletResponse> {
+    const { data } = await api.get('/recharges/wallet')
+    return data
   }
+
+  /* ================= HISTORY ================= */
+
+  static async myHistory(): Promise<RechargeHistory[]> {
+    const { data } = await api.get('/recharges/my')
+    return data
+  }
+
+  /* ================= ADMIN ================= */
 
   static async listAll() {
     const { data } = await api.get('/recharges')

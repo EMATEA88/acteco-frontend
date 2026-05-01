@@ -15,17 +15,21 @@ import {
   Clock,
 } from '@phosphor-icons/react'
 
+// 1. TYPE CORRETO COM SUPORTE A CRYPTO
 type Transaction = {
   id: number
   type: string
   amount: number
   currency: 'AOA' | 'USDT'
+  method?: 'BANK' | 'CRYPTO'
+  network?: string
+  token?: string
+  txHash?: string
   createdAt: string
 }
 
 const CACHE_KEY = 'transactions-cache'
 
-// CONFIGURAÇÃO DE CORES: Emerald para Entradas, Rose para Saídas
 const TYPE_META: Record<string, any> = {
   RECHARGE: { label: 'Recarga', icon: Wallet, color: 'text-emerald-500', sign: '+', category: 'IN' },
   WITHDRAW: { label: 'Levantamento', icon: ArrowUpRight, color: 'text-rose-500', sign: '-', category: 'OUT' },
@@ -38,7 +42,6 @@ const TYPE_META: Record<string, any> = {
   INVESTMENT_DEBIT: { label: 'Investimento', icon: ArrowUpRight, color: 'text-rose-500', sign: '-', category: 'OUT' },
   INVESTMENT_CREDIT: { label: 'Lucro', icon: ArrowDownLeft, color: 'text-emerald-500', sign: '+', category: 'IN' },
   TASK_REWARD: { label: 'Tarefa', icon: Coins, color: 'text-emerald-500', sign: '+', category: 'IN' },
-  
   INTERNAL_TRANSFER_IN: { label: 'Transf. Recebida', icon: ArrowDownLeft, color: 'text-emerald-500', sign: '+', category: 'IN' },
   INTERNAL_TRANSFER_OUT: { label: 'Transf. Enviada', icon: PaperPlaneTilt, color: 'text-rose-500', sign: '-', category: 'OUT' },
   KIXIKILA_IN: { label: 'Kixikila Recebida', icon: UsersThree, color: 'text-emerald-500', sign: '+', category: 'IN' },
@@ -64,10 +67,15 @@ export default function Transactions() {
       .finally(() => setLoading(false))
   }, [])
 
+  // 4. FORMATADOR DE MOEDA AJUSTADO
   function formatCurrency(amount: number, currency: string) {
-    return currency === 'USDT' ? `${amount.toFixed(2)} USDT` : `${amount.toLocaleString()} Kz`
+    if (currency === 'USDT') {
+      return `${amount.toFixed(2)} USDT`
+    }
+    return `${amount.toLocaleString()} Kz`
   }
 
+  // FILTRO LÓGICO
   const filtered = useMemo(() => {
     return items.filter(tx => {
       const meta = TYPE_META[tx.type]
@@ -76,15 +84,29 @@ export default function Transactions() {
     })
   }, [items, filter])
 
+  // 2. SUMMARY (CORREÇÃO TOTAL PARA AOA E USDT)
   const summary = useMemo(() => {
-    let totalIn = 0; let totalOut = 0
+    let totalInAOA = 0; let totalOutAOA = 0
+    let totalInUSDT = 0; let totalOutUSDT = 0
+
     items.forEach(tx => {
       const meta = TYPE_META[tx.type]
       if (!meta) return
-      if (meta.category === 'IN') totalIn += Number(tx.amount)
-      else totalOut += Number(tx.amount)
+      const value = Number(tx.amount)
+
+      if (tx.currency === 'USDT') {
+        if (meta.category === 'IN') totalInUSDT += value
+        else totalOutUSDT += value
+      } else {
+        if (meta.category === 'IN') totalInAOA += value
+        else totalOutAOA += value
+      }
     })
-    return { totalIn, totalOut, balance: totalIn - totalOut }
+
+    return {
+      AOA: { in: totalInAOA, out: totalOutAOA, balance: totalInAOA - totalOutAOA },
+      USDT: { in: totalInUSDT, out: totalOutUSDT, balance: totalInUSDT - totalOutUSDT }
+    }
   }, [items])
 
   const grouped = useMemo(() => {
@@ -100,7 +122,6 @@ export default function Transactions() {
 
   return (
     <div className="min-h-screen bg-[#0B0E11] text-white">
-      {/* HEADER FIXO */}
       <div className="sticky top-0 z-10 bg-[#0B0E11]/80 backdrop-blur-md px-5 py-6 flex items-center justify-between border-b border-white/5">
         <button onClick={() => navigate(-1)} className="p-2 bg-white/5 rounded-xl">
           <ArrowLeft size={18} weight="bold" />
@@ -110,27 +131,35 @@ export default function Transactions() {
       </div>
 
       <div className="px-5 py-8 space-y-8 pb-20">
-        {/* CARD DE RESUMO */}
+        
+        {/* 3. CARD DE RESUMO - FOCO EM SALDO DISPONÍVEL (EMERALD) */}
         <div className="bg-[#161A1F] border border-white/5 p-6 rounded-[2rem] shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-[50px]" />
-          <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-2">Balanço do Período</p>
-          <h2 className={`text-3xl font-mono font-bold ${summary.balance >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-            {summary.balance.toLocaleString()} <span className="text-xs">Kz</span>
-          </h2>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-[50px]" />
+          
+          <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-2">Saldo Disponível</p>
+          
+          <div className="space-y-1">
+            <h2 className="text-3xl font-mono font-bold text-emerald-500">
+              {summary.AOA.balance.toLocaleString()} <span className="text-xs">Kz</span>
+            </h2>
+            <h3 className="text-lg font-mono font-bold text-yellow-400">
+              {summary.USDT.balance.toFixed(2)} <span className="text-[10px]">USDT</span>
+            </h3>
+          </div>
 
           <div className="flex justify-between items-center pt-5 mt-5 border-t border-white/5">
             <div className="text-left">
-              <p className="text-[9px] text-gray-500 uppercase font-bold">Total Entradas</p>
-              <p className="text-emerald-500 font-bold text-xs">+{summary.totalIn.toLocaleString()} Kz</p>
+              <p className="text-[9px] text-gray-500 uppercase font-bold">Total Entradas (Kz)</p>
+              <p className="text-emerald-500 font-bold text-xs">+{summary.AOA.in.toLocaleString()}</p>
             </div>
             <div className="text-right">
-              <p className="text-[9px] text-gray-500 uppercase font-bold">Total Saídas</p>
-              <p className="text-rose-500 font-bold text-xs">-{summary.totalOut.toLocaleString()} Kz</p>
+              <p className="text-[9px] text-gray-500 uppercase font-bold">Total Saídas (Kz)</p>
+              <p className="text-rose-500 font-bold text-xs">-{summary.AOA.out.toLocaleString()}</p>
             </div>
           </div>
         </div>
 
-        {/* FILTROS DE ESTADO */}
+        {/* FILTROS */}
         <div className="flex gap-2 bg-[#161A1F] p-1.5 rounded-2xl border border-white/5">
           {(['ALL', 'IN', 'OUT'] as const).map(f => (
             <button
@@ -145,7 +174,7 @@ export default function Transactions() {
           ))}
         </div>
 
-        {/* LISTAGEM AGRUPADA */}
+        {/* LISTAGEM */}
         <div className="space-y-8">
           {loading ? (
             <p className="text-center text-[10px] text-gray-500 animate-pulse tracking-widest">SINCRONIZANDO BLOCKCHAIN...</p>
@@ -169,15 +198,27 @@ export default function Transactions() {
                       </div>
                       <div>
                         <p className="text-xs font-bold text-gray-100">{meta.label}</p>
-                        <p className="text-[10px] text-gray-600 font-mono mt-0.5">
-                          {new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
+                        <div className="flex flex-col">
+                          <p className="text-[10px] text-gray-600 font-mono mt-0.5">
+                            {new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                          {/* 5. MOSTRAR TX HASH SE EXISTIR */}
+                          {tx.txHash && (
+                            <p className="text-[9px] text-yellow-500/70 mt-1 font-mono truncate max-w-[120px]">
+                              {tx.txHash.slice(0, 10)}...
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
 
                     <div className="text-right">
                       <p className={`text-sm font-mono font-bold ${meta.color}`}>
                         {meta.sign}{formatCurrency(Number(tx.amount), tx.currency)}
+                        {/* 6. INDICADOR DE REDE PARA USDT */}
+                        {tx.currency === 'USDT' && (
+                          <span className="ml-1 text-[8px] text-yellow-400 font-black">BSC</span>
+                        )}
                       </p>
                       <p className="text-[8px] text-gray-700 font-black uppercase tracking-tighter mt-1">{tx.currency}</p>
                     </div>

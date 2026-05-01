@@ -23,6 +23,7 @@ export default function WithdrawUSDT() {
   const inputsRef = useRef<(HTMLInputElement | null)[]>([])
   const [timer, setTimer] = useState(0)
 
+  // 🔥 6. FEE ALINHADO COM BACKEND
   const FEE = 1 
   const amountNumber = Number(amount || 0)
   const fee = amountNumber > 0 ? FEE : 0
@@ -79,7 +80,7 @@ export default function WithdrawUSDT() {
     }
   }
 
-  // 🔥 VALIDAÇÃO ATUALIZADA (CONFORME SOLICITADO)
+  // 🔥 2. VALIDAÇÃO BSC REAL (CRÍTICO)
   function validate() {
     const address = finalAddress?.trim()
 
@@ -88,8 +89,9 @@ export default function WithdrawUSDT() {
       return false
     }
 
-    if (address.length < 34 || !address.startsWith('T')) {
-      toast.error('Endereço TRC20 inválido')
+    // Validação real de rede BSC/Ethereum
+    if (!address.startsWith('0x') || address.length !== 42) {
+      toast.error('Endereço BEP20 inválido')
       return false
     }
 
@@ -112,6 +114,11 @@ export default function WithdrawUSDT() {
   }
 
   async function handleWithdraw() {
+    // 🔥 7. SEGURANÇA EXTRA
+    if (targetType === 'ME' && !savedAddress) {
+      return toast.error('Configure sua carteira antes')
+    }
+
     if (!validate()) return
 
     if (!otpSent) {
@@ -147,7 +154,8 @@ export default function WithdrawUSDT() {
         <button onClick={() => navigate(-1)} className="p-2 bg-white/5 rounded-full text-gray-400">
           <ArrowLeft size={18} weight="bold" />
         </button>
-        <h1 className="text-lg font-bold">Saque USDT (TRC20)</h1>
+        {/* 🔥 1. HEADER */}
+        <h1 className="text-lg font-bold">Saque USDT (BEP20)</h1>
       </div>
 
       <div className="px-5 py-8 max-w-md mx-auto space-y-6">
@@ -187,16 +195,22 @@ export default function WithdrawUSDT() {
               </p>
             </div>
           ) : (
-            <input
-              type="text"
-              value={manualAddress}
-              onChange={(e) => setManualAddress(e.target.value.trim())}
-              placeholder="Endereço TRC20 (Binance, Trust Wallet...)"
-              className="w-full bg-[#161A1E] border border-white/5 rounded-2xl p-4 text-xs font-mono outline-none focus:border-cyan-500/50"
-            />
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={manualAddress}
+                onChange={(e) => setManualAddress(e.target.value.trim())}
+                
+                placeholder="Endereço BEP20 (Binance, Trust Wallet...)"
+                className="w-full bg-[#161A1E] border border-white/5 rounded-2xl p-4 text-xs font-mono outline-none focus:border-cyan-500/50"
+              />
+              {/* 🔥 5. MELHORIA VISUAL ABAIXO DO ENDEREÇO */}
+              <div className="text-[10px] text-yellow-400 px-1">
+                Rede: BSC (BEP20) • Token: USDT
+              </div>
+            </div>
           )}
 
-          {/* 🔥 MELHORIA VISUAL (OPCIONAL MAS PROFISSIONAL) */}
           {targetType === 'ME' && !savedAddress && (
             <p className="text-[10px] text-red-400 mt-2 font-bold uppercase tracking-tighter">
               ⚠️ Nenhuma carteira vinculada. Configure no perfil antes de sacar.
@@ -205,8 +219,9 @@ export default function WithdrawUSDT() {
 
           <div className="flex gap-2 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
             <Info size={20} className="text-yellow-500 shrink-0" />
+            {/* 🔥 4. AVISO DE REDE */}
             <p className="text-[10px] text-yellow-500/80 leading-relaxed font-bold uppercase">
-              Aviso: Envie apenas para redes TRC20. O uso de outras redes resultará em perda permanente.
+              Aviso: Utilize apenas a rede BNB Smart Chain (BEP20). O uso de redes incorretas resultará em perda permanente.
             </p>
           </div>
         </div>
@@ -262,7 +277,6 @@ export default function WithdrawUSDT() {
           </div>
         )}
 
-        {/* 🔥 BOTÃO COM TRAVA DE SEGURANÇA UX */}
         <div className="pt-4">
           <button
             onClick={handleWithdraw}

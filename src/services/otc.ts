@@ -1,5 +1,7 @@
 import { api } from "../services/api"
 
+/* ================= TYPES ================= */
+
 export interface OTCOrder {
   id: number
   assetId: number
@@ -25,9 +27,19 @@ export interface OTCOrder {
     | "EXPIRED"
     | "DISPUTED"
 
-  createdAt: string
+  // 🔥 NOVOS CAMPOS IMPORTANTES
+  fee?: number
+  txHash?: string
+  paidAt?: string
   completedAt?: string
+
+  network?: string
+  walletAddress?: string
+
+  createdAt: string
 }
+
+/* ================= SERVICE ================= */
 
 export const otcService = {
 
@@ -37,7 +49,7 @@ export const otcService = {
     return res.data.data
   },
 
-  /* ================= CREATE ORDER ================= */
+  /* ================= CREATE ================= */
   async createOrder(data: {
     assetId: number
     type: "BUY" | "SELL"
@@ -56,13 +68,13 @@ export const otcService = {
     return res.data.data
   },
 
-  /* ================= MY ORDERS ================= */
+  /* ================= LIST ================= */
   async myOrders() {
     const res = await api.get("/otc/my-orders")
     return res.data.data
   },
 
-  /* ================= GET ORDER ================= */
+  /* ================= GET ================= */
   async getOrder(id: number) {
     const res = await api.get(`/otc/orders/${id}`)
     return res.data.data
@@ -78,6 +90,16 @@ export const otcService = {
   async markAsPaid(id: number) {
     const res = await api.patch(`/otc/orders/${id}/pay`)
     return res.data.data
-  }
+  },
 
+  async markSellPaid(id: number) {
+    const res = await api.patch(`/otc/orders/${id}/mark-sell-paid`)
+    return res.data.data
+  },
+
+  /* 🔥 CRÍTICO — ADMIN EXECUTA BLOCKCHAIN */
+  async completeSell(id: number) {
+    const res = await api.patch(`/otc/orders/${id}/complete`)
+    return res.data.data
+  }
 }
