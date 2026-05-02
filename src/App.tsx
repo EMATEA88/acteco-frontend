@@ -46,6 +46,7 @@ import { Transfer } from './pages/Transfer';
 import Wallet from './pages/Wallet';
 import WithdrawUSDT from './pages/WithdrawUSDT'
 import WithdrawAOA from './pages/WithdrawAOA'
+import Cards from "./pages/Cards"
 
 /* ===== OTC USER ===== */
 import OtcPage from "./pages/otc/OtcPage"
@@ -129,6 +130,7 @@ function App() {
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/withdraw/usdt" element={<WithdrawUSDT />} />
           <Route path="/withdraw/aoa" element={<WithdrawAOA />} />
+          <Route path="/cards" element={<Cards />} />
 
           {/* OTC */}
           <Route path="otc" element={<OtcPage />} />

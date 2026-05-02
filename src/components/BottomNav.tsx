@@ -5,15 +5,15 @@ import {
   UsersThree,
   ArrowsLeftRight,
   Megaphone,
-  ChartPieSlice
 } from "@phosphor-icons/react"
+import { CreditCard } from "@phosphor-icons/react"
 
 const links = [
   { to: "/home", label: "Início", icon: House },
   { to: "/kixikila", label: "Kixikila", icon: UsersThree },
   { to: "/otc", label: "OTC", icon: ArrowsLeftRight },
   { to: "/tasks", label: "Tarefas", icon: Megaphone },
-  { to: "/applications", label: "Aplicações", icon: ChartPieSlice },
+  { to: "/cards", label: "Cartão VISA", icon: CreditCard },
   { to: "/profile", label: "Perfil", icon: User },
 ]
 
