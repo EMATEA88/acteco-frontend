@@ -23,13 +23,14 @@ export class RechargeService {
   /* ================= AOA (FIAT ONLY) ================= */
 
   static async create(amount: number) {
-    const response = await api.post('/recharges', {
-      amount,
-      method: 'BANK'
-    })
+  const response = await api.post('/recharges', {
+    amount: Number(amount),
+    currency: 'AOA',
+    method: 'BANK'
+  })
 
-    return response.data
-  }
+  return response.data
+}
 
   /* ================= UPLOAD PROOF ================= */
 
