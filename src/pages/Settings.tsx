@@ -65,17 +65,24 @@ export default function Settings() {
   }, [])
 
   async function handleRequestOTP() {
-    try {
-      setSendingOtp(true)
-      await UserService.requestEmailChangeOTP()
-      toast.success('Código enviado')
-      setShowOtpField(true)
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Erro ao enviar código')
-    } finally {
-      setSendingOtp(false)
+  try {
+    setSendingOtp(true)
+
+    if (!form.email) {
+      return toast.error("Email inválido")
     }
+
+    await UserService.sendOtp('WITHDRAW', form.email)
+
+    toast.success('Código enviado')
+    setShowOtpField(true)
+
+  } catch (err: any) {
+    toast.error(err.response?.data?.error || 'Erro ao enviar código')
+  } finally {
+    setSendingOtp(false)
   }
+}
 
   async function handleSave() {
     try {
