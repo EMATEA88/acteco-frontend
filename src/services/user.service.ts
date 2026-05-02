@@ -23,12 +23,10 @@ export interface UserResponse {
 
   role: string
 
-  // 💰 SALDOS
   balance: number
   balanceUSDT: number
   cryptoBalance?: number
 
-  // 🔐 WALLETS
   depositWalletAddress?: string
   withdrawWalletAddress?: string
 
@@ -55,7 +53,6 @@ export interface UserResponse {
 
 export interface UpdateProfileDTO {
   fullName?: string
-  email?: string
   phone?: string
   address?: string
   province?: string
@@ -81,7 +78,6 @@ export const UserService = {
     if (data.withdrawWalletAddress) {
       const addr = data.withdrawWalletAddress.trim()
 
-      // 🔥 VALIDAÇÃO BSC / EVM
       const evmRegex = /^0x[a-fA-F0-9]{40}$/
 
       if (!evmRegex.test(addr)) {
@@ -95,10 +91,12 @@ export const UserService = {
     return response.data
   },
 
-  /* ================= OTP ================= */
-  async requestEmailChangeOTP(): Promise<{ message: string }> {
-    const response = await api.post('/users/request-email-otp')
-    return response.data
+  /* ================= OTP (NOVO PADRÃO) ================= */
+  async sendOtp(type: 'WITHDRAW', target: string): Promise<void> {
+    await api.post('/otp/send', {
+      type,
+      target
+    })
   }
 
 }
