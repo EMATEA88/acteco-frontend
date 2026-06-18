@@ -14,15 +14,12 @@ import {
   ShieldCheck,
   LockKey,
   Copy,
-  DownloadSimple,
   SignOut,
   CaretRight,
   UserCircleGear,
   Wallet,
   SealCheck,
-  PaperPlaneTilt,
-  UsersThree,
-  Info // Ícone para o About
+  PaperPlaneTilt
 } from '@phosphor-icons/react'
 
 type User = {
@@ -150,17 +147,11 @@ export default function Profile() {
 
           <div className="grid grid-cols-2 gap-4">
             <SessionCard label="Transferir" sub="Envio Interno" icon={<PaperPlaneTilt size={20} />} to="/transfer" />
-            <SessionCard label="Kixikila" sub="Poupança" icon={<UsersThree size={20} />} to="/kixikila" />
             <SessionCard label="Banco" sub="Conta & Dados" icon={<Bank size={20} />} to="/bank" />
             <SessionCard label="Transações" sub="Histórico" icon={<ArrowsLeftRight size={20} />} to="/transactions" />
             <SessionCard label="Presente" sub="Bônus" icon={<Gift size={20} />} to="/gift" />
             <SessionCard label="Segurança" sub="Proteção" icon={<ShieldCheck size={20} />} to="/security" />
             <SessionCard label="Senha" sub="Alterar" icon={<LockKey size={20} />} to="/password" />
-            <SessionCard label="Aplicações" sub="Ferramentas" icon={<DownloadSimple size={20} />} to="/applications" />
-            
-            {/* 🟢 NOVOS CARDS PARA FECHAR O GRID PAR */}
-            <SessionCard label="Carteira" sub="USDT TRC20" icon={<Wallet size={20} />} to="/wallet" />
-            <SessionCard label="Sobre" sub="EMATEA v1.0" icon={<Info size={20} />} to="/about" />
           </div>
         </div>
 

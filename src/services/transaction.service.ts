@@ -1,37 +1,37 @@
-import { api } from './api'
+import { api } from "./api";
 
 /* ================= TYPES ================= */
 
-export type Transaction = {
-  id: number
+export interface Transaction {
+  id: number;
 
-  // 🔥 ALINHADO COM BACKEND
-  type: 'RECHARGE' | 'WITHDRAW'
+  type: string;
 
-  amount: number
-  currency: 'AOA' | 'USDT'
+  amount: number;
 
-  method?: 'BANK' | 'CRYPTO'
+  currency: string;
 
-  // 🔥 CRYPTO
-  network?: string
-  token?: string
-  txHash?: string
+  method?: string;
 
-  status: string
+  status: string;
 
-  description?: string
-  reference?: string
+  description?: string;
 
-  createdAt: string
-  processedAt?: string
+  reference?: string;
+
+  relatedPublicId?: string;
+
+  createdAt: string;
+
+  processedAt?: string;
 }
 
-export type TransactionFilter = {
-  type?: 'RECHARGE' | 'WITHDRAW'
-  category?: 'IN' | 'OUT'
-  page?: number
-  limit?: number
+export interface TransactionFilter {
+  type?: string;
+
+  page?: number;
+
+  limit?: number;
 }
 
 /* ================= SERVICE ================= */
@@ -41,79 +41,79 @@ export const TransactionService = {
   /* ================= LIST ================= */
 
   async list(): Promise<Transaction[]> {
+
     try {
-      const res = await api.get('/transactions')
 
-      // 🔥 NORMALIZAÇÃO (CRÍTICO)
-      return res.data.map((tx: any) => {
+      const { data } =
+        await api.get("/transactions");
 
-        const isCrypto = tx.method === 'CRYPTO'
-
-        return {
-          id: tx.id,
-          type: tx.type,
-
-          amount: isCrypto
-            ? Number(tx.amount)
-            : Number(tx.amount),
-
-          currency: tx.currency,
-          method: tx.method,
-
-          network: tx.network || null,
-          token: tx.token || null,
-          txHash: tx.txHash || null,
-
-          status: tx.status,
-
-          description: tx.description,
-          reference: tx.reference,
-
-          createdAt: tx.createdAt,
-          processedAt: tx.processedAt
-        }
-      })
+      return data;
 
     } catch (err: any) {
+
       throw new Error(
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        'Erro ao carregar transações'
-      )
+        err?.response?.data?.error ||
+        "Erro ao carregar transações"
+      );
     }
   },
 
   /* ================= FILTER ================= */
 
-  async listFiltered(params?: TransactionFilter): Promise<Transaction[]> {
+  async listFiltered(
+    params?: TransactionFilter
+  ): Promise<Transaction[]> {
+
     try {
-      const res = await api.get('/transactions', { params })
-      return res.data
+
+      const { data } =
+        await api.get(
+          "/transactions",
+          {
+            params
+          }
+        );
+
+      return data;
+
     } catch (err: any) {
-      throw new Error('Erro ao filtrar transações')
+
+      throw new Error(
+        err?.response?.data?.error ||
+        "Erro ao filtrar transações"
+      );
     }
   },
 
   /* ================= PAGINATION ================= */
 
-  async paginate(page = 1, limit = 20): Promise<{
-    data: Transaction[]
-    page: number
-    limit: number
-  }> {
-    try {
-      const res = await api.get('/transactions', {
-        params: { page, limit }
-      })
+  async paginate(
+    page = 1,
+    limit = 20
+  ): Promise<Transaction[]> {
 
-      return {
-        data: res.data,
-        page,
-        limit
-      }
+    try {
+
+      const { data } =
+        await api.get(
+          "/transactions",
+          {
+            params: {
+              page,
+              limit
+            }
+          }
+        );
+
+      return data;
 
     } catch (err: any) {
-      throw new Error('Erro ao paginar transações')
+
+      throw new Error(
+        err?.response?.data?.error ||
+        "Erro ao carregar transações"
+      );
     }
   }
-}
+
+};

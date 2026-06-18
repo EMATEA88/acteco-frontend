@@ -1,6 +1,9 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { TransactionService } from '../services/transaction.service'
+import {
+  TransactionService,
+  type Transaction
+} from '../services/transaction.service'
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -15,22 +18,28 @@ import {
   Clock,
 } from '@phosphor-icons/react'
 
-// 1. TYPE CORRETO COM SUPORTE A CRYPTO
-type Transaction = {
-  id: number
-  type: string
-  amount: number
-  currency: 'AOA' | 'USDT'
-  method?: 'BANK' | 'CRYPTO'
-  network?: string
-  token?: string
-  txHash?: string
-  createdAt: string
-}
-
-const CACHE_KEY = 'transactions-cache'
-
 const TYPE_META: Record<string, any> = {
+  DEPOSIT: {
+    label: 'Depósito',
+    icon: ArrowDownLeft,
+    color: 'text-emerald-500',
+    sign: '+',
+    category: 'IN'
+  },
+  TRANSFER: {
+    label: 'Transferência',
+    icon: PaperPlaneTilt,
+    color: 'text-rose-500',
+    sign: '-',
+    category: 'OUT'
+  },
+  PAYMENT: {
+    label: 'Pagamento',
+    icon: Receipt,
+    color: 'text-rose-500',
+    sign: '-',
+    category: 'OUT'
+  },
   RECHARGE: { label: 'Recarga', icon: Wallet, color: 'text-emerald-500', sign: '+', category: 'IN' },
   WITHDRAW: { label: 'Levantamento', icon: ArrowUpRight, color: 'text-rose-500', sign: '-', category: 'OUT' },
   BUY_DEBIT: { label: 'Compra OTC', icon: ArrowUpRight, color: 'text-rose-500', sign: '-', category: 'OUT' },
@@ -50,24 +59,25 @@ const TYPE_META: Record<string, any> = {
 
 export default function Transactions() {
   const navigate = useNavigate()
-  const cached = localStorage.getItem(CACHE_KEY)
-  const initial = cached ? JSON.parse(cached) : []
 
-  const [items, setItems] = useState<Transaction[]>(initial)
+  const [items, setItems] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'ALL' | 'IN' | 'OUT'>('ALL')
 
   useEffect(() => {
     TransactionService.list()
       .then(data => {
-        if (!Array.isArray(data)) return
+        if (!Array.isArray(data))
+          return
+
         setItems(data)
-        localStorage.setItem(CACHE_KEY, JSON.stringify(data))
       })
-      .finally(() => setLoading(false))
+      .catch(console.error)
+      .finally(() =>
+        setLoading(false)
+      )
   }, [])
 
-  // 4. FORMATADOR DE MOEDA AJUSTADO
   function formatCurrency(amount: number, currency: string) {
     if (currency === 'USDT') {
       return `${amount.toFixed(2)} USDT`
@@ -75,7 +85,6 @@ export default function Transactions() {
     return `${amount.toLocaleString()} Kz`
   }
 
-  // FILTRO LÓGICO
   const filtered = useMemo(() => {
     return items.filter(tx => {
       const meta = TYPE_META[tx.type]
@@ -84,7 +93,6 @@ export default function Transactions() {
     })
   }, [items, filter])
 
-  // 2. SUMMARY (CORREÇÃO TOTAL PARA AOA E USDT)
   const summary = useMemo(() => {
     let totalInAOA = 0; let totalOutAOA = 0
     let totalInUSDT = 0; let totalOutUSDT = 0
@@ -132,7 +140,7 @@ export default function Transactions() {
 
       <div className="px-5 py-8 space-y-8 pb-20">
         
-        {/* 3. CARD DE RESUMO - FOCO EM SALDO DISPONÍVEL (EMERALD) */}
+        {/* CARD DE RESUMO - FOCO EM SALDO DISPONÍVEL (EMERALD) */}
         <div className="bg-[#161A1F] border border-white/5 p-6 rounded-[2rem] shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-[50px]" />
           
@@ -202,12 +210,6 @@ export default function Transactions() {
                           <p className="text-[10px] text-gray-600 font-mono mt-0.5">
                             {new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
-                          {/* 5. MOSTRAR TX HASH SE EXISTIR */}
-                          {tx.txHash && (
-                            <p className="text-[9px] text-yellow-500/70 mt-1 font-mono truncate max-w-[120px]">
-                              {tx.txHash.slice(0, 10)}...
-                            </p>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -215,10 +217,6 @@ export default function Transactions() {
                     <div className="text-right">
                       <p className={`text-sm font-mono font-bold ${meta.color}`}>
                         {meta.sign}{formatCurrency(Number(tx.amount), tx.currency)}
-                        {/* 6. INDICADOR DE REDE PARA USDT */}
-                        {tx.currency === 'USDT' && (
-                          <span className="ml-1 text-[8px] text-yellow-400 font-black">BSC</span>
-                        )}
                       </p>
                       <p className="text-[8px] text-gray-700 font-black uppercase tracking-tighter mt-1">{tx.currency}</p>
                     </div>

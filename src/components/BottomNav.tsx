@@ -2,18 +2,23 @@ import { NavLink } from "react-router-dom"
 import {
   House,
   User,
-  UsersThree,
-  ArrowsLeftRight,
-  Megaphone,
+  Lightning,      // Ícone elétrico e ágil perfeito para Recargas Rápidas
+  CreditCard,     // Ícone ideal para faturas, referências e Pagamentos
+  Receipt,        // Ícone perfeito de extrato/fatura para Transações
+  ChartPieSlice,  // Ícone ideal de gráficos para o Dashboard/Visão Geral
 } from "@phosphor-icons/react"
-import { CreditCard } from "@phosphor-icons/react"
 
 const links = [
-  { to: "/home", label: "Início", icon: House },
-  { to: "/kixikila", label: "Kixikila", icon: UsersThree },
-  { to: "/otc", label: "OTC", icon: ArrowsLeftRight },
-  { to: "/tasks", label: "Tarefas", icon: Megaphone },
-  { to: "/cards", label: "Cartão VISA", icon: CreditCard },
+  { to: "/home", label: "Home", icon: House },
+
+  { to: "/recharges", label: "Recargas", icon: Lightning },
+
+  { to: "/payments", label: "Pagamentos", icon: CreditCard },
+
+  { to: "/transactions", label: "Transações", icon: Receipt },
+
+  { to: "/dashboard", label: "Dashboard", icon: ChartPieSlice },
+
   { to: "/profile", label: "Perfil", icon: User },
 ]
 
@@ -24,7 +29,7 @@ export default function BottomNav() {
         fixed bottom-0 left-0 right-0 z-[100]
         w-screen
         bg-[#0B0E11]/95 backdrop-blur-xl
-        border-t border-[#2B3139]
+        border-t border-white/[0.04]
         h-[65px] flex items-center
       "
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -35,8 +40,8 @@ export default function BottomNav() {
           <NavLink
             key={to}
             to={to}
+            // Removido o preventDefault do TouchStart para não quebrar o clique nativo no mobile
             onMouseDown={(e) => e.preventDefault()}
-            onTouchStart={(e) => e.preventDefault()}
             className={({ isActive }) =>
               `
               flex flex-col items-center gap-1 text-[9px] font-bold uppercase tracking-tighter
@@ -64,8 +69,8 @@ export default function BottomNav() {
 
                 <span
                   className={`
-                    transition-all duration-300
-                    ${isActive ? "opacity-100" : "opacity-60"}
+                    transition-all duration-300 tracking-wider text-[8px]
+                    ${isActive ? "opacity-100 font-black" : "opacity-60 font-medium"}
                   `}
                 >
                   {label}

@@ -16,7 +16,7 @@ export default function Services() {
 
   async function load() {
     try {
-      const data = await ServiceService.listPartners()
+      const data = await ServiceService.listServices()
       setPartners(data)
     } catch {
       toast.error('Erro ao carregar serviços')

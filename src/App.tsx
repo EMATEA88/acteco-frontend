@@ -6,11 +6,9 @@ import { PrivateRoute } from './routes/PrivateRoute'
 import LoginUser from './pages/LoginUser'
 import Login from './pages/Login'
 import Register from './pages/Register'
-
-/* ===== Reset Password ===== */
 import ResetPassword from './pages/ResetPassword'
 
-/* ===== CORE APP ===== */
+/* ===== CORE ===== */
 import Home from './pages/Home'
 import History from './pages/History'
 import Profile from './pages/Profile'
@@ -23,39 +21,39 @@ import DepositBanks from './pages/DepositBanks'
 import RechargeHistory from './pages/RechargeHistory'
 import Withdraw from './pages/Withdraw'
 import WithdrawHistory from './pages/WithdrawHistory'
+import RechargeServices from "./pages/recharges/RechargeServices";
+import RechargeCategories from "./pages/recharges/RechargeCategories";
+import RechargePlans from "./pages/recharges/RechargePlans";
+import RechargeCheckout from "./pages/recharges/RechargeCheckout";
+import Payments from "./pages/payments/Payments";
+import PaymentCheckout from "./pages/payments/PaymentCheckout";
+import Dashboard from "./pages/dashboard/Dashboard";
+import MyRecharges from "./pages/recharges/MyRecharges";
 
-/* ===== PROFILE MODULES ===== */
+/* ===== PROFILE ===== */
 import Bank from './pages/Bank'
 import Transactions from './pages/Transactions'
 import Gift from './pages/Gift'
 import Security from './pages/Security'
 import Password from './pages/Password'
-import Services from './pages/services/Services'
-import PartnerPlans from './pages/PartnerPlans'
 import KYCPage from './pages/user/KYCPage'
-import Applications from './pages/user/Applications'
-import Marketing from "./pages/Marketing"
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import DeleteAccount from "./pages/DeleteAccount";
-import Kixikila from "./pages/Kixikila"
-import Tasks from './pages/Tasks'
-import CompanyDashboard from './pages/CompanyDashboard'
-import Terms from './pages/Terms'
 import Settings from './pages/Settings'
-import { Transfer } from './pages/Transfer';
-import Wallet from './pages/Wallet';
-import WithdrawUSDT from './pages/WithdrawUSDT'
+
+/* ===== SERVICES ===== */
+import Services from './pages/services/Services'
+
+/* ===== TRANSFER ===== */
+import { Transfer } from './pages/Transfer'
+
+/* ===== WITHDRAW ===== */
 import WithdrawAOA from './pages/WithdrawAOA'
-import Cards from "./pages/Cards"
 
-/* ===== OTC USER ===== */
-import OtcPage from "./pages/otc/OtcPage"
-import OtcDetail from "./pages/otc/OtcDetail"
-import OtcChat from "./pages/otc/OtcChat"
-import OtcOrder from "./pages/otc/OtcOrder"
-import OtcMyOrders from "./pages/otc/OtcMyOrders"
+/* ===== LEGAL ===== */
+import Terms from './pages/Terms'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 
-import { Toaster } from "react-hot-toast"
+/* ===== UI ===== */
+import { Toaster } from 'react-hot-toast'
 
 /* ===== LAYOUT ===== */
 import AppLayout from './layouts/AppLayout'
@@ -69,33 +67,29 @@ function App() {
         toastOptions={{
           duration: 3000,
           style: {
-            padding: "16px 20px",
-            borderRadius: "16px",
-            fontSize: "15px",
-            fontWeight: "500"
+            padding: '16px 20px',
+            borderRadius: '16px',
+            fontSize: '15px',
+            fontWeight: '500'
           }
         }}
       />
 
       <Routes>
 
-        {/* =====================
-            PUBLIC ROUTES
-        ===================== */}
+        {/* ================= PUBLIC ================= */}
+
         <Route path="/login-user" element={<LoginUser />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/about" element={<About />} />
 
-        {/* ===== Reset Password ===== */}
-        <Route path="/reset-password" element={<ResetPassword />} />
+        {/* ================= PRIVATE ================= */}
 
-        {/* =====================
-            PRIVATE APP
-        ===================== */}
         <Route
           element={
             <PrivateRoute>
@@ -104,10 +98,15 @@ function App() {
           }
         >
 
-          <Route index element={<Navigate to="home" replace />} />
+          <Route
+            path="/"
+            element={<Navigate to="/login" replace />}
+          />
 
-          {/* MAIN */}
+          {/* HOME */}
           <Route path="home" element={<Home />} />
+
+          {/* HISTORY */}
           <Route path="history" element={<History />} />
 
           {/* PROFILE */}
@@ -117,48 +116,91 @@ function App() {
           <Route path="gift" element={<Gift />} />
           <Route path="security" element={<Security />} />
           <Route path="password" element={<Password />} />
-          <Route path="services" element={<Services />} />
-          <Route path="services/:id" element={<PartnerPlans />} />
           <Route path="kyc" element={<KYCPage />} />
-          <Route path="/marketing" element={<Marketing />} />
-          <Route path="/delete-account" element={<DeleteAccount />} />
-          <Route path="/kixikila" element={<Kixikila />} />
-          <Route path="/tasks" element={<Tasks />} />
-          <Route path="/company-dashboard" element={<CompanyDashboard />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/transfer" element={<Transfer />} />
-          <Route path="/wallet" element={<Wallet />} />
-          <Route path="/withdraw/usdt" element={<WithdrawUSDT />} />
-          <Route path="/withdraw/aoa" element={<WithdrawAOA />} />
-          <Route path="/cards" element={<Cards />} />
+          <Route path="settings" element={<Settings />} />
 
-          {/* OTC */}
-          <Route path="otc" element={<OtcPage />} />
-          <Route path="otc/:assetId/:type" element={<OtcDetail />} />
-          <Route path="otc/orders/:orderId" element={<OtcChat />} />
-          <Route path="otc/order/:orderId" element={<OtcOrder />} />
-          <Route path="otc/orders" element={<OtcMyOrders />} />
-          <Route path="/otc/chat/:orderId" element={<OtcChat />} />
+          {/* SERVICES */}
+          <Route path="services" element={<Services />} />
+
+          {/* TRANSFER */}
+          <Route path="transfer" element={<Transfer />} />
+
+          {/* WITHDRAW */}
+          <Route path="withdraw/aoa" element={<WithdrawAOA />} />
 
           {/* FINANCIAL */}
           <Route path="deposit" element={<Deposit />} />
-          <Route path="deposit/banks/:rechargeId" element={<DepositBanks />} />
-          <Route path="recharge-history" element={<RechargeHistory />} />
+          <Route
+            path="deposit/banks/:rechargeId"
+            element={<DepositBanks />}
+          />
+          <Route
+            path="recharge-history"
+            element={<RechargeHistory />}
+          />
           <Route path="withdraw" element={<Withdraw />} />
-          <Route path="withdraw-history" element={<WithdrawHistory />} />
+          <Route
+            path="withdraw-history"
+            element={<WithdrawHistory />}
+          />
 
-          {/* APPLICATIONS */}
-          <Route path="applications" element={<Applications />} />
+          <Route
+            path="recharges"
+            element={<RechargeServices />}
+          />
+           
+           <Route
+             path="/recharges/:serviceId"
+             element={<RechargeCategories />}
+          />
+
+             <Route
+               path="/recharges/:serviceId/categories/:categoryId"
+               element={<RechargePlans />}
+          />
+
+          <Route
+            path="/recharges/:serviceId/categories/:categoryId/plans/:planId"
+            element={<RechargeCheckout />}
+          />
+
+          <Route
+            path="/payments"
+            element={<Payments />}
+         />
+
+          <Route
+            path="/payments/:paymentId"
+            element={<PaymentCheckout />}
+          />
+
+          <Route
+            path="/dashboard"
+            element={<Dashboard />}
+          />
+
+          <Route
+            path="/my-recharges"
+            element={<MyRecharges />}
+           />
 
           {/* NOTIFICATIONS */}
-          <Route path="notifications" element={<Notifications />} />
+          <Route
+            path="notifications"
+            element={<Notifications />}
+          />
 
         </Route>
 
         {/* FALLBACK */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+
+        <Route
+          path="*"
+          element={<Navigate to="/login" replace />}
+        />
 
       </Routes>
+
     </AuthProvider>
   )
 }
