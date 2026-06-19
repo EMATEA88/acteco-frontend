@@ -13,16 +13,20 @@ import {
 import toast from "react-hot-toast";
 // IMPORTANTE: Ajuste o caminho abaixo para onde está a sua função/serviço de login real
 import { loginUser } from "../services/api"; 
+// 1. ALTERAÇÃO ADICIONADA: Import do hook useAuth
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Landing() {
   const navigate = useNavigate();
+  // 2. ALTERAÇÃO ADICIONADA: Extração do login do contexto de autenticação
+  const { login } = useAuth();
   
-  // 1. ADICIONADOS: Estados para capturar os dados do formulário
+  // Estados para capturar os dados do formulário
   const [identity, setIdentity] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 2. ADICIONADA: Função que processa o login real com a API
+  // Função que processa o login real com a API
   async function handleLogin(e: FormEvent) {
     e.preventDefault(); // Evita que a página recarregue
 
@@ -33,12 +37,13 @@ export default function Landing() {
     try {
       setLoading(true);
       
-      // Envia os dados para a sua API (ajuste conforme o formato esperado pelo seu backend)
-      // Geralmente, isso salva o Token no localStorage de forma automática por dentro do serviço.
-      await loginUser(identity, password); 
-      
+      // 3. ALTERAÇÃO ADICIONADA: Substituição do bloco antigo pelo processamento com Token
+      const response = await loginUser(identity, password);
+
+      await login(response.token);
+
       toast.success("Acesso autorizado!");
-      navigate("/home"); // Redireciona com sucesso após autenticar
+      navigate("/home", { replace: true });
     } catch (error: any) {
       console.error(error);
       toast.error(error?.response?.data?.message || "Credenciais incorretas ou erro no servidor.");
@@ -117,7 +122,6 @@ export default function Landing() {
             <p className="text-xs text-gray-400">Insira as suas credenciais para entrar na sua conta.</p>
           </div>
 
-          {/* 3. MUDANÇA: Agora envolvemos os inputs numa tag <form> */}
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase tracking-widest font-mono text-gray-400 font-bold">Identificação</label>
@@ -141,7 +145,6 @@ export default function Landing() {
               />
             </div>
 
-            {/* 4. MUDANÇA: O botão agora é do tipo submit e desativa se estiver carregando */}
             <button
               type="submit"
               disabled={loading}

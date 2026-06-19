@@ -11,15 +11,10 @@ import {
 // Ordem corrigida: Recargas colocada na terceira posição
 const links = [
   { to: "/home", label: "Home", icon: House },
-
   { to: "/payments", label: "Pagamentos", icon: CreditCard },
-
   { to: "/recharges", label: "Recargas", icon: Lightning }, // Fica no meio/terceiro card
-
   { to: "/transactions", label: "Transações", icon: Receipt },
-
   { to: "/dashboard", label: "Dashboard", icon: ChartPieSlice },
-
   { to: "/profile", label: "Perfil", icon: User },
 ]
 
@@ -29,9 +24,9 @@ export default function BottomNav() {
       className="
         fixed bottom-0 left-0 right-0 z-[100]
         w-screen
-        bg-white/95 backdrop-blur-xl
-        border-t border-gray-100
-        h-[65px] flex items-center
+        bg-white
+        border-t border-gray-300
+        h-[65px] flex items-center shadow-md
       "
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
@@ -44,33 +39,35 @@ export default function BottomNav() {
             onMouseDown={(e) => e.preventDefault()}
             className={({ isActive }) =>
               `
-              flex flex-col items-center gap-1 text-[9px] font-bold uppercase tracking-tighter
+              flex flex-col items-center gap-1 text-[9px] font-black uppercase tracking-wider
               transition-all duration-200
-              ${isActive ? "text-gray-900" : "text-gray-400"}
+              ${isActive ? "text-gray-950" : "text-gray-700 hover:text-gray-950"}
               `
             }
           >
             {({ isActive }) => (
               <>
+                {/* CONTAINER DO ÍCONE - COM VERDE DISCRETO SE ATIVO */}
                 <div
                   className={`
                     flex items-center justify-center
-                    w-9 h-7 rounded-lg transition-all duration-300
+                    w-10 h-7 rounded-lg border transition-all duration-300
                     ${isActive 
-                      ? "bg-gray-100 scale-105 text-emerald-600" 
-                      : "bg-transparent text-gray-400"}
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-700 scale-105" 
+                      : "bg-transparent border-transparent text-gray-700"}
                   `}
                 >
                   <Icon 
                     size={20} 
-                    weight={isActive ? "fill" : "regular"} 
+                    weight={isActive ? "fill" : "bold"} 
                   />
                 </div>
 
+                {/* TEXTO DA LABEL - REMOVIDA QUALQUER OPACIDADE APAGADA */}
                 <span
                   className={`
-                    transition-all duration-300 tracking-wider text-[8px]
-                    ${isActive ? "opacity-100 font-black text-gray-900" : "opacity-60 font-medium"}
+                    transition-all duration-200 tracking-wider text-[8px]
+                    ${isActive ? "font-black text-gray-950" : "font-extrabold text-gray-700"}
                   `}
                 >
                   {label}

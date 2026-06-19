@@ -1,167 +1,106 @@
-import { useNavigate } from "react-router-dom"
+// Home.tsx
 import { useState } from "react"
-import { MessageCircle, Users, X, } from "lucide-react"
+import { Headset, Users, X, MessageCircle } from "lucide-react" // Substituído para Headset no topo
+import Carousel from "./Carousel"
 
 const WHATSAPP_MANAGER = "https://wa.me/244928270636"
 const WHATSAPP_GROUP = "https://chat.whatsapp.com/CaiU4nncaaa7vUnzO6HTzB?mode=gi_t"
 
 export default function Home() {
-
-  const navigate = useNavigate()
   const [supportOpen, setSupportOpen] = useState(false)
 
-  function openWhatsapp() {
-    window.open(WHATSAPP_MANAGER, "_blank")
-  }
-
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] px-5 pt-6 pb-24">
+    <div className="min-h-screen bg-white text-[#1E2329] px-5 pt-4 pb-28 antialiased selection:bg-[#02C076]/20">
 
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-6">
-
+      {/* HEADER LIMPO E PROFISSIONAL */}
+      <div className="pt-4 pb-5 flex items-center justify-between border-b border-gray-100 sticky top-0 bg-white/90 backdrop-blur-md z-50">
         <div>
-          <p className="text-xs text-[#848E9C]">
+          <p className="text-[11px] text-[#848E9C] font-medium tracking-wide">
             Bem-vindo à
           </p>
-
-          <h1 className="text-lg font-semibold tracking-wide">
+          <h1 className="text-xl font-black tracking-wider text-[#1E2329] flex items-center gap-1.5 mt-0.5">
             EMATEA
+            <span className="inline-flex relative items-center justify-center h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#02C076] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#02C076]"></span>
+            </span>
           </h1>
         </div>
 
+        {/* BOTÃO SUPORTE COM ÍCONE REAL DE ATENDENTE (HEADSET) */}
         <button
           onClick={() => setSupportOpen(true)}
           className="
-          h-10 px-4 rounded-xl
-          bg-emerald-500/10
-          border border-emerald-500/30
-          text-emerald-400
-          flex items-center gap-2
-          text-sm
-          hover:bg-emerald-500/20
-          transition
-        "
+            h-9 px-4 rounded-xl
+            bg-gray-50 border border-gray-200
+            text-[#1E2329] text-xs font-bold
+            flex items-center gap-2
+            hover:bg-gray-100 hover:border-gray-300
+            transition-all duration-200 shadow-sm
+          "
         >
-          <MessageCircle size={16}/>
+          <Headset size={15} className="text-[#02C076]" strokeWidth={2.5} />
           Suporte
         </button>
-
       </div>
 
-      {/* SESSÃO */}
-      <SectionTitle title="SESSÃO" />
-
-      <div className="grid grid-cols-2 gap-5 mb-12">
-
-        <ImageCard
-          image="/assets/home/fundos.png"
-          title="Fundos & Juros"
-          subtitle="Invista por prazos e reembolse com juros"
-          onClick={() => navigate("/applications")}
-        />
-
-        <ImageCard
-          image="/assets/home/cripto.png"
-          title="Compra & Venda"
-          subtitle="USDT, BTC, BNB e ativos digitais"
-          onClick={() => navigate("/otc")}
-        />
-
-        <ImageCard
-          image="/assets/home/marketing.png"
-          title="Marketing"
-          subtitle="Vídeos e campanhas"
-          onClick={() => navigate("/marketing")}
-        />
-
-        <ImageCard
-          image="/assets/home/tecnologia.png"
-          title="Tecnologia"
-          subtitle="Web, apps e design"
-          onClick={openWhatsapp}
-        />
-
+      {/* CARROSSEL PRINCIPAL */}
+      <div className="mt-5 mb-8">
+        <Carousel />
       </div>
 
-      {/* SERVIÇOS */}
-      <SectionTitle title="NOSSOS SERVIÇOS" />
-
-      <div className="grid grid-cols-2 gap-5 mb-12">
-
-        <ImageCard
-          image="/assets/home/deposito.png"
-          title="Depósito"
-          subtitle="Adicionar saldo"
-          onClick={() => navigate("/deposit")}
-        />
-
-        <ImageCard
-          image="/assets/home/levantamento.png"
-          title="Levantamento"
-          subtitle="Retirar fundos"
-          onClick={() => navigate("/withdraw")}
-        />
-
-        <ImageCard
-          image="/assets/home/aplicacoes.png"
-          title="Aplicações"
-          subtitle="Fundos por prazo"
-          onClick={() => navigate("/applications")}
-        />
-
-        <ImageCard
-          image="/assets/home/design.png"
-          title="Design"
-          subtitle="Identidade visual"
-          onClick={() => navigate("/about")}
-        />
-
+      {/* MÉTRICAS RÁPIDAS DO MERCADO */}
+      <SectionTitle title="MÉTRICAS DO MERCADO" />
+      <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 shadow-sm mb-8 flex justify-around items-center">
+        <div className="text-center">
+          <p className="text-[10px] text-[#848E9C] font-bold uppercase tracking-widest mb-1">Volume 24h</p>
+          <span className="text-xs font-mono font-black text-[#1E2329] bg-white border border-gray-100 px-2.5 py-1 rounded-full shadow-sm">
+            +{Number(12500000).toLocaleString()} Kz
+          </span>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] text-[#848E9C] font-bold uppercase tracking-widest mb-1">Média Juros</p>
+          <span className="text-xs font-mono font-black text-[#02C076] bg-[#02C076]/10 px-2.5 py-1 rounded-full">
+            7.15% <span className="font-sans font-bold text-[9px] text-[#848E9C]">/ Mês</span>
+          </span>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] text-[#848E9C] font-bold uppercase tracking-widest mb-1">Taxas OTC</p>
+          <span className="text-xs font-mono font-black text-[#1E2329] bg-white border border-gray-100 px-2.5 py-1 rounded-full shadow-sm">
+            0.05% <span className="font-sans font-bold text-[9px] text-[#848E9C]">/ Ordem</span>
+          </span>
+        </div>
       </div>
 
       {/* MODAL SUPORTE */}
       {supportOpen && (
         <div
           onClick={() => setSupportOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
         >
-
           <div
             onClick={(e) => e.stopPropagation()}
-            className="
-              w-[90%] max-w-sm p-6 rounded-3xl
-              bg-gradient-to-br from-[#1E2329] to-[#14181D]
-              border border-[#2B3139]
-              shadow-[0_20px_40px_rgba(0,0,0,0.8)]
-              relative
-            "
+            className="w-full max-w-sm p-6 rounded-3xl bg-white border border-gray-100 shadow-2xl relative"
           >
-
             <button
               onClick={() => setSupportOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              className="absolute top-4 right-4 text-gray-400 hover:text-[#1E2329] transition"
             >
               <X size={20}/>
             </button>
 
-            <h2 className="text-lg font-semibold text-white mb-6 text-center">
-              Centro de Apoio EMATEA
+            <h2 className="text-base font-black text-[#1E2329] mb-6 text-center uppercase tracking-widest font-mono">
+              Centro de Apoio
             </h2>
 
             <div className="space-y-4">
-
               <a
                 href={WHATSAPP_MANAGER}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="
-                  w-full h-12 rounded-xl
-                  bg-green-500 text-white font-semibold
-                  flex items-center justify-center gap-2
-                  hover:bg-green-600 transition
-                "
+                className="w-full h-12 rounded-xl bg-[#02C076] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#00b06c] transition-all shadow-md shadow-[#02C076]/10"
               >
-                <MessageCircle size={18}/>
+                <MessageCircle size={18} strokeWidth={2.5} />
                 Falar com Operadora
               </a>
 
@@ -169,21 +108,13 @@ export default function Home() {
                 href={WHATSAPP_GROUP}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="
-                  w-full h-12 rounded-xl
-                  bg-emerald-600 text-white font-semibold
-                  flex items-center justify-center gap-2
-                  hover:bg-emerald-700 transition
-                "
+                className="w-full h-12 rounded-xl bg-[#1E2329] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-black transition-all shadow-md"
               >
-                <Users size={18}/>
+                <Users size={18} strokeWidth={2.5} />
                 Entrar no Grupo
               </a>
-
             </div>
-
           </div>
-
         </div>
       )}
 
@@ -191,63 +122,10 @@ export default function Home() {
   )
 }
 
-/* COMPONENTES */
-
 function SectionTitle({ title }: { title: string }) {
   return (
-    <h2 className="text-sm tracking-widest text-[#848E9C] mb-6">
+    <h2 className="text-xs tracking-widest text-[#848E9C] mb-4 uppercase font-mono font-black border-l-2 border-[#02C076] pl-3">
       {title}
     </h2>
-  )
-}
-
-function ImageCard({
-  image,
-  title,
-  subtitle,
-  onClick
-}: {
-  image: string
-  title: string
-  subtitle: string
-  onClick: () => void
-}) {
-
-  return (
-    <button
-      onClick={onClick}
-      className="
-        relative
-        h-[185px]
-        rounded-2xl
-        overflow-hidden
-        border border-[#2B3139]
-        shadow-[0_8px_20px_rgba(0,0,0,0.6)]
-        hover:-translate-y-1
-        transition-all
-      "
-    >
-
-      <img
-        src={image}
-        alt={title}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black/90" />
-
-      <div className="relative z-10 p-4 flex flex-col justify-end h-full">
-
-        <h3 className="text-sm font-semibold text-[#EAECEF]">
-          {title}
-        </h3>
-
-        <p className="text-xs text-[#848E9C] mt-1">
-          {subtitle}
-        </p>
-
-      </div>
-
-    </button>
   )
 }

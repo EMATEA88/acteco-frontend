@@ -192,9 +192,9 @@ function App() {
         {/* FALLBACK */}
 
         <Route
-          path="*"
-          element={<Navigate to="/login" replace />}
-        />
+          path="/"
+          element={<Navigate to="/home" replace />}
+      />
 
       </Routes>
 
