@@ -29,17 +29,17 @@ export default function MyRecharges() {
     }
   }
 
-  // Define os estilos do status de forma limpa e visível
+  // Estilos de status refinados para Dark Mode Premium
   function getStatusBadge(status: string) {
     switch (status) {
       case "COMPLETED":
-        return "bg-emerald-50 border border-emerald-200 text-emerald-700 font-black";
+        return "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold";
       case "IN_PROGRESS":
-        return "bg-amber-50 border border-amber-200 text-amber-700 font-black";
+        return "bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold";
       case "FAILED":
-        return "bg-rose-50 border border-rose-200 text-rose-700 font-black";
+        return "bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold";
       default:
-        return "bg-gray-100 border border-gray-200 text-gray-700 font-bold";
+        return "bg-white/[0.04] border border-white/[0.05] text-gray-400 font-bold";
     }
   }
 
@@ -51,19 +51,19 @@ export default function MyRecharges() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F4F7] text-[#111827] pb-28 antialiased">
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] pb-28 antialiased">
       
-      {/* HEADER FIXO - ALTO CONTRASTE */}
-      <div className="px-6 pt-8 pb-5 flex items-center gap-4 border-b border-[#D1D5DB] bg-[#F2F4F7]/80 backdrop-blur-md sticky top-0 z-50">
+      {/* HEADER FIXO - DARK MODE */}
+      <div className="px-6 pt-8 pb-5 flex items-center gap-4 border-b border-white/[0.05] bg-[#0B0E11]/90 backdrop-blur-md sticky top-0 z-50">
         <button 
           onClick={() => navigate(-1)} 
-          className="p-2 rounded-xl bg-[#FCFCFD] border border-[#E4E7EB] text-gray-800 hover:bg-gray-50 transition-all duration-200 shadow-sm"
+          className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.05] text-gray-300 hover:bg-white/[0.08] transition-all duration-200 shadow-sm"
         >
           <ArrowLeft size={16} />
         </button>
         <div>
-          <h1 className="text-xl font-black tracking-tight text-gray-950">Minhas Recargas</h1>
-          <p className="text-xs text-gray-600 font-medium mt-0.5">
+          <h1 className="text-xl font-black tracking-tight text-white">Minhas Recargas</h1>
+          <p className="text-xs text-gray-400 font-medium mt-0.5">
             Histórico completo de transações solicitadas
           </p>
         </div>
@@ -77,18 +77,18 @@ export default function MyRecharges() {
           Array.from({ length: 3 }).map((_, index) => (
             <div 
               key={index} 
-              className="bg-[#FCFCFD] border border-[#E4E7EB] rounded-2xl p-5 space-y-4 animate-pulse"
+              className="bg-[#161A1E] border border-white/[0.03] rounded-2xl p-5 space-y-4 animate-pulse"
             >
               <div className="flex justify-between items-center">
                 <div className="space-y-2 w-1/3">
-                  <div className="h-4 bg-gray-200 rounded w-full" />
-                  <div className="h-3 bg-gray-100 rounded w-2/3" />
+                  <div className="h-4 bg-gray-800 rounded w-full" />
+                  <div className="h-3 bg-gray-800/50 rounded w-2/3" />
                 </div>
-                <div className="h-6 bg-gray-200 rounded-full w-20" />
+                <div className="h-6 bg-gray-800 rounded-full w-20" />
               </div>
-              <div className="pt-2 space-y-2 border-t border-gray-100">
-                <div className="h-3 bg-gray-100 rounded w-1/2" />
-                <div className="h-3 bg-gray-100 rounded w-1/3" />
+              <div className="pt-2 space-y-2 border-t border-white/[0.03]">
+                <div className="h-3 bg-gray-800/50 rounded w-1/2" />
+                <div className="h-3 bg-gray-800/50 rounded w-1/3" />
               </div>
             </div>
           ))
@@ -96,7 +96,7 @@ export default function MyRecharges() {
           <>
             {/* ESTADO VAZIO */}
             {requests.length === 0 && (
-              <div className="bg-[#FCFCFD] border border-[#E4E7EB] rounded-2xl p-8 text-center text-xs text-gray-600 font-mono font-bold tracking-wide shadow-sm">
+              <div className="bg-[#161A1E] border border-white/[0.03] rounded-2xl p-8 text-center text-xs text-gray-400 font-mono font-bold tracking-wide shadow-xl">
                 Nenhuma solicitação de recarga encontrada.
               </div>
             )}
@@ -105,15 +105,15 @@ export default function MyRecharges() {
             {requests.map((request) => (
               <div
                 key={request.id}
-                className="bg-[#FCFCFD] border border-[#E4E7EB] rounded-2xl p-5 shadow-sm space-y-3.5 hover:border-gray-400 transition-colors"
+                className="bg-[#161A1E] border border-white/[0.03] rounded-2xl p-5 shadow-xl space-y-3.5 hover:border-white/[0.08] transition-colors"
               >
                 {/* TOPO DO CARD: SERVIÇO E STATUS */}
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
-                    <h3 className="font-black text-base text-gray-950 tracking-tight truncate">
+                    <h3 className="font-bold text-base text-white tracking-tight truncate">
                       {request.serviceName || "Serviço"}
                     </h3>
-                    <p className="text-xs text-gray-600 font-semibold mt-0.5 truncate">
+                    <p className="text-xs text-gray-400 font-semibold mt-0.5 truncate">
                       {request.planName || "-"}
                     </p>
                   </div>
@@ -124,32 +124,32 @@ export default function MyRecharges() {
                 </div>
 
                 {/* DETALHES TÉCNICOS */}
-                <div className="pt-3 border-t border-gray-100 space-y-2 text-xs font-medium text-gray-700">
+                <div className="pt-3 border-t border-white/[0.04] space-y-2 text-xs font-medium text-gray-400">
                   <div className="flex items-center gap-2">
-                    <Hash size={14} className="text-gray-400" />
+                    <Hash size={14} className="text-gray-500" />
                     <span>Número / Ref:</span>
-                    <span className="font-mono font-black text-gray-950 ml-auto">{request.customerReference}</span>
+                    <span className="font-mono font-black text-white ml-auto">{request.customerReference}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Receipt size={14} className="text-gray-400" />
+                    <Receipt size={14} className="text-gray-500" />
                     <span>Categoria:</span>
-                    <span className="font-extrabold text-gray-900 ml-auto">{request.serviceGroupName}</span>
+                    <span className="font-bold text-gray-200 ml-auto">{request.serviceGroupName}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Calendar size={14} className="text-gray-400" />
+                    <Calendar size={14} className="text-gray-500" />
                     <span>Data e Hora:</span>
-                    <span className="text-gray-600 font-semibold ml-auto">
+                    <span className="text-gray-400 font-semibold ml-auto">
                       {new Date(request.createdAt).toLocaleString()}
                     </span>
                   </div>
                 </div>
 
                 {/* RODAPÉ DO CARD: VALOR EM DESTAQUE */}
-                <div className="flex justify-between items-center pt-2 border-t border-gray-50 bg-gray-50/50 -mx-5 -mb-5 p-4 rounded-b-2xl">
-                  <span className="text-[10px] font-black uppercase text-gray-600 tracking-wider">Valor Pago</span>
-                  <span className="font-mono font-black text-sm text-emerald-700">
+                <div className="flex justify-between items-center pt-2 border-t border-white/[0.02] bg-white/[0.01] -mx-5 -mb-5 p-4 rounded-b-2xl">
+                  <span className="text-[10px] font-bold uppercase text-gray-400 tracking-wider">Valor Pago</span>
+                  <span className="font-mono font-black text-sm text-emerald-400">
                     {Number(request.amount).toLocaleString()} Kz
                   </span>
                 </div>

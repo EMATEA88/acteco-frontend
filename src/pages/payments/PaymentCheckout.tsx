@@ -41,21 +41,21 @@ export default function PaymentCheckout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F4F7] text-[#111827] pb-28 antialiased">
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] pb-28 antialiased">
       
-      {/* HEADER FIXO - ALTO CONTRASTE */}
-      <div className="px-6 pt-8 pb-5 flex items-center gap-4 border-b border-[#D1D5DB] bg-[#F2F4F7]/80 backdrop-blur-md sticky top-0 z-50">
+      {/* HEADER FIXO - ADAPTADO PARA DARK MODE */}
+      <div className="px-6 pt-8 pb-5 flex items-center gap-4 border-b border-white/[0.05] bg-[#0B0E11]/90 backdrop-blur-md sticky top-0 z-50">
         <button 
           onClick={() => navigate(-1)} 
-          className="p-2 rounded-xl bg-[#FCFCFD] border border-[#E4E7EB] text-gray-800 hover:bg-gray-50 transition-all duration-200 shadow-sm"
+          className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.05] text-gray-300 hover:bg-white/[0.08] transition-all duration-200 shadow-sm"
         >
           <ArrowLeft size={16} />
         </button>
         <div>
-          <h1 className="text-xl font-black tracking-tight text-gray-950">
+          <h1 className="text-xl font-black tracking-tight text-white">
             {getPaymentName(paymentId)}
           </h1>
-          <p className="text-xs text-gray-600 font-medium mt-0.5">
+          <p className="text-xs text-gray-400 font-medium mt-0.5">
             Preencha os dados da fatura para pagar
           </p>
         </div>
@@ -63,17 +63,17 @@ export default function PaymentCheckout() {
 
       {/* FORMULÁRIO PRINCIPAL */}
       <div className="p-6">
-        <div className="bg-[#FCFCFD] border border-[#E4E7EB] rounded-2xl p-5 shadow-sm space-y-5">
+        <div className="bg-[#161A1E] border border-white/[0.03] rounded-2xl p-5 shadow-xl space-y-5">
           
-          <h3 className="text-xs font-black uppercase text-gray-600 tracking-wider mb-2 flex items-center gap-2">
-            <CreditCard size={14} className="text-emerald-700" /> Formulário de Depósito / Liquidação
+          <h3 className="text-xs font-black uppercase text-gray-400 tracking-wider mb-2 flex items-center gap-2">
+            <CreditCard size={14} className="text-emerald-400" /> Formulário de Depósito / Liquidação
           </h3>
 
           <div className="space-y-4">
             
             {/* CAMPO: REFERÊNCIA */}
             <div>
-              <label className="text-xs font-black uppercase text-gray-600 tracking-wider flex items-center gap-2 mb-2">
+              <label className="text-xs font-bold uppercase text-gray-400 tracking-wider flex items-center gap-2 mb-2">
                 Referência do Serviço
               </label>
               <div className="relative flex items-center">
@@ -83,14 +83,14 @@ export default function PaymentCheckout() {
                   value={reference}
                   onChange={(e) => setReference(e.target.value)}
                   placeholder="Ex: 0012345678"
-                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-300 rounded-xl font-mono text-sm text-gray-950 outline-none focus:border-emerald-500 focus:bg-white transition-all font-bold placeholder:text-gray-400 placeholder:font-sans"
+                  className="w-full pl-11 pr-4 py-3.5 bg-white/[0.02] border border-white/[0.08] rounded-xl font-mono text-sm text-white outline-none focus:border-blue-500/50 focus:bg-white/[0.04] transition-all font-bold placeholder:text-gray-600 placeholder:font-sans"
                 />
               </div>
             </div>
 
             {/* CAMPO: VALOR */}
             <div>
-              <label className="text-xs font-black uppercase text-gray-600 tracking-wider flex items-center gap-2 mb-2">
+              <label className="text-xs font-bold uppercase text-gray-400 tracking-wider flex items-center gap-2 mb-2">
                 Valor a Pagar (Kz)
               </label>
               <div className="relative flex items-center">
@@ -100,14 +100,14 @@ export default function PaymentCheckout() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0,00"
-                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-300 rounded-xl font-mono text-sm text-gray-950 outline-none focus:border-emerald-500 focus:bg-white transition-all font-bold placeholder:text-gray-400 placeholder:font-sans"
+                  className="w-full pl-11 pr-4 py-3.5 bg-white/[0.02] border border-white/[0.08] rounded-xl font-mono text-sm text-white outline-none focus:border-blue-500/50 focus:bg-white/[0.04] transition-all font-bold placeholder:text-gray-600 placeholder:font-sans"
                 />
               </div>
             </div>
 
             {/* CAMPO: NOME DO CLIENTE */}
             <div>
-              <label className="text-xs font-black uppercase text-gray-600 tracking-wider flex items-center gap-2 mb-2">
+              <label className="text-xs font-bold uppercase text-gray-400 tracking-wider flex items-center gap-2 mb-2">
                 Nome do Titular / Cliente
               </label>
               <div className="relative flex items-center">
@@ -117,16 +117,16 @@ export default function PaymentCheckout() {
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="Ex: Nome Completo"
-                  className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-300 rounded-xl text-sm text-gray-950 outline-none focus:border-emerald-500 focus:bg-white transition-all font-bold placeholder:text-gray-400"
+                  className="w-full pl-11 pr-4 py-3.5 bg-white/[0.02] border border-white/[0.08] rounded-xl text-sm text-white outline-none focus:border-blue-500/50 focus:bg-white/[0.04] transition-all font-bold placeholder:text-gray-600"
                 />
               </div>
             </div>
 
-            {/* BOTÃO DE ENVIO PROFISSIONAL */}
+            {/* BOTÃO DE ENVIO ESTILIZADO */}
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full bg-gray-950 hover:bg-gray-900 active:scale-[0.99] border border-transparent text-white rounded-xl py-4 text-xs font-black uppercase tracking-widest disabled:opacity-40 transition-all shadow-md mt-4 flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-500 active:scale-[0.99] border border-transparent text-white rounded-xl py-4 text-xs font-black uppercase tracking-widest disabled:opacity-40 transition-all shadow-md mt-4 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

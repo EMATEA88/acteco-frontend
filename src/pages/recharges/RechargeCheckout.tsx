@@ -69,21 +69,21 @@ export default function RechargeCheckout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F4F7] text-[#111827] pb-28 antialiased">
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] pb-28 antialiased">
       
-      {/* HEADER FIXO - ALTO CONTRASTE */}
-      <div className="px-6 pt-8 pb-5 flex items-center gap-4 border-b border-[#D1D5DB] bg-[#F2F4F7]/80 backdrop-blur-md sticky top-0 z-50">
+      {/* HEADER FIXO - DARK MODE */}
+      <div className="px-6 pt-8 pb-5 flex items-center gap-4 border-b border-white/[0.05] bg-[#0B0E11]/90 backdrop-blur-md sticky top-0 z-50">
         <button 
           onClick={() => navigate(-1)} 
-          className="p-2 rounded-xl bg-[#FCFCFD] border border-[#E4E7EB] text-gray-800 hover:bg-gray-50 transition-all duration-200 shadow-sm"
+          className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.05] text-gray-300 hover:bg-white/[0.08] transition-all duration-200 shadow-sm"
         >
           <ArrowLeft size={16} />
         </button>
         <div>
-          <h1 className="text-xl font-black tracking-tight text-gray-950">
+          <h1 className="text-xl font-black tracking-tight text-white">
             {loadingPlan ? "Carregando..." : plan ? plan.serviceGroup.service.name : "Recarga"}
           </h1>
-          <p className="text-xs text-gray-600 font-medium mt-0.5">
+          <p className="text-xs text-gray-400 font-medium mt-0.5">
             Confirme os detalhes e forneça a referência
           </p>
         </div>
@@ -92,50 +92,50 @@ export default function RechargeCheckout() {
       <div className="p-6 space-y-5">
         
         {loadingPlan ? (
-          /* SKELETON INTEGRADO DA TELA DE CHECKOUT */
+          /* SKELETON INTEGRADO DA TELA DE CHECKOUT - DARK MODE */
           <>
-            <div className="bg-[#FCFCFD] border border-[#E4E7EB] rounded-2xl p-5 space-y-4 animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-1/3" />
+            <div className="bg-[#161A1E] border border-white/[0.03] rounded-2xl p-5 space-y-4 animate-pulse">
+              <div className="h-4 bg-gray-800 rounded w-1/3" />
               <div className="space-y-2.5 pt-2">
-                <div className="flex justify-between"><div className="h-4 bg-gray-100 rounded w-1/4" /><div className="h-4 bg-gray-200 rounded w-1/3" /></div>
-                <div className="flex justify-between"><div className="h-4 bg-gray-100 rounded w-1/4" /><div className="h-4 bg-gray-200 rounded w-1/2" /></div>
-                <div className="flex justify-between"><div className="h-4 bg-gray-100 rounded w-1/4" /><div className="h-4 bg-gray-200 rounded w-1/4" /></div>
+                <div className="flex justify-between"><div className="h-4 bg-gray-800 rounded w-1/4" /><div className="h-4 bg-gray-800 rounded w-1/3" /></div>
+                <div className="flex justify-between"><div className="h-4 bg-gray-800 rounded w-1/4" /><div className="h-4 bg-gray-800 rounded w-1/2" /></div>
+                <div className="flex justify-between"><div className="h-4 bg-gray-800 rounded w-1/4" /><div className="h-4 bg-gray-800 rounded w-1/4" /></div>
               </div>
             </div>
-            <div className="bg-[#FCFCFD] border border-[#E4E7EB] rounded-2xl p-5 space-y-3 animate-pulse">
-              <div className="h-3 bg-gray-200 rounded w-1/4" />
-              <div className="h-12 bg-gray-100 rounded-xl w-full" />
-              <div className="h-12 bg-gray-200 rounded-xl w-full mt-2" />
+            <div className="bg-[#161A1E] border border-white/[0.03] rounded-2xl p-5 space-y-3 animate-pulse">
+              <div className="h-3 bg-gray-800 rounded w-1/4" />
+              <div className="h-12 bg-gray-800/50 rounded-xl w-full" />
+              <div className="h-12 bg-gray-800 rounded-xl w-full mt-2" />
             </div>
           </>
         ) : !plan ? (
           /* COMPORTAMENTO SE NÃO ENCONTRAR O PLANO */
-          <div className="bg-[#FCFCFD] border border-[#E4E7EB] rounded-2xl p-8 text-center text-xs text-gray-600 font-mono font-bold tracking-wide shadow-sm">
+          <div className="bg-[#161A1E] border border-white/[0.03] rounded-2xl p-8 text-center text-xs text-gray-400 font-mono font-bold tracking-wide shadow-xl">
             Plano ou serviço não encontrado. Volte e selecione novamente.
           </div>
         ) : (
           /* CONTEÚDO PRINCIPAL DE PAGAMENTO */
           <>
             {/* CARD DE RESUMO DO PRODUTO */}
-            <div className="bg-[#FCFCFD] border border-[#E4E7EB] rounded-2xl p-5 shadow-sm">
-              <h3 className="text-xs font-black uppercase text-gray-600 tracking-wider mb-4 flex items-center gap-2">
-                <CreditCard size={14} className="text-emerald-700" /> Detalhes da Compra
+            <div className="bg-[#161A1E] border border-white/[0.03] rounded-2xl p-5 shadow-xl">
+              <h3 className="text-xs font-bold uppercase text-gray-400 tracking-wider mb-4 flex items-center gap-2">
+                <CreditCard size={14} className="text-emerald-400" /> Detalhes da Compra
               </h3>
               
               <div className="space-y-3.5 text-sm">
-                <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                  <span className="text-gray-600 font-medium">Categoria</span>
-                  <span className="font-extrabold text-gray-950 text-right">{plan.serviceGroup.name}</span>
+                <div className="flex justify-between items-center border-b border-white/[0.04] pb-3">
+                  <span className="text-gray-400 font-medium">Categoria</span>
+                  <span className="font-bold text-white text-right">{plan.serviceGroup.name}</span>
                 </div>
 
-                <div className="flex justify-between items-center border-b border-gray-100 pb-3">
-                  <span className="text-gray-600 font-medium">Plano</span>
-                  <span className="font-extrabold text-gray-950 text-right">{plan.name}</span>
+                <div className="flex justify-between items-center border-b border-white/[0.04] pb-3">
+                  <span className="text-gray-400 font-medium">Plano</span>
+                  <span className="font-bold text-white text-right">{plan.name}</span>
                 </div>
 
                 <div className="flex justify-between items-center pt-1">
-                  <span className="text-gray-600 font-medium">Preço Total</span>
-                  <span className="text-base font-mono font-black text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-0.5 rounded-xl">
+                  <span className="text-gray-400 font-medium">Preço Total</span>
+                  <span className="text-sm font-mono font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-xl">
                     {Number(plan.price).toLocaleString()} Kz
                   </span>
                 </div>
@@ -143,20 +143,20 @@ export default function RechargeCheckout() {
             </div>
 
             {/* CARD DO FORMULÁRIO DE DESTINO */}
-            <div className="bg-[#FCFCFD] border border-[#E4E7EB] rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="bg-[#161A1E] border border-white/[0.03] rounded-2xl p-5 shadow-xl space-y-4">
               <div>
-                <label className="text-xs font-black uppercase text-gray-600 tracking-wider flex items-center gap-2 mb-2">
-                  <User size={14} className="text-gray-700" /> Número de Conta / Telefone
+                <label className="text-xs font-bold uppercase text-gray-400 tracking-wider flex items-center gap-2 mb-2">
+                  <User size={14} className="text-gray-400" /> Número de Conta / Telefone
                 </label>
 
                 <div className="relative flex items-center">
-                  <Hash size={16} className="absolute left-4 text-gray-600" />
+                  <Hash size={16} className="absolute left-4 text-gray-500" />
                   <input
                     type="text"
                     value={customerReference}
                     onChange={(e) => setCustomerReference(e.target.value)}
                     placeholder="Ex: 9XXXXXXXX ou Nº de Contrato"
-                    className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-300 rounded-xl font-mono text-sm text-gray-950 outline-none focus:border-emerald-500 focus:bg-white transition-all font-bold placeholder:text-gray-400 placeholder:font-sans"
+                    className="w-full pl-11 pr-4 py-3.5 bg-white/[0.02] border border-white/[0.08] rounded-xl font-mono text-sm text-white outline-none focus:border-blue-500/50 focus:bg-white/[0.04] transition-all font-bold placeholder:text-gray-600 placeholder:font-sans"
                   />
                 </div>
               </div>
@@ -165,7 +165,7 @@ export default function RechargeCheckout() {
               <button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full bg-gray-950 hover:bg-gray-900 active:scale-[0.99] border border-transparent text-white rounded-xl py-3.5 text-xs font-black uppercase tracking-widest disabled:opacity-40 transition-all shadow-md mt-2 flex items-center justify-center gap-2"
+                className="w-full bg-blue-600 hover:bg-blue-500 active:scale-[0.99] border border-transparent text-white rounded-xl py-4 text-xs font-black uppercase tracking-widest disabled:opacity-40 transition-all shadow-md mt-2 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
