@@ -14,23 +14,18 @@ interface User {
   phone?: string
   email?: string
 
-  // 🔥 SALDOS (OBRIGATÓRIO PARA OTC)
   balance: number
   balanceUSDT: number
   cryptoBalance?: number
 
-  // 🔥 CARTEIRAS
   depositWalletAddress?: string
   withdrawWalletAddress?: string
 
-  // 🔥 SEGURANÇA
   isVerified: boolean
   role?: string
 
   verification?: Verification
 }
-
-/* ================= CONTEXT ================= */
 
 interface AuthContextData {
   isAuthenticated: boolean
@@ -41,11 +36,15 @@ interface AuthContextData {
   refreshUser: () => Promise<void>
 }
 
-export const AuthContext = createContext<AuthContextData>({} as AuthContextData)
+export const AuthContext = createContext<AuthContextData>(
+  {} as AuthContextData
+)
 
-/* ================= PROVIDER ================= */
-
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({
+  children,
+}: {
+  children: ReactNode
+}) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -53,21 +52,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function fetchUserFromApi() {
     try {
-      const response = await api.get<User>("/users/me")
+      const response = await api.get("/users/me")
 
-      // 🔒 GARANTE TIPAGEM E DEFAULTS (ANTI-CRASH)
-      const safeUser: User = {
-        ...response.data,
-        balance: Number(response.data.balance ?? 0),
-        balanceUSDT: Number(response.data.balanceUSDT ?? 0),
-        isVerified: Boolean(response.data.isVerified)
+      const rawUser =
+        response.data?.data ??
+        response.data
+
+      if (!rawUser?.id) {
+        throw new Error("INVALID_USER_RESPONSE")
       }
 
-      localStorage.setItem("user", JSON.stringify(safeUser))
+      const safeUser: User = {
+        ...rawUser,
+        balance: Number(rawUser.balance ?? 0),
+        balanceUSDT: Number(rawUser.balanceUSDT ?? 0),
+        cryptoBalance: Number(rawUser.cryptoBalance ?? 0),
+        isVerified: Boolean(rawUser.isVerified)
+      }
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(safeUser)
+      )
+
       setUser(safeUser)
 
     } catch (err) {
       console.error("AUTH_FETCH_ERROR:", err)
+
+      localStorage.removeItem("user")
+
       setUser(null)
     }
   }
@@ -78,7 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const token = localStorage.getItem("token")
 
     if (token) {
-      fetchUserFromApi().finally(() => setLoading(false))
+      fetchUserFromApi()
+        .finally(() => setLoading(false))
     } else {
       setLoading(false)
     }
@@ -88,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(token: string) {
     localStorage.setItem("token", token)
+
     await fetchUserFromApi()
   }
 
@@ -118,7 +134,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     </AuthContext.Provider>
   )
 }
-
-/* ================= HOOK ================= */
 
 export const useAuth = () => useContext(AuthContext)

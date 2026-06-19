@@ -3,7 +3,6 @@ import { AuthProvider } from './contexts/AuthContext'
 import { PrivateRoute } from './routes/PrivateRoute'
 
 /* ===== PUBLIC ===== */
-import LoginUser from './pages/LoginUser'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ResetPassword from './pages/ResetPassword'
@@ -78,8 +77,6 @@ function App() {
       <Routes>
 
         {/* ================= PUBLIC ================= */}
-
-        <Route path="/login-user" element={<LoginUser />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -100,8 +97,8 @@ function App() {
 
           <Route
             path="/"
-            element={<Navigate to="/login" replace />}
-          />
+            element={<Navigate to="/home" replace />}
+        />
 
           {/* HOME */}
           <Route path="home" element={<Home />} />

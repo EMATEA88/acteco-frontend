@@ -38,7 +38,7 @@ export default function Landing() {
       await loginUser(identity, password); 
       
       toast.success("Acesso autorizado!");
-      navigate("/dashboard"); // Redireciona com sucesso após autenticar
+      navigate("/home"); // Redireciona com sucesso após autenticar
     } catch (error: any) {
       console.error(error);
       toast.error(error?.response?.data?.message || "Credenciais incorretas ou erro no servidor.");
