@@ -28,27 +28,59 @@ export default function Landing() {
 
   // Função que processa o login real com a API
   async function handleLogin(e: FormEvent) {
-    e.preventDefault(); // Evita que a página recarregue
+    e.preventDefault()
 
     if (!identity || !password) {
-      return toast.error("Por favor, preencha todos os campos.");
+      return toast.error("Preencha todos os campos.")
     }
 
     try {
-      setLoading(true);
-      
-      // 3. ALTERAÇÃO ADICIONADA: Substituição do bloco antigo pelo processamento com Token
-      const response = await loginUser(identity, password);
+      setLoading(true)
 
-      await login(response.token);
+      const response = await loginUser(identity, password)
 
-      toast.success("Acesso autorizado!");
-      navigate("/home", { replace: true });
+      login(response.token, response.user)
+
+      // SUBSTITUIÇÃO DO BLOCO DE REDIRECIONAMENTO E TOAST ANTERIOR
+      toast.success("Acesso autorizado.")
+
+      if (response.user.role === "AGENT") {
+        switch (response.user.agent?.status) {
+          case "PENDING":
+            navigate("/agent/pending", { replace: true })
+            return
+
+          case "REJECTED":
+            navigate("/agent/rejected", { replace: true })
+            return
+
+          case "SUSPENDED":
+            navigate("/agent/suspended", { replace: true })
+            return
+        }
+      }
+
+      // Fallback para administradores, sub-agentes ou utilizadores normais validados
+      if (response.user.role === "ADMIN") {
+        navigate("/admin", { replace: true })
+        return
+      }
+
+      if (response.user.role === "SUB_AGENT") {
+        navigate("/sub-agent", { replace: true })
+        return
+      }
+
+      navigate("/home", { replace: true })
+
     } catch (error: any) {
-      console.error(error);
-      toast.error(error?.response?.data?.message || "Credenciais incorretas ou erro no servidor.");
+      console.error(error)
+      toast.error(
+        error?.response?.data?.message ??
+        "Credenciais inválidas."
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 

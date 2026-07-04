@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Importado para navegação direta
 import {
   Wallet,
   Receipt,
@@ -17,6 +18,7 @@ import {
 import toast from "react-hot-toast";
 
 export default function Dashboard() {
+  const navigate = useNavigate(); // Hook instanciado
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -38,12 +40,15 @@ export default function Dashboard() {
       console.error(error);
       toast.error("Erro ao carregar dashboard");
     } finally {
-      // CORREÇÃO: Chamando a função modificadora correta do useState
       setLoading(false);
     }
   }
 
-  // Mapeamento dinâmico das métricas adaptadas para o NOVO PADRÃO PREMIUM ESCURO
+  // Função centralizada para abrir o comprovativo reutilizável
+  const openTransaction = (id: number) => {
+    navigate(`/transactions/${id}`);
+  };
+
   const cards = [
     {
       title: "Saldo Atual",
@@ -82,7 +87,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] pb-28 font-sans antialiased">
       
-      {/* HEADER FIXO - ADAPTADO PARA DARK MODE */}
+      {/* HEADER FIXO */}
       <div className="px-6 pt-8 pb-4 flex items-center justify-between border-b border-white/[0.05] bg-[#0B0E11]/90 backdrop-blur-md sticky top-0 z-50">
         <div>
           <h1 className="text-xl font-black tracking-tight uppercase italic flex items-center gap-2 text-white">
@@ -115,7 +120,6 @@ export default function Dashboard() {
               </div>
               <div className="mt-6">
                 {loading ? (
-                  /* Skeleton do Valor do Card - Ajustado para fundo escuro */
                   <div className="h-5 bg-gray-800 rounded w-3/4 animate-pulse mb-1" />
                 ) : (
                   <h3 className={`text-base font-mono font-black tracking-tight ${item.textColor} truncate`}>
@@ -139,7 +143,6 @@ export default function Dashboard() {
           </h2>
 
           {loading ? (
-            /* Skeleton das Linhas de Transações em Dark Mode */
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, idx) => (
                 <div key={idx} className="flex justify-between items-center bg-white/[0.02] p-3 rounded-xl animate-pulse">
@@ -166,7 +169,12 @@ export default function Dashboard() {
                 return (
                   <div
                     key={tx.id}
-                    className="flex justify-between items-center bg-white/[0.01] hover:bg-white/[0.03] border border-white/[0.02] p-3 rounded-xl transition-colors duration-200"
+                    onClick={() => openTransaction(tx.id)}
+                    className="
+                      flex justify-between items-center bg-white/[0.01] border border-white/[0.02] p-3 rounded-xl 
+                      cursor-pointer transition-all duration-200 
+                      hover:scale-[1.01] hover:bg-white/[0.03] active:scale-[0.98]
+                    "
                   >
                     <div className="flex items-center gap-3">
                       <div className={`p-2 rounded-lg border ${isOut ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
@@ -199,7 +207,6 @@ export default function Dashboard() {
           </h2>
 
           <div className="space-y-3 text-xs font-mono font-bold">
-            {/* Linha 1 */}
             <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
               <span className="text-gray-400 font-sans font-medium">Saldo Atual</span>
               {loading ? (
@@ -211,7 +218,6 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Linha 2 */}
             <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
               <span className="text-gray-400 font-sans font-medium">Total Movimentado</span>
               {loading ? (
@@ -223,7 +229,6 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Linha 3 */}
             <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
               <span className="text-gray-400 font-sans font-medium">Total de Requisições</span>
               {loading ? (
@@ -235,7 +240,6 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Linha 4 */}
             <div className="flex justify-between items-center pt-1">
               <span className="text-gray-400 font-sans font-medium">Serviço mais Ativo</span>
               {loading ? (

@@ -1,138 +1,252 @@
-import { createContext, useEffect, useState, useContext } from "react"
-import type { ReactNode } from "react"
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react"
+
 import { api } from "../services/api"
 
 /* ================= TYPES ================= */
 
-interface Verification {
-  status: "NOT_SUBMITTED" | "PENDING" | "VERIFIED" | "REJECTED"
+export type UserRole =
+  | "CLIENT"
+  | "AGENT"
+  | "SUB_AGENT"
+  | "ADMIN"
+
+export type AgentStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "SUSPENDED"
+
+export interface AgentProfile {
+  status: AgentStatus
+  isActive: boolean
+  agentCode: string
+  companyName?: string | null
+
+  commissionBalance: number
+  totalSales: number
+  totalCommission: number
 }
 
-interface User {
+export interface User {
   id: number
-  fullName?: string
-  phone?: string
-  email?: string
+  publicId: string
+
+  fullName: string
+  email: string
+  phone: string
+
+  role: UserRole
 
   balance: number
-  balanceUSDT: number
-  cryptoBalance?: number
-
-  depositWalletAddress?: string
-  withdrawWalletAddress?: string
+  frozenBalance: number
 
   isVerified: boolean
-  role?: string
+  isBlocked: boolean
+  isAgentApproved: boolean
 
-  verification?: Verification
+  createdAt: string
+
+  agent?: AgentProfile | null
 }
 
 interface AuthContextData {
-  isAuthenticated: boolean
-  user: User | null
   loading: boolean
-  login: (token: string) => Promise<void>
+
+  token: string | null
+
+  user: User | null
+
+  isAuthenticated: boolean
+
+  login: (
+    token: string,
+    user: User
+  ) => void
+
   logout: () => void
+
   refreshUser: () => Promise<void>
+
+  setUser: React.Dispatch<
+    React.SetStateAction<User | null>
+  >
 }
 
-export const AuthContext = createContext<AuthContextData>(
-  {} as AuthContextData
-)
+/* ================= CONTEXT ================= */
+
+export const AuthContext =
+  createContext<AuthContextData>(
+    {} as AuthContextData
+  )
+
+/* ================= PROVIDER ================= */
 
 export function AuthProvider({
   children,
 }: {
   children: ReactNode
 }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
 
-  /* ================= FETCH USER ================= */
+  const [loading, setLoading] =
+    useState(true)
 
-  async function fetchUserFromApi() {
-    try {
-      const response = await api.get("/users/me")
+  const [token, setToken] =
+    useState<string | null>(
+      localStorage.getItem("token")
+    )
 
-      const rawUser =
-        response.data?.data ??
-        response.data
+  const [user, setUser] =
+    useState<User | null>(() => {
 
-      if (!rawUser?.id) {
-        throw new Error("INVALID_USER_RESPONSE")
+      const stored =
+        localStorage.getItem("user")
+
+      if (!stored) return null
+
+      try {
+
+        return JSON.parse(stored)
+
+      } catch {
+
+        return null
+
       }
 
-      const safeUser: User = {
-        ...rawUser,
-        balance: Number(rawUser.balance ?? 0),
-        balanceUSDT: Number(rawUser.balanceUSDT ?? 0),
-        cryptoBalance: Number(rawUser.cryptoBalance ?? 0),
-        isVerified: Boolean(rawUser.isVerified)
-      }
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify(safeUser)
-      )
-
-      setUser(safeUser)
-
-    } catch (err) {
-      console.error("AUTH_FETCH_ERROR:", err)
-
-      localStorage.removeItem("user")
-
-      setUser(null)
-    }
-  }
+    })
 
   /* ================= INIT ================= */
 
   useEffect(() => {
-    const token = localStorage.getItem("token")
 
     if (token) {
-      fetchUserFromApi()
-        .finally(() => setLoading(false))
-    } else {
-      setLoading(false)
+
+      api.defaults.headers.common.Authorization =
+        `Bearer ${token}`
+
     }
-  }, [])
 
-  /* ================= ACTIONS ================= */
+    setLoading(false)
 
-  async function login(token: string) {
-    localStorage.setItem("token", token)
+  }, [token])
 
-    await fetchUserFromApi()
-  }
-
-  function logout() {
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
-    setUser(null)
-  }
+  /* ================= REFRESH ================= */
 
   async function refreshUser() {
-    await fetchUserFromApi()
+
+    try {
+
+      const response =
+        await api.get("/users/me")
+
+      const raw =
+        response.data?.data ??
+        response.data
+
+      setUser(raw)
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(raw)
+      )
+
+    } catch {
+
+      logout()
+
+    }
+
   }
 
-  /* ================= RETURN ================= */
+  /* ================= LOGIN ================= */
+
+  function login(
+    newToken: string,
+    newUser: User
+  ) {
+
+    localStorage.setItem(
+      "token",
+      newToken
+    )
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify(newUser)
+    )
+
+    api.defaults.headers.common.Authorization =
+      `Bearer ${newToken}`
+
+    setToken(newToken)
+
+    setUser(newUser)
+
+  }
+
+  /* ================= LOGOUT ================= */
+
+  function logout() {
+
+    localStorage.removeItem("token")
+
+    localStorage.removeItem("user")
+
+    delete api.defaults.headers.common.Authorization
+
+    setToken(null)
+
+    setUser(null)
+
+  }
+
+  /* ================= PROVIDER ================= */
 
   return (
+
     <AuthContext.Provider
       value={{
-        isAuthenticated: !!user,
-        user,
+
         loading,
+
+        token,
+
+        user,
+
+        isAuthenticated:
+          !!token && !!user,
+
         login,
+
         logout,
-        refreshUser
+
+        refreshUser,
+
+        setUser
+
       }}
     >
+
       {children}
+
     </AuthContext.Provider>
+
   )
+
 }
 
-export const useAuth = () => useContext(AuthContext)
+/* ================= HOOK ================= */
+
+export function useAuth() {
+
+  return useContext(
+    AuthContext
+  )
+
+}

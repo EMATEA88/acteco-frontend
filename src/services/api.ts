@@ -45,14 +45,26 @@ api.interceptors.request.use(config => {
 ========================= */
 
 api.interceptors.response.use(
+
   response => response,
+
   error => {
+
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      window.location.href = '/login'
+
+      localStorage.removeItem("token")
+      localStorage.removeItem("user")
+
+      delete api.defaults.headers.common.Authorization
+
+      window.location.href = "/login-user"
+
     }
+
     return Promise.reject(error)
+
   }
+
 )
 
 /* =========================
@@ -68,14 +80,19 @@ export const registerUser = async (
   phone: string,
   email: string,
   password: string,
-  code: string
+  code: string,
+  fullName: string,
+  role: 'CLIENT' | 'AGENT'
 ) => {
   const { data } = await api.post('/auth/register', {
     phone,
     email,
     password,
-    code
+    code,
+    fullName,
+    role
   })
+
   return data
 }
 
@@ -101,16 +118,20 @@ export const loginUser = async (
   identifier: string,
   password: string
 ) => {
-  const { data } = await api.post('/auth/login', {
-    identifier,
-    password
-  })
 
-  if (data.token) {
-    localStorage.setItem('token', data.token)
+  const { data } = await api.post(
+    "/auth/login",
+    {
+      identifier,
+      password
+    }
+  )
+
+  return {
+    token: data.token,
+    user: data.user
   }
 
-  return data
 }
 
 /* =========================
@@ -118,8 +139,14 @@ export const loginUser = async (
 ========================= */
 
 export const logoutUser = () => {
-  localStorage.removeItem('token')
-  window.location.href = '/login'
+
+  localStorage.removeItem("token")
+  localStorage.removeItem("user")
+
+  delete api.defaults.headers.common.Authorization
+
+  window.location.href = "/login-user"
+
 }
 
 /* =========================

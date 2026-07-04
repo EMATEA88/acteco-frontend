@@ -214,7 +214,11 @@ export default function Transactions() {
                 const isOut = meta.category === 'OUT'
 
                 return (
-                  <div key={tx.id} className="flex justify-between items-center p-4 bg-[#161A1E] border border-white/[0.03] rounded-2xl hover:bg-[#1c2127] transition-all shadow-md">
+                  <button
+                    key={tx.id}
+                    onClick={() => navigate(`/transactions/${tx.id}`)}
+                    className="w-full flex justify-between items-center p-4 bg-[#161A1E] border border-white/[0.03] rounded-2xl hover:bg-[#1c2127] transition-all shadow-md active:scale-[0.99]"
+                  >
                     <div className="flex items-center gap-4 min-w-0">
                       {/* CONTAINER DE ÍCONE CONFIGURADO PARA DARK MODE */}
                       <div className={`w-11 h-11 rounded-xl flex items-center justify-center border shrink-0 ${
@@ -222,8 +226,11 @@ export default function Transactions() {
                       }`}>
                         <Icon size={18} weight="bold" />
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-white truncate tracking-tight">{meta.label}</p>
+                      <div className="min-w-0 text-left">
+                        {/* ALTERADO AQUI: Prioriza a descrição detalhada gravada, senão cai na label padrão do tipo */}
+                        <p className="text-xs font-bold text-white truncate tracking-tight">
+                          {tx.description?.trim() || meta.label}
+                        </p>
                         <p className="text-[10px] text-gray-400 font-mono font-medium mt-0.5">
                           {new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
@@ -238,7 +245,7 @@ export default function Transactions() {
                         {tx.currency}
                       </span>
                     </div>
-                  </div>
+                  </button>
                 )
               })}
             </div>

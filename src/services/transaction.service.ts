@@ -26,6 +26,19 @@ export interface Transaction {
   processedAt?: string;
 }
 
+// 1. Interface adicionada logo abaixo de Transaction
+export interface TransactionDetails extends Transaction {
+  externalId?: string;
+
+  gatewayProvider?: string;
+
+  gatewayStatus?: string;
+
+  merchantTransactionId?: string;
+
+  metadata?: any;
+}
+
 export interface TransactionFilter {
   type?: string;
 
@@ -112,6 +125,31 @@ export const TransactionService = {
       throw new Error(
         err?.response?.data?.error ||
         "Erro ao carregar transações"
+      );
+    }
+  },
+
+  // 2. Método adicionado no final do objeto TransactionService
+  /* ================= DETAILS ================= */
+
+  async details(
+    id: number
+  ): Promise<TransactionDetails> {
+
+    try {
+
+      const { data } =
+        await api.get(
+          `/transactions/${id}`
+        );
+
+      return data;
+
+    } catch (err: any) {
+
+      throw new Error(
+        err?.response?.data?.error ||
+        "Erro ao carregar detalhes da transação"
       );
     }
   }
