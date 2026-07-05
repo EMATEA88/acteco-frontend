@@ -14,7 +14,6 @@ import {
   LockKey,
   Copy,
   SignOut,
-  UserCircleGear,
   Wallet,
   SealCheck,
   PaperPlaneTilt,
@@ -39,7 +38,6 @@ type KYCState = {
   canSubmit: boolean
 }
 
-// Mapeamento atualizado com os 4 perfis bem definidos
 const ROLE_BADGES = {
   USER: { label: "Cliente", className: "bg-gray-500/10 text-gray-400 border-gray-500/20" },
   AGENT: { label: "Agente", className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
@@ -103,23 +101,17 @@ export default function Profile() {
         ) : (
           <div className="bg-[#161A1E] py-5 px-6 rounded-[2rem] relative border border-white/[0.04] shadow-2xl">
             
-            {/* CONTAINER SUPERIOR ESQUERDO: Botão de Menu para Agentes/Admins */}
-            {(user?.role === "AGENT" || user?.role === "ADMIN") && (
-              <div className="absolute top-5 left-5 z-10">
-                <AgentMenuButton onClick={() => setAgentMenuOpen(true)} />
-              </div>
-            )}
-
-            {/* CONTAINER SUPERIOR DIREITO: Settings + Nível de Acesso */}
-            <div className="absolute top-5 right-5 flex flex-col items-end gap-2">
-              <button 
-                onClick={() => navigate('/settings')}
-                className="p-2 rounded-full bg-white/[0.03] text-emerald-400 border border-white/[0.05] hover:bg-white/[0.08] transition-colors"
-              >
-                <UserCircleGear size={20} weight="fill" />
-              </button>
+            {/* CONTAINER SUPERIOR DIREITO REFORMULADO */}
+            <div className="absolute top-5 right-5 flex flex-col items-end gap-2.5">
               
-              {/* Garante a renderização do badge para TODOS os tipos mapeados, incluindo USER */}
+              {/* Se for AGENT ou ADMIN, renderiza o botão do menu de forma discreta */}
+              {(user?.role === "AGENT" || user?.role === "ADMIN") ? (
+                <div className="scale-90 origin-top-right">
+                  <AgentMenuButton onClick={() => setAgentMenuOpen(true)} />
+                </div>
+              ) : null}
+              
+              {/* Emblema de Nível de Acesso (Badge) */}
               {user?.role && ROLE_BADGES[user.role] && (
                 <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${ROLE_BADGES[user.role].className}`}>
                   {ROLE_BADGES[user.role].label}
@@ -127,8 +119,8 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Adicionado padding-left extra (pl-14 ou pr-16) para não encavalar o conteúdo se o menu aparecer */}
-            <div className={`flex items-center gap-4 pr-16 ${(user?.role === "AGENT" || user?.role === "ADMIN") ? 'pl-12 pt-6 sm:pt-0 sm:pl-0' : ''}`}>
+            {/* Layout Principal Organizado e Seguro para Telas Pequenas */}
+            <div className="flex items-center gap-4 pr-20">
               <div className="w-14 h-14 rounded-full border border-white/[0.08] overflow-hidden bg-white/[0.02] p-1 flex-shrink-0">
                 <img src="/logo.png" className="w-full h-full object-contain rounded-full" alt="Logo" />
               </div>
@@ -150,6 +142,7 @@ export default function Profile() {
               </div>
             </div>
 
+            {/* Seção inferior de Saldo e Botões Rápidos */}
             <div className="mt-5 pt-4 border-t border-white/[0.04] flex items-center justify-between">
               <div>
                 <p className="text-[9px] text-gray-500 uppercase tracking-widest font-black mb-0.5">Saldo Disponível</p>
@@ -157,7 +150,6 @@ export default function Profile() {
               </div>
 
               <div className="flex items-center gap-3">
-                {/* CORREÇÃO: Mostra para USER, AGENT e ADMIN. Esconde APENAS para SUB_AGENTE */}
                 {user?.role !== "SUB_AGENT" && (
                   <>
                     <button
@@ -167,7 +159,6 @@ export default function Profile() {
                       <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/[0.03] border border-white/[0.05] text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">
                         <Wallet size={18} weight="bold" />
                       </div>
-
                       <span className="text-[8px] font-black uppercase text-gray-500 tracking-wide">
                         Depósito
                       </span>
@@ -180,7 +171,6 @@ export default function Profile() {
                       <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/[0.03] border border-white/[0.05] text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all">
                         <ArrowDown size={18} weight="bold" />
                       </div>
-
                       <span className="text-[8px] font-black uppercase text-gray-500 tracking-wide">
                         Saque
                       </span>
