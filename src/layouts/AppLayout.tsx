@@ -1,8 +1,6 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom"
-import { useEffect } from "react"
 import BottomNav from "../components/BottomNav"
 import { Bell, ArrowLeft } from "lucide-react"
-import { connectSocket } from "../services/socket"
 import { useNotification } from "../contexts/NotificationContext"
 
 export default function AppLayout() {
@@ -11,13 +9,6 @@ export default function AppLayout() {
   const location = useLocation()
 
   const pathname = location.pathname || ""
-
-  /* ================= SOCKET ================= */
-  useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (!token) return
-    connectSocket(token)
-  }, [])
 
   /* ================= ROUTE DETECTION ================= */
   const isOtcPage = pathname.startsWith("/otc")
@@ -28,7 +19,7 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen w-full bg-[#0B0E11] text-[#EAECEF] flex flex-col">
 
-      {/* TOP BACK BUTTON (OTC) 
+      {/* TOP BACK BUTTON (OTC)
           Só renderiza se for uma página OTC, mas NÃO for a tela de chat,
           pois o componente OtcChat já possui seu próprio Header.
       */}
@@ -47,20 +38,17 @@ export default function AppLayout() {
       {/* ================= MAIN ================= */}
       <main
         className={`flex-1 flex flex-col ${
-          // Se for chat, removemos o padding superior (pt-0) para o Header do chat encostar no topo.
-          // Se for outra página OTC, mantemos pt-14 para não cobrir o conteúdo com o botão de voltar.
-          isOtcPage && !isChatting 
-            ? "pt-14" 
-            : isChatting 
-              ? "pt-0" 
+          isOtcPage && !isChatting
+            ? "pt-14"
+            : isChatting
+              ? "pt-0"
               : "pb-20 overflow-y-auto"
         }`}
       >
         <Outlet />
       </main>
 
-      {/* ================= FOOTER ================= */
-      /* Oculta o menu inferior e notificações flutuantes durante o OTC */}
+      {/* ================= FOOTER ================= */}
       {!isOtcPage && <BottomNav />}
 
       {/* ================= FLOATING NOTIFICATION ================= */}
@@ -114,7 +102,6 @@ export default function AppLayout() {
           )}
         </button>
       )}
-
     </div>
   )
 }

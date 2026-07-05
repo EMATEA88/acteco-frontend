@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { NotificationService } from "../services/notification.service"
-import { connectSocket } from "../services/socket"
 import {
   Info,
   CheckCircle,
@@ -60,20 +59,6 @@ export default function Notifications() {
     load()
   }, [])
 
-  useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (!token) return
-
-    const socket = connectSocket(token)
-    const handler = (data: Toast) => {
-      setToast(data)
-      load()
-      setTimeout(() => setToast(null), 4000)
-    }
-
-    socket.on("notification:new", handler)
-    return () => { socket.off("notification:new", handler) }
-  }, [])
 
   async function handleRead(notification: Notification) {
     if (!notification.isRead) {

@@ -5,7 +5,6 @@ import {
   useState,
 } from "react"
 import toast from "react-hot-toast"
-import { connectSocket } from "../services/socket"
 import { NotificationService } from "../services/notification.service"
 import type { ReactNode } from "react"
 
@@ -26,8 +25,6 @@ export function NotificationProvider({
 
   const [unread, setUnread] = useState(0)
 
-  /* ================= LOAD INITIAL ================= */
-
   async function refresh() {
     try {
       const data = await NotificationService.list()
@@ -41,31 +38,10 @@ export function NotificationProvider({
     setUnread(0)
   }
 
-  /* ================= SOCKET ================= */
-
   useEffect(() => {
-
-    const token = localStorage.getItem("token")
-    if (!token) return
-
-    refresh()
-
-    const socket = connectSocket(token)
-
-    const handleNotification = (data: any) => {
-      setUnread(prev => prev + 1)
-
-      toast.success(data?.title || "Nova notificação", {
-        duration: 4000
-      })
-    }
-
-    socket.on("notification:new", handleNotification)
-
-    return () => {
-      socket.off("notification:new", handleNotification)
-    }
-
+    refresh().catch(() => {
+      toast.error("Erro ao carregar notificações")
+    })
   }, [])
 
   return (

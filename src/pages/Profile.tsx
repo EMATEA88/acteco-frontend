@@ -17,8 +17,12 @@ import {
   UserCircleGear,
   Wallet,
   SealCheck,
-  PaperPlaneTilt
+  PaperPlaneTilt,
 } from '@phosphor-icons/react'
+
+import AgentDrawer from "../components/agent/AgentDrawer";
+import AgentSidebar from "../components/agent/AgentSidebar";
+import AgentMenuButton from "../components/agent/AgentMenuButton";
 
 type User = {
   fullName?: string
@@ -46,6 +50,7 @@ const ROLE_BADGES = {
 export default function Profile() {
   const navigate = useNavigate()
   const [kyc, setKyc] = useState<KYCState | null>(null)
+  const [agentMenuOpen, setAgentMenuOpen] = useState(false);
 
   const { data: user, isLoading } = useQuery<User>({
     queryKey: ['me'],
@@ -98,6 +103,13 @@ export default function Profile() {
         ) : (
           <div className="bg-[#161A1E] py-5 px-6 rounded-[2rem] relative border border-white/[0.04] shadow-2xl">
             
+            {/* CONTAINER SUPERIOR ESQUERDO: Botão de Menu para Agentes/Admins */}
+            {(user?.role === "AGENT" || user?.role === "ADMIN") && (
+              <div className="absolute top-5 left-5 z-10">
+                <AgentMenuButton onClick={() => setAgentMenuOpen(true)} />
+              </div>
+            )}
+
             {/* CONTAINER SUPERIOR DIREITO: Settings + Nível de Acesso */}
             <div className="absolute top-5 right-5 flex flex-col items-end gap-2">
               <button 
@@ -115,19 +127,20 @@ export default function Profile() {
               )}
             </div>
 
-            <div className="flex items-center gap-4 pr-16">
-              <div className="w-14 h-14 rounded-full border border-white/[0.08] overflow-hidden bg-white/[0.02] p-1">
+            {/* Adicionado padding-left extra (pl-14 ou pr-16) para não encavalar o conteúdo se o menu aparecer */}
+            <div className={`flex items-center gap-4 pr-16 ${(user?.role === "AGENT" || user?.role === "ADMIN") ? 'pl-12 pt-6 sm:pt-0 sm:pl-0' : ''}`}>
+              <div className="w-14 h-14 rounded-full border border-white/[0.08] overflow-hidden bg-white/[0.02] p-1 flex-shrink-0">
                 <img src="/logo.png" className="w-full h-full object-contain rounded-full" alt="Logo" />
               </div>
 
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <h1 className="text-base font-bold tracking-tight text-white capitalize">
+                  <h1 className="text-base font-bold tracking-tight text-white capitalize truncate">
                     {user?.fullName?.toLowerCase() ?? user?.phone}
                   </h1>
-                  {kyc?.isVerified && <SealCheck size={16} weight="fill" className="text-blue-400" />}
+                  {kyc?.isVerified && <SealCheck size={16} weight="fill" className="text-blue-400 flex-shrink-0" />}
                 </div>
-                <p className="text-gray-400 text-[11px] font-medium mt-0.5">{user?.email}</p>
+                <p className="text-gray-400 text-[11px] font-medium mt-0.5 truncate">{user?.email}</p>
                 <div className="flex items-center gap-2 mt-1.5">
                   <span className="text-[10px] text-gray-500 font-mono font-bold tracking-wider uppercase">ID: {user?.publicId}</span>
                   <button onClick={() => navigator.clipboard.writeText(user?.publicId ?? '')} className="text-gray-500 hover:text-emerald-400 transition-colors">
@@ -201,44 +214,6 @@ export default function Profile() {
                 <SessionCard label="Presente" sub="Bônus" icon={<Gift size={18} weight="bold" />} to="/gift" />
                 <SessionCard label="Segurança" sub="Proteção" icon={<ShieldCheck size={18} weight="bold" />} to="/security" />
                 <SessionCard label="Senha" sub="Alterar" icon={<LockKey size={18} weight="bold" />} to="/password" />
-                {user?.role === "AGENT" && (
-  <>
-    <SessionCard
-      label="Dashboard"
-      sub="Painel do Agente"
-      icon={<Wallet size={18} weight="bold" />}
-      to="/agent/dashboard"
-    />
-
-    <SessionCard
-      label="Sub-agentes"
-      sub="Gerenciar equipa"
-      icon={<UserCircleGear size={18} weight="bold" />}
-      to="/agent/sub-agents"
-    />
-
-    <SessionCard
-      label="Comissões"
-      sub="Ganhos"
-      icon={<Gift size={18} weight="bold" />}
-      to="/agent/commissions"
-    />
-
-    <SessionCard
-      label="Estatísticas"
-      sub="Desempenho"
-      icon={<ArrowsLeftRight size={18} weight="bold" />}
-      to="/agent/statistics"
-    />
-
-    <SessionCard
-      label="Histórico"
-      sub="Vendas da equipa"
-      icon={<PaperPlaneTilt size={18} weight="bold" />}
-      to="/agent/history"
-    />
-  </>
-)}
               </>
             )}
           </div>
@@ -258,6 +233,11 @@ export default function Profile() {
         )}
 
       </div>
+
+      {/* 4. DRAWER DE AGENTE */}
+      <AgentDrawer open={agentMenuOpen} onClose={() => setAgentMenuOpen(false)}>
+        <AgentSidebar />
+      </AgentDrawer>
     </div>
   )
 }
