@@ -16,26 +16,15 @@ export default function AgentDashboard() {
   const [dashboard, setDashboard] = useState<any>(null);
 
   useEffect(() => {
-    loadAllData();
+    loadDashboard();
   }, []);
 
-  async function loadAllData() {
+  async function loadDashboard() {
     try {
-      setLoading(true);
-      // Chamada paralela para garantir que ambos os endpoints retornam dados
-      const [dashData, statsData] = await Promise.all([
-        AgentService.dashboard(),
-        AgentService.statistics()
-      ]);
-
-      // Unificamos os dados: mantemos o financeiro do dashboard 
-      // e usamos a estatística para garantir que os dados de equipa estejam corretos
-      setDashboard({
-        ...dashData,
-        team: statsData.team // Sobrescreve com os dados precisos da estatística
-      });
+      const data = await AgentService.dashboard();
+      setDashboard(data);
     } catch (error) {
-      console.error("Erro ao carregar dados do painel:", error);
+      console.error("Erro ao carregar dashboard:", error);
     } finally {
       setLoading(false);
     }
@@ -62,7 +51,7 @@ export default function AgentDashboard() {
 
   return (
     <div className="space-y-8 p-6 text-gray-200">
-      {/* Cards */}
+      {/* Cards - Removido ícone de seta do Total Vendido */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <Card title="Saldo" value={formatKz(dashboard.currentBalance)} icon={<Wallet size={24} />} />
         <Card title="Comissão" value={formatKz(dashboard.commissionBalance)} icon={<BadgeDollarSign size={24} />} />
