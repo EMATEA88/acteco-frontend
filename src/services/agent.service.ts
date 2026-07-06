@@ -171,7 +171,7 @@ export const AgentService = {
   async dashboard(): Promise<AgentDashboard> {
 
     const { data } =
-      await api.get("/agent/dashboard");
+      await api.get("/api/agent/dashboard");
 
     return data;
 
@@ -182,7 +182,7 @@ export const AgentService = {
   async statistics(): Promise<AgentStatistics> {
 
     const { data } =
-      await api.get("/agent/statistics");
+      await api.get("/api/agent/statistics");
 
     return data;
 
@@ -193,7 +193,7 @@ export const AgentService = {
   async listSubAgents(): Promise<SubAgent[]> {
 
     const { data } =
-      await api.get("/agent/sub-agents");
+      await api.get("/api/agent/sub-agents");
 
     return data;
 
@@ -207,7 +207,7 @@ export const AgentService = {
 
     const { data } =
       await api.get(
-        `/agent/sub-agents/${id}`
+        `/api/agent/sub-agents/${id}`
       );
 
     return data;
@@ -222,7 +222,7 @@ export const AgentService = {
 
     const { data } =
       await api.post(
-        "/agent/sub-agents",
+        "/api/agent/sub-agents",
         payload
       );
 
@@ -243,7 +243,7 @@ export const AgentService = {
     const { data } =
       await api.put(
 
-        `/agent/sub-agents/${id}`,
+        `/api/agent/sub-agents/${id}`,
 
         payload
 
@@ -262,7 +262,7 @@ export const AgentService = {
     const { data } =
       await api.patch(
 
-        `/agent/sub-agents/${id}/block`
+        `/api/agent/sub-agents/${id}/block`
 
       );
 
@@ -279,7 +279,7 @@ export const AgentService = {
     const { data } =
       await api.patch(
 
-        `/agent/sub-agents/${id}/unblock`
+        `/api/agent/sub-agents/${id}/unblock`
 
       );
 
@@ -296,7 +296,7 @@ export const AgentService = {
     const { data } =
       await api.get(
 
-        `/agent/sub-agents/${id}/balance`
+        `/api/agent/sub-agents/${id}/balance`
 
       );
 
@@ -313,7 +313,7 @@ export const AgentService = {
     const { data } =
       await api.get(
 
-        `/agent/sub-agents/${id}/history`
+        `/api/agent/sub-agents/${id}/history`
 
       );
 
@@ -328,7 +328,7 @@ export const AgentService = {
     const { data } =
       await api.get(
 
-        "/agent/team-sales"
+        "/api/agent/team-sales"
 
       );
 
@@ -343,7 +343,7 @@ export const AgentService = {
     const { data } =
       await api.get(
 
-        "/agent/commissions/summary"
+        "/api/agent/commissions/summary"
 
       );
 
@@ -362,7 +362,7 @@ export const AgentService = {
     const { data } =
       await api.get(
 
-        "/agent/commissions/history",
+        "/api/agent/commissions/history",
 
         {
 
@@ -387,7 +387,7 @@ export const AgentService = {
     const { data } =
       await api.get(
 
-        "/agent/commissions/pending"
+        "/api/agent/commissions/pending"
 
       );
 
@@ -400,7 +400,7 @@ export const AgentService = {
     const { data } =
       await api.get(
 
-        "/agent/commissions/paid"
+        "/api/agent/commissions/paid"
 
       );
 
@@ -413,7 +413,7 @@ export const AgentService = {
     const { data } =
       await api.get(
 
-        "/agent/commissions/latest"
+        "/api/agent/commissions/latest"
 
       );
 

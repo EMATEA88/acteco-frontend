@@ -95,7 +95,6 @@ function App() {
 
         {/* ================= PUBLIC ================= */}
         <Route path="/login" element={<Login />} />
-        <Route path="/login-user" element={<Navigate to="/login" replace />} />
         
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />

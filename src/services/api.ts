@@ -57,7 +57,7 @@ api.interceptors.response.use(
 
       delete api.defaults.headers.common.Authorization
 
-      window.location.href = "/login-user"
+      window.location.href = "/login"
 
     }
 
@@ -145,7 +145,7 @@ export const logoutUser = () => {
 
   delete api.defaults.headers.common.Authorization
 
-  window.location.href = "/login-user"
+  window.location.href = "/login"
 
 }
 

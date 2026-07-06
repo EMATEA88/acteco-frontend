@@ -4,7 +4,6 @@ import {
   useEffect,
   useState,
 } from "react"
-import toast from "react-hot-toast"
 import { NotificationService } from "../services/notification.service"
 import type { ReactNode } from "react"
 
@@ -18,11 +17,10 @@ const NotificationContext =
   createContext<NotificationContextType | null>(null)
 
 export function NotificationProvider({
-  children
+  children,
 }: {
   children: ReactNode
 }) {
-
   const [unread, setUnread] = useState(0)
 
   async function refresh() {
@@ -39,9 +37,13 @@ export function NotificationProvider({
   }
 
   useEffect(() => {
-    refresh().catch(() => {
-      toast.error("Erro ao carregar notificações")
-    })
+    const token = localStorage.getItem("token")
+
+    if (!token) {
+      return
+    }
+
+    refresh().catch(() => {})
   }, [])
 
   return (
@@ -49,7 +51,7 @@ export function NotificationProvider({
       value={{
         unread,
         refresh,
-        reset
+        reset,
       }}
     >
       {children}

@@ -60,7 +60,7 @@ export default function ResetPassword() {
       setResetLoading(true)
       await resetPassword(email, newPassword, code)
       showSuccess('Segurança atualizada! Password redefinida.')
-      setTimeout(() => navigate('/login-user'), 2000)
+      setTimeout(() => navigate('/login'), 2000)
     } catch (err: any) {
       showError(err?.response?.data?.message || 'Falha na redefinição')
     } finally {
@@ -182,7 +182,7 @@ export default function ResetPassword() {
 
             <div className="text-center pt-4">
               <Link
-                to="/login-user"
+                to="/login"
                 className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-white transition-colors"
               >
                 <ArrowLeft size={14} />

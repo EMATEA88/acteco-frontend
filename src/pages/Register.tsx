@@ -137,7 +137,7 @@ export default function Register() {
       )
 
       setTimeout(() => {
-        navigate("/login-user")
+        navigate("/login")
       }, 1500)
 
     } catch (err: any) {
@@ -236,7 +236,7 @@ export default function Register() {
             </p>
 
             <Link
-              to="/login-user"
+              to="/login"
               className="font-semibold text-blue-400 hover:text-blue-300"
             >
               Entrar
