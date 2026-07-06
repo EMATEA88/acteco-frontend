@@ -17,6 +17,7 @@ import {
   Wallet,
   SealCheck,
   PaperPlaneTilt,
+  Gear, // Adicionado
 } from '@phosphor-icons/react'
 
 import AgentDrawer from "../components/agent/AgentDrawer";
@@ -103,15 +104,22 @@ export default function Profile() {
             
             {/* CONTAINER SUPERIOR DIREITO REFORMULADO */}
             <div className="absolute top-5 right-5 flex flex-col items-end gap-2.5">
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => navigate('/settings')} 
+                  className="p-2 rounded-full bg-white/[0.03] border border-white/[0.05] text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
+                  title="Configurações"
+                >
+                  <Gear size={20} weight="bold" />
+                </button>
+
+                {(user?.role === "AGENT" || user?.role === "ADMIN") && (
+                  <div className="scale-90 origin-right">
+                    <AgentMenuButton onClick={() => setAgentMenuOpen(true)} />
+                  </div>
+                )}
+              </div>
               
-              {/* Se for AGENT ou ADMIN, renderiza o botão do menu de forma discreta */}
-              {(user?.role === "AGENT" || user?.role === "ADMIN") ? (
-                <div className="scale-90 origin-top-right">
-                  <AgentMenuButton onClick={() => setAgentMenuOpen(true)} />
-                </div>
-              ) : null}
-              
-              {/* Emblema de Nível de Acesso (Badge) */}
               {user?.role && ROLE_BADGES[user.role] && (
                 <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${ROLE_BADGES[user.role].className}`}>
                   {ROLE_BADGES[user.role].label}
@@ -119,7 +127,6 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Layout Principal Organizado e Seguro para Telas Pequenas */}
             <div className="flex items-center gap-4 pr-20">
               <div className="w-14 h-14 rounded-full border border-white/[0.08] overflow-hidden bg-white/[0.02] p-1 flex-shrink-0">
                 <img src="/logo.png" className="w-full h-full object-contain rounded-full" alt="Logo" />
@@ -142,7 +149,6 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Seção inferior de Saldo e Botões Rápidos */}
             <div className="mt-5 pt-4 border-t border-white/[0.04] flex items-center justify-between">
               <div>
                 <p className="text-[9px] text-gray-500 uppercase tracking-widest font-black mb-0.5">Saldo Disponível</p>
@@ -152,28 +158,17 @@ export default function Profile() {
               <div className="flex items-center gap-3">
                 {user?.role !== "SUB_AGENT" && (
                   <>
-                    <button
-                      onClick={() => navigate("/deposit")}
-                      className="flex flex-col items-center gap-1 group"
-                    >
+                    <button onClick={() => navigate("/deposit")} className="flex flex-col items-center gap-1 group">
                       <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/[0.03] border border-white/[0.05] text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">
                         <Wallet size={18} weight="bold" />
                       </div>
-                      <span className="text-[8px] font-black uppercase text-gray-500 tracking-wide">
-                        Depósito
-                      </span>
+                      <span className="text-[8px] font-black uppercase text-gray-500 tracking-wide">Depósito</span>
                     </button>
-
-                    <button
-                      onClick={() => navigate("/withdraw")}
-                      className="flex flex-col items-center gap-1 group"
-                    >
+                    <button onClick={() => navigate("/withdraw")} className="flex flex-col items-center gap-1 group">
                       <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/[0.03] border border-white/[0.05] text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all">
                         <ArrowDown size={18} weight="bold" />
                       </div>
-                      <span className="text-[8px] font-black uppercase text-gray-500 tracking-wide">
-                        Saque
-                      </span>
+                      <span className="text-[8px] font-black uppercase text-gray-500 tracking-wide">Saque</span>
                     </button>
                   </>
                 )}
@@ -182,7 +177,6 @@ export default function Profile() {
           </div>
         )}
 
-        {/* 2. TERMINAL DE OPERAÇÕES */}
         <div>
           <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 ml-2 font-mono">
             Terminal de Operações
@@ -209,22 +203,16 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* 3. BOTÃO SAIR DA CONTA */}
         {!isLoading && (
           <button
-            onClick={() => { 
-              localStorage.clear()
-              navigate('/login')
-            }}
+            onClick={() => { localStorage.clear(); navigate('/login') }}
             className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-400 mt-6 transition-colors self-center bg-white/[0.02] border border-white/[0.05] px-5 py-2.5 rounded-xl shadow-sm"
           >
             <SignOut size={16} weight="bold" /> Sair da conta
           </button>
         )}
-
       </div>
 
-      {/* 4. DRAWER DE AGENTE */}
       <AgentDrawer open={agentMenuOpen} onClose={() => setAgentMenuOpen(false)}>
         <AgentSidebar />
       </AgentDrawer>

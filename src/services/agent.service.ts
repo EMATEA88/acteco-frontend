@@ -4,6 +4,17 @@ import { api } from "./api";
    TYPES
 ===================================================== */
 
+export interface PremiumStats {
+  overview: {
+    totalVolume: number;
+    totalCommission: number;
+    activeAgentsCount: number;
+  };
+  timeline: any[];
+  teamPerformance: any[];
+}
+
+
 export interface AgentDashboard {
   profile: {
     currentBalance: number;
@@ -159,6 +170,7 @@ export interface CommissionSummary {
   };
 
 }
+
 
 /* =====================================================
    SERVICE
@@ -419,6 +431,16 @@ export const AgentService = {
 
     return data;
 
-  }
+  },
 
-};
+  async getPremiumStatistics() {
+
+  const { data } =
+    await api.get(
+      "/api/agent/statistics/premium"
+    )
+
+  return data
+
+}
+}
