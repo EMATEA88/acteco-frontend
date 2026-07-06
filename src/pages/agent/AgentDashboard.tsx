@@ -1,81 +1,111 @@
 import { useEffect, useState } from "react";
-import { Wallet, BadgeDollarSign, Users, BarChart3 } from "lucide-react";
+import { Wallet, BadgeDollarSign, Users, BarChart3, } from "lucide-react";
 import { AgentService } from "../../services/agent.service";
 
+interface DashboardData {
+  currentBalance: number;
+  commissionBalance: number;
+  totalSales: number;
+  totalSubAgents: number;
+  activeSubAgents: number;
+  inactiveSubAgents: number;
+  totalTransactions: number;
+  totalCommission: number;
+  totalTeamBalance: number;
+}
+
 export default function AgentDashboard() {
-  const [loading, setLoading] = useState(true);
-  const [dashboard, setDashboard] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [data, setData] = useState<DashboardData | null>(null);
 
   useEffect(() => {
-    loadDashboard();
+    // Corrigido: tipagem explícita na resposta da API
+    AgentService.dashboard()
+      .then((res: any) => setData(res as DashboardData))
+      .catch((err: Error) => console.error("Erro ao carregar dashboard:", err))
+      .finally(() => setLoading(false));
   }, []);
 
-  async function loadDashboard() {
-    try {
-      setLoading(true);
-      const data = await AgentService.dashboard();
-      setDashboard(data);
-    } catch (error) {
-      console.error("Erro ao carregar dashboard:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const formatKz = (value: any) => 
-    Number(value || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 }) + " Kz";
-
-  if (loading) return <div className="text-center py-20 text-gray-400">Carregando painel...</div>;
+  const formatCurrency = (val: number) => 
+    new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(val || 0);
 
   return (
-    <div className="space-y-8 p-6 text-gray-200">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <Card title="Saldo" value={formatKz(dashboard?.currentBalance)} icon={<Wallet size={24} />} />
-        <Card title="Comissão" value={formatKz(dashboard?.commissionBalance)} icon={<BadgeDollarSign size={24} />} />
-        <Card title="Total Vendido" value={formatKz(dashboard?.totalSales)} icon={<BarChart3 size={24} />} />
-        <Card title="Sub-agentes" value={dashboard?.totalSubAgents || 0} icon={<Users size={24} />} />
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => <StatSkeleton key={i} />)
+        ) : (
+          <>
+            <StatCard title="Saldo Disponível" value={formatCurrency(data?.currentBalance || 0)} icon={<Wallet size={20} />} color="text-emerald-400" />
+            <StatCard title="Comissões" value={formatCurrency(data?.commissionBalance || 0)} icon={<BadgeDollarSign size={20} />} color="text-cyan-400" />
+            <StatCard title="Vendas Totais" value={formatCurrency(data?.totalSales || 0)} icon={<BarChart3 size={20} />} color="text-blue-400" />
+            <StatCard title="Sub-Agentes" value={data?.totalSubAgents || 0} icon={<Users size={20} />} color="text-purple-400" />
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-[#1a1c1f] rounded-xl border border-gray-800 p-6">
-          <h2 className="font-semibold text-lg mb-5 text-white">Resumo da Rede</h2>
-          <div className="space-y-4">
-            <Item label="Sub-agentes Ativos" value={dashboard?.activeSubAgents || 0} />
-            <Item label="Sub-agentes Inativos" value={dashboard?.inactiveSubAgents || 0} />
-            <Item label="Total de Transações" value={dashboard?.totalTransactions || 0} />
-          </div>
-        </div>
-        <div className="bg-[#1a1c1f] rounded-xl border border-gray-800 p-6">
-          <h2 className="font-semibold text-lg mb-5 text-white">Financeiro</h2>
-          <div className="space-y-4">
-            <Item label="Comissão Total Acumulada" value={formatKz(dashboard?.totalCommission)} />
-            <Item label="Saldo Total da Equipa" value={formatKz(dashboard?.totalTeamBalance)} />
-          </div>
-        </div>
+        {loading ? (
+          <>
+            <SectionSkeleton title="Resumo da Rede" />
+            <SectionSkeleton title="Financeiro" />
+          </>
+        ) : (
+          <>
+            <section className="bg-[#161A1E] rounded-3xl border border-white/[0.05] p-6 shadow-sm">
+              <h2 className="text-sm font-black uppercase tracking-widest text-gray-500 mb-6">Resumo da Rede</h2>
+              <div className="space-y-4">
+                <Row label="Ativos" value={data?.activeSubAgents || 0} />
+                <Row label="Inativos" value={data?.inactiveSubAgents || 0} />
+                <Row label="Total Transações" value={data?.totalTransactions || 0} />
+              </div>
+            </section>
+            <section className="bg-[#161A1E] rounded-3xl border border-white/[0.05] p-6 shadow-sm">
+              <h2 className="text-sm font-black uppercase tracking-widest text-gray-500 mb-6">Financeiro</h2>
+              <div className="space-y-4">
+                <Row label="Comissão Acumulada" value={formatCurrency(data?.totalCommission || 0)} />
+                <Row label="Saldo da Equipa" value={formatCurrency(data?.totalTeamBalance || 0)} />
+              </div>
+            </section>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
-function Card({ title, value, icon }: any) {
+function StatSkeleton() {
+  return <div className="bg-[#161A1E] p-6 rounded-3xl border border-white/[0.05] animate-pulse h-32" />;
+}
+
+function SectionSkeleton({ title }: { title: string }) {
   return (
-    <div className="bg-[#1a1c1f] rounded-xl border border-gray-800 p-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <p className="text-xs uppercase text-gray-500 font-semibold">{title}</p>
-          <h2 className="text-2xl font-bold mt-1 text-white">{value}</h2>
-        </div>
-        <div className="text-cyan-500/80">{icon}</div>
+    <div className="bg-[#161A1E] rounded-3xl border border-white/[0.05] p-6 animate-pulse">
+      {/* Corrigido: título agora é exibido */}
+      <div className="text-sm font-black uppercase tracking-widest text-gray-700 mb-6">{title}</div>
+      <div className="space-y-4">
+        <div className="h-4 bg-white/5 rounded w-full" />
+        <div className="h-4 bg-white/5 rounded w-full" />
       </div>
     </div>
   );
 }
 
-function Item({ label, value }: any) {
+function StatCard({ title, value, icon, color }: { title: string; value: string | number; icon: React.ReactNode; color: string }) {
   return (
-    <div className="flex justify-between border-b border-gray-800/50 pb-3">
+    <div className="bg-[#161A1E] p-6 rounded-3xl border border-white/[0.05]">
+      <div className={`mb-3 ${color}`}>{icon}</div>
+      <p className="text-[10px] uppercase tracking-widest font-black text-gray-500">{title}</p>
+      <h2 className="text-xl font-bold text-white mt-1">{value}</h2>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="flex justify-between items-center py-2 border-b border-white/[0.03]">
       <span className="text-sm text-gray-400">{label}</span>
-      <strong className="text-white font-medium">{value}</strong>
+      <span className="text-sm font-bold text-white">{value}</span>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './routes/ProtectedRoute'
-import AgentRoute from './routes/AgentRoute' // Certifique-se de que o caminho do import está correto
+import AgentRoute from './routes/AgentRoute'
 
 /* ===== PUBLIC ===== */
 import Login from './pages/Login'
@@ -39,8 +39,9 @@ import Security from './pages/Security'
 import Password from './pages/Password'
 import KYCPage from './pages/user/KYCPage'
 import Settings from './pages/Settings'
-import AgentLayout from "./pages/agent/AgentLayout";
 
+/* ===== AGENT ===== */
+import AgentLayout from "./pages/agent/AgentLayout";
 import AgentDashboard from "./pages/agent/AgentDashboard";
 import AgentSubAgents from "./pages/agent/AgentSubAgents";
 import CreateSubAgent from "./pages/agent/CreateSubAgent";
@@ -69,7 +70,7 @@ import { Toaster } from 'react-hot-toast'
 /* ===== LAYOUT ===== */
 import AppLayout from './layouts/AppLayout'
 
-/* ===== AGENT PAGES ===== */
+/* ===== AGENT STATUS ===== */
 import AgentPending from "./pages/agent/AgentPending"
 import AgentRejected from "./pages/agent/AgentRejected"
 import AgentSuspended from "./pages/agent/AgentSuspended"
@@ -94,8 +95,8 @@ function App() {
       <Routes>
 
         {/* ================= PUBLIC ================= */}
+
         <Route path="/login" element={<Login />} />
-        
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
@@ -103,7 +104,8 @@ function App() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/about" element={<About />} />
 
-        {/* ================= AGENT STATUS (FORA DO APPLAYOUT) ================= */}
+        {/* ================= AGENT STATUS ================= */}
+
         <Route
           path="/agent/pending"
           element={
@@ -131,7 +133,8 @@ function App() {
           }
         />
 
-        {/* ================= PRIVATE (DENTRO DO APPLAYOUT) ================= */}
+        {/* ================= CLIENT ================= */}
+
         <Route
           element={
             <ProtectedRoute>
@@ -139,6 +142,7 @@ function App() {
             </ProtectedRoute>
           }
         >
+
           <Route
             path="/"
             element={<Navigate to="/home" replace />}
@@ -160,53 +164,6 @@ function App() {
           <Route path="password" element={<Password />} />
           <Route path="kyc" element={<KYCPage />} />
           <Route path="settings" element={<Settings />} />
-          <Route path="/agent" element={<AgentLayout />}>
-
-  <Route
-    index
-    element={<AgentDashboard />}
-  />
-
-  <Route
-    path="dashboard"
-    element={<AgentDashboard />}
-  />
-
-  <Route
-    path="sub-agents"
-    element={<AgentSubAgents />}
-  />
-
-  <Route
-    path="sub-agents/new"
-    element={<CreateSubAgent />}
-  />
-
-  <Route
-    path="sub-agents/:id"
-    element={<SubAgentDetails />}
-  />
-
-  <Route
-    path="sub-agents/:id/edit"
-    element={<EditSubAgent />}
-  />
-
-  <Route
-    path="commissions"
-    element={<AgentCommissions />}
-  />
-
-  <Route
-    path="statistics"
-    element={<AgentStatistics />}/>
-
-  <Route
-    path="history"
-    element={<AgentHistory />}
-  />
-
-</Route>
 
           {/* SERVICES */}
           <Route path="services" element={<Services />} />
@@ -219,34 +176,39 @@ function App() {
 
           {/* FINANCIAL */}
           <Route path="deposit" element={<Deposit />} />
+
           <Route
             path="deposit/banks/:rechargeId"
             element={<DepositBanks />}
           />
+
           <Route
             path="recharge-history"
             element={<RechargeHistory />}
           />
+
           <Route path="withdraw" element={<Withdraw />} />
+
           <Route
             path="withdraw-history"
             element={<WithdrawHistory />}
           />
 
           {/* RECHARGES */}
+
           <Route
             path="recharges"
             element={<RechargeServices />}
           />
-           
+
           <Route
-             path="recharges/:serviceId"
-             element={<RechargeCategories />}
+            path="recharges/:serviceId"
+            element={<RechargeCategories />}
           />
 
           <Route
-             path="recharges/:serviceId/categories/:categoryId"
-             element={<RechargePlans />}
+            path="recharges/:serviceId/categories/:categoryId"
+            element={<RechargePlans />}
           />
 
           <Route
@@ -255,10 +217,11 @@ function App() {
           />
 
           {/* PAYMENTS */}
+
           <Route
             path="payments"
             element={<Payments />}
-         />
+          />
 
           <Route
             path="payments/:paymentId"
@@ -266,18 +229,21 @@ function App() {
           />
 
           {/* DASHBOARD */}
+
           <Route
             path="dashboard"
             element={<Dashboard />}
           />
 
           {/* MY RECHARGES */}
+
           <Route
             path="my-recharges"
             element={<MyRecharges />}
-           />
+          />
 
           {/* NOTIFICATIONS */}
+
           <Route
             path="notifications"
             element={<Notifications />}
@@ -285,7 +251,66 @@ function App() {
 
         </Route>
 
+        {/* ================= AGENT ================= */}
+
+        <Route
+          path="/agent"
+          element={
+            <ProtectedRoute>
+              <AgentLayout />
+            </ProtectedRoute>
+          }
+        >
+
+          <Route
+            index
+            element={<Navigate to="dashboard" replace />}
+          />
+
+          <Route
+            path="dashboard"
+            element={<AgentDashboard />}
+          />
+
+          <Route
+            path="sub-agents"
+            element={<AgentSubAgents />}
+          />
+
+          <Route
+            path="sub-agents/new"
+            element={<CreateSubAgent />}
+          />
+
+          <Route
+            path="sub-agents/:id"
+            element={<SubAgentDetails />}
+          />
+
+          <Route
+            path="sub-agents/:id/edit"
+            element={<EditSubAgent />}
+          />
+
+          <Route
+            path="commissions"
+            element={<AgentCommissions />}
+          />
+
+          <Route
+            path="statistics"
+            element={<AgentStatistics />}
+          />
+
+          <Route
+            path="history"
+            element={<AgentHistory />}
+          />
+
+        </Route>
+
         {/* FALLBACK */}
+
         <Route
           path="*"
           element={<Navigate to="/home" replace />}

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { UserService } from '../services/user.service'
@@ -48,8 +48,14 @@ const ROLE_BADGES = {
 
 export default function Profile() {
   const navigate = useNavigate()
+  const location = useLocation();
   const [kyc, setKyc] = useState<KYCState | null>(null)
   const [agentMenuOpen, setAgentMenuOpen] = useState(false);
+
+  // Efeito para fechar o menu ao mudar de rota
+  useEffect(() => {
+    setAgentMenuOpen(false);
+  }, [location.pathname]);
 
   const { data: user, isLoading } = useQuery<User>({
     queryKey: ['me'],
@@ -102,7 +108,6 @@ export default function Profile() {
         ) : (
           <div className="bg-[#161A1E] py-5 px-6 rounded-[2rem] relative border border-white/[0.04] shadow-2xl">
             
-            {/* CONTAINER SUPERIOR DIREITO REFORMULADO */}
             <div className="absolute top-5 right-5 flex flex-col items-end gap-2.5">
               <div className="flex items-center gap-2">
                 {(user?.role === "USER" || user?.role === "SUB_AGENT") ? (
@@ -216,7 +221,9 @@ export default function Profile() {
       </div>
 
       <AgentDrawer open={agentMenuOpen} onClose={() => setAgentMenuOpen(false)}>
-        <AgentSidebar />
+        <AgentSidebar
+    onClose={() => setAgentMenuOpen(false)}
+/>
       </AgentDrawer>
     </div>
   )
