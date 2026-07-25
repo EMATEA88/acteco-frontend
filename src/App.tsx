@@ -21,14 +21,8 @@ import DepositBanks from './pages/DepositBanks'
 import RechargeHistory from './pages/RechargeHistory'
 import Withdraw from './pages/Withdraw'
 import WithdrawHistory from './pages/WithdrawHistory'
-import RechargeServices from "./pages/recharges/RechargeServices";
-import RechargeCategories from "./pages/recharges/RechargeCategories";
-import RechargePlans from "./pages/recharges/RechargePlans";
-import RechargeCheckout from "./pages/recharges/RechargeCheckout";
-import Payments from "./pages/payments/Payments";
-import PaymentCheckout from "./pages/payments/PaymentCheckout";
+import RecargasList from "./components/RecargasList";
 import Dashboard from "./pages/dashboard/Dashboard";
-import MyRecharges from "./pages/recharges/MyRecharges";
 
 /* ===== PROFILE ===== */
 import Bank from './pages/Bank'
@@ -196,50 +190,14 @@ function App() {
 
           {/* RECHARGES */}
 
-          <Route
-            path="recharges"
-            element={<RechargeServices />}
-          />
-
-          <Route
-            path="recharges/:serviceId"
-            element={<RechargeCategories />}
-          />
-
-          <Route
-            path="recharges/:serviceId/categories/:categoryId"
-            element={<RechargePlans />}
-          />
-
-          <Route
-            path="recharges/:serviceId/categories/:categoryId/plans/:planId"
-            element={<RechargeCheckout />}
-          />
-
-          {/* PAYMENTS */}
-
-          <Route
-            path="payments"
-            element={<Payments />}
-          />
-
-          <Route
-            path="payments/:paymentId"
-            element={<PaymentCheckout />}
-          />
+<Route path="services" element={<RecargasList />} />
+<Route path="recharges" element={<RecargasList />} />
 
           {/* DASHBOARD */}
 
           <Route
             path="dashboard"
             element={<Dashboard />}
-          />
-
-          {/* MY RECHARGES */}
-
-          <Route
-            path="my-recharges"
-            element={<MyRecharges />}
           />
 
           {/* NOTIFICATIONS */}

@@ -28,6 +28,7 @@ const api = axios.create({
 ========================= */
 
 api.interceptors.request.use(config => {
+  // Ajuste a chave do token caso no seu login use outra nomenclatura (ex: '@EMATEA:token')
   const token = localStorage.getItem('token')
 
   if (token) {
@@ -45,26 +46,19 @@ api.interceptors.request.use(config => {
 ========================= */
 
 api.interceptors.response.use(
-
   response => response,
-
   error => {
-
-    if (error.response?.status === 401) {
-
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem("token")
       localStorage.removeItem("user")
 
       delete api.defaults.headers.common.Authorization
 
       window.location.href = "/login"
-
     }
 
     return Promise.reject(error)
-
   }
-
 )
 
 /* =========================
@@ -118,7 +112,6 @@ export const loginUser = async (
   identifier: string,
   password: string
 ) => {
-
   const { data } = await api.post(
     "/auth/login",
     {
@@ -127,11 +120,15 @@ export const loginUser = async (
     }
   )
 
+  // Salva o token no localStorage no momento do login
+  if (data.token) {
+    localStorage.setItem("token", data.token)
+  }
+
   return {
     token: data.token,
     user: data.user
   }
-
 }
 
 /* =========================
@@ -139,14 +136,12 @@ export const loginUser = async (
 ========================= */
 
 export const logoutUser = () => {
-
   localStorage.removeItem("token")
   localStorage.removeItem("user")
 
   delete api.defaults.headers.common.Authorization
 
   window.location.href = "/login"
-
 }
 
 /* =========================

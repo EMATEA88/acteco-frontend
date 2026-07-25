@@ -1,80 +1,153 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ServiceService } from '../../services/service.service'
-import { toast } from 'sonner'
-import { ArrowRight } from 'lucide-react'
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import {
+  Smartphone,
+  Tv,
+  Lightbulb,
+  Globe,
+  Gamepad2,
+  ChevronRight,
+} from "lucide-react";
+
+import serviceService from "../../services/service.service";
+
+type ServiceCategory = {
+  id: string;
+  name: string;
+};
 
 export default function Services() {
 
-  const [partners, setPartners] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    load()
-  }, [])
+    load();
+  }, []);
 
   async function load() {
     try {
-      const data = await ServiceService.listServices()
-      setPartners(data)
+
+      const data =
+        await serviceService.listCategories();
+
+      setCategories(data);
+
     } catch {
-      toast.error('Erro ao carregar serviços')
+
+      toast.error("Erro ao carregar categorias.");
+
     } finally {
-      setLoading(false)
+
+      setLoading(false);
+
     }
   }
 
-  if (loading)
-    return (
-      <div className="p-6 text-gray-400">
-        Carregando...
-      </div>
-    )
+  function getIcon(id: string) {
+
+    switch (id) {
+
+      case "TELECOM":
+        return Smartphone;
+
+      case "TV":
+        return Tv;
+
+      case "ENERGY":
+      case "WATER":
+        return Lightbulb;
+
+      case "BETTING":
+        return Gamepad2;
+
+      default:
+        return Globe;
+
+    }
+
+  }
 
   return (
-    <div className="p-6 space-y-6 animate-fadeZoom">
 
-      <h1 className="text-2xl font-semibold text-white">
-        Serviços
-      </h1>
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] pb-28">
 
-      <div className="grid grid-cols-2 gap-5">
-        {partners.map((p) => (
-          <div
-            key={p.id}
-            onClick={() => navigate(`/services/${p.id}`)}
-            className="
-              group
-              bg-white/5 border border-white/10
-              rounded-2xl p-6
-              cursor-pointer
-              transition-all duration-300
-              hover:scale-[1.04]
-              hover:bg-white/10
-              hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]
-            "
-          >
-            <div className="flex justify-between items-center">
+      <div className="px-6 pt-8 pb-5 border-b border-white/5">
 
-              <div className="text-lg font-semibold text-white">
-                {p.name}
-              </div>
+        <h1 className="text-xl font-bold">
+          Serviços
+        </h1>
 
-              <ArrowRight
-                size={18}
-                className="text-emerald-400 opacity-0 group-hover:opacity-100 transition"
-              />
-            </div>
+        <p className="text-sm text-gray-400">
+          Escolha uma categoria
+        </p>
 
-            <p className="text-xs text-gray-400 mt-2">
-              Ver planos disponíveis
-            </p>
+      </div>
 
+      <div className="p-6 space-y-4">
+
+        {loading ? (
+
+          <div className="text-center">
+            Carregando...
           </div>
-        ))}
+
+        ) : (
+
+          categories.map(category => {
+
+            const Icon =
+              getIcon(category.id);
+
+            return (
+
+              <button
+                key={category.id}
+                onClick={() =>
+                  navigate(
+                    `/recharges/categories/${category.id}/operators`
+                  )
+                }
+                className="w-full bg-[#161A1E] rounded-2xl p-5 flex items-center justify-between hover:bg-[#1D232A] transition"
+              >
+
+                <div className="flex items-center gap-4">
+
+                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+
+                    <Icon
+                      size={22}
+                      className="text-emerald-400"
+                    />
+
+                  </div>
+
+                  <span className="font-semibold">
+                    {category.name}
+                  </span>
+
+                </div>
+
+                <ChevronRight
+                  size={18}
+                  className="text-gray-500"
+                />
+
+              </button>
+
+            );
+
+          })
+
+        )}
+
       </div>
 
     </div>
-  )
+
+  );
+
 }

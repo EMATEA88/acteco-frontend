@@ -1,122 +1,141 @@
-import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { api } from '../../services/api'
-import { toast } from 'sonner'
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  ArrowLeft,
+  ChevronRight,
+  Zap,
+} from "lucide-react";
+import toast from "react-hot-toast";
 
-interface Plan {
-  id: number
-  name: string
-  price: number
-}
+import serviceService from "../../services/service.service";
+import type { ServicePlan } from "../../services/service.service";
 
 export default function ServiceDetail() {
 
-  const { id } = useParams()
-  const [plans, setPlans] = useState<Plan[]>([])
-  const [loading, setLoading] = useState(true)
-  const [processingId, setProcessingId] =
-    useState<number | null>(null)
+  const navigate = useNavigate();
+
+  const { serviceId } = useParams();
+
+  const [plans, setPlans] =
+    useState<ServicePlan[]>([]);
+
+  const [loading, setLoading] =
+    useState(true);
 
   useEffect(() => {
-    if (id) loadPlans(Number(id))
-  }, [id])
 
-  async function loadPlans(partnerId: number) {
+    if (serviceId) {
+      loadPlans(Number(serviceId));
+    }
+
+  }, [serviceId]);
+
+  async function loadPlans(id: number) {
+
     try {
-      const { data } =
-        await api.get(
-          `/services/partners/${partnerId}/plans`
-        )
-      setPlans(data)
+
+      const data =
+        await serviceService.listPlans(id);
+
+      setPlans(data);
+
     } catch {
-      toast.error('Erro ao carregar planos')
-    } finally {
-      setLoading(false)
-    }
-  }
 
-  async function handlePurchase(planId: number) {
-    try {
-      setProcessingId(planId)
-
-      await api.post('/services/pay', {
-        planId
-      })
-
-      toast.success('Compra realizada com sucesso')
-
-    } catch (error: any) {
       toast.error(
-        error?.response?.data?.error ||
-        'Erro ao processar pagamento'
-      )
-    } finally {
-      setProcessingId(null)
-    }
-  }
+        "Erro ao carregar planos."
+      );
 
-  if (loading) {
-    return (
-      <div className="p-6 text-gray-400">
-        Carregando planos...
-      </div>
-    )
+    } finally {
+
+      setLoading(false);
+
+    }
+
   }
 
   return (
-    <div className="p-6 space-y-6 animate-fadeZoom">
 
-      <h1 className="text-2xl font-semibold text-white">
-        Planos Disponíveis
-      </h1>
+    <div className="min-h-screen bg-[#0B0E11] text-white">
 
-      <div className="space-y-5">
-        {plans.map((plan) => (
-          <div
-            key={plan.id}
-            className="
-              bg-white/5 border border-white/10
-              rounded-2xl p-5
-              flex justify-between items-center
-              transition-all duration-300
-              hover:bg-white/10
-              hover:scale-[1.02]
-            "
-          >
-            <div>
-              <div className="font-semibold text-white">
-                {plan.name}
-              </div>
+      <div className="px-6 py-5 flex items-center gap-4 border-b border-white/5">
 
-              <div className="text-sm text-emerald-400 mt-1">
-                {plan.price.toLocaleString()} Kz
-              </div>
-            </div>
+        <button
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeft />
+        </button>
+
+        <h1 className="text-xl font-bold">
+          Planos
+        </h1>
+
+      </div>
+
+      <div className="p-6 space-y-4">
+
+        {loading ? (
+
+          <div className="text-center">
+            Carregando...
+          </div>
+
+        ) : (
+
+          plans.map(plan => (
 
             <button
-              disabled={processingId === plan.id}
+              key={plan.id}
               onClick={() =>
-                handlePurchase(plan.id)
+                navigate(
+                  `/recharges/plans/${plan.id}`
+                )
               }
-              className={`
-                px-5 py-2 rounded-xl font-medium
-                transition-all duration-200
-                ${
-                  processingId === plan.id
-                    ? 'bg-gray-500'
-                    : 'bg-emerald-600 hover:bg-emerald-700 hover:scale-105'
-                }
-                text-white
-              `}
+              className="w-full bg-[#161A1E] rounded-2xl p-5 flex justify-between items-center hover:bg-[#1D232A] transition"
             >
-              {processingId === plan.id
-                ? 'Processando...'
-                : 'Comprar'}
+
+              <div className="flex items-center gap-4">
+
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+
+                  <Zap
+                    className="text-emerald-400"
+                    size={20}
+                  />
+
+                </div>
+
+                <div className="text-left">
+
+                  <div className="font-semibold">
+                    {plan.name}
+                  </div>
+
+                  <div className="text-emerald-400 font-bold">
+
+                    {Number(plan.price).toLocaleString()}
+                    {" "}
+                    Kz
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              <ChevronRight
+                className="text-gray-500"
+              />
+
             </button>
 
-          </div>
-        ))}
+          ))
+
+        )}
+
       </div>
+
     </div>
-  )
+
+  );
+
 }

@@ -2,17 +2,14 @@ import { NavLink } from "react-router-dom"
 import {
   House,
   User,
-  Lightning,      // Ícone para Recargas Rápidas
-  CreditCard,     // Ícone para Faturas/Pagamentos
-  Receipt,        // Ícone para Transações
-  ChartPieSlice,  // Ícone para o Dashboard
+  Lightning,       // Ícone para Recargas Rápidas
+  Receipt,         // Ícone para Transações
+  ChartPieSlice,   // Ícone para o Dashboard
 } from "@phosphor-icons/react"
 
-// Ordem corrigida: Recargas colocada na terceira posição
 const links = [
   { to: "/home", label: "Home", icon: House },
-  { to: "/payments", label: "Pagamentos", icon: CreditCard },
-  { to: "/recharges", label: "Recargas", icon: Lightning }, // Fica no meio/terceiro card
+  { to: "/recharges", label: "Recargas", icon: Lightning }, // Ajustado para /recharges
   { to: "/transactions", label: "Transações", icon: Receipt },
   { to: "/dashboard", label: "Dashboard", icon: ChartPieSlice },
   { to: "/profile", label: "Perfil", icon: User },
