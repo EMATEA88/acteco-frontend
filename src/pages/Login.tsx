@@ -8,79 +8,77 @@ import {
   ArrowRight, 
   MapPin, 
   Phone, 
-  Mail 
+  Mail,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import toast from "react-hot-toast";
-// IMPORTANTE: Ajuste o caminho abaixo para onde está a sua função/serviço de login real
 import { loginUser } from "../services/api"; 
-// 1. ALTERAÇÃO ADICIONADA: Import do hook useAuth
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Landing() {
   const navigate = useNavigate();
-  // 2. ALTERAÇÃO ADICIONADA: Extração do login do contexto de autenticação
   const { login } = useAuth();
   
-  // Estados para capturar os dados do formulário
+  // Estados de entrada e controlo de UI
   const [identity, setIdentity] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Função que processa o login real com a API
   async function handleLogin(e: FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!identity || !password) {
-      return toast.error("Preencha todos os campos.")
+      return toast.error("Preencha todos os campos.");
     }
 
     try {
-      setLoading(true)
+      setLoading(true);
 
-      const response = await loginUser(identity, password)
+      const response = await loginUser(identity, password);
 
-      login(response.token, response.user)
+      login(response.token, response.user);
 
-      // SUBSTITUIÇÃO DO BLOCO DE REDIRECIONAMENTO E TOAST ANTERIOR
-      toast.success("Acesso autorizado.")
+      toast.success("Acesso autorizado.");
 
       if (response.user.role === "AGENT") {
         switch (response.user.agent?.status) {
           case "PENDING":
-            navigate("/agent/pending", { replace: true })
-            return
+            navigate("/agent/pending", { replace: true });
+            return;
 
           case "REJECTED":
-            navigate("/agent/rejected", { replace: true })
-            return
+            navigate("/agent/rejected", { replace: true });
+            return;
 
           case "SUSPENDED":
-            navigate("/agent/suspended", { replace: true })
-            return
+            navigate("/agent/suspended", { replace: true });
+            return;
         }
       }
 
-      // Fallback para administradores, sub-agentes ou utilizadores normais validados
       if (response.user.role === "ADMIN") {
-        navigate("/admin", { replace: true })
-        return
+        navigate("/admin", { replace: true });
+        return;
       }
 
       if (response.user.role === "SUB_AGENT") {
-        navigate("/sub-agent", { replace: true })
-        return
+        navigate("/sub-agent", { replace: true });
+        return;
       }
 
-      navigate("/home", { replace: true })
+      navigate("/home", { replace: true });
 
     } catch (error: any) {
-      console.error(error)
+      console.error(error);
       toast.error(
         error?.response?.data?.message ??
         "Credenciais inválidas."
-      )
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -168,19 +166,31 @@ export default function Landing() {
 
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase tracking-widest font-mono text-gray-400 font-bold">Palavra-passe</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full p-3.5 rounded-xl bg-[#0b1220] border border-white/[0.05] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm transition-all duration-200 placeholder:text-gray-600 focus:outline-none"
-              />
+              
+              {/* CAMPO DE SENHA COM VISUALIZADOR EMBUTIDO */}
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full p-3.5 pr-11 rounded-xl bg-[#0b1220] border border-white/[0.05] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm transition-all duration-200 placeholder:text-gray-600 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Ocultar palavra-passe" : "Mostrar palavra-passe"}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white p-3.5 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 mt-2 shadow-lg shadow-blue-600/10 hover:shadow-blue-600/20"
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white p-3.5 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 mt-2 shadow-lg shadow-blue-600/10 hover:shadow-blue-600/20 active:scale-[0.98]"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />

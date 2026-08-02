@@ -1,52 +1,63 @@
-export interface Category {
+export interface CategoryBranding {
   id: string;
   name: string;
-  icon: string;
-  description: string;
-  prefixes: string[]; // Códigos exatos ou partes únicas do Provider_Code / Type
+  logo: string;
 }
 
-export const CATEGORIES: Category[] = [
-  {
-    id: 'telecom',
-    name: 'Telecomunicações',
-    icon: '📱',
-    description: 'Recargas de voz, SMS e dados',
-    prefixes: ['UTL_', 'MOV_', 'AFR_', 'TEL_', 'NET_', 'UNITEL', 'MOVICEL', 'AFRICELL', 'NETONE']
+export const CATEGORIES: Record<string, CategoryBranding> = {
+
+  TELECOMUNICAÇÕES: {
+    id: "telecommunications",
+    name: "Telecomunicações",
+    logo: "TELECOMUNICACOES.PNG"
   },
-  {
-    id: 'tv',
-    name: 'Televisão',
-    icon: '📺',
-    description: 'Assinaturas e recargas de TV',
-    prefixes: ['DSTV', 'ZAP_', 'TV_', 'ZAD_']
+
+  TELECOMUNICACOES: {
+    id: "telecommunications",
+    name: "Telecomunicações",
+    logo: "TELECOMUNICACOES.PNG"
   },
-  {
-    id: 'games',
-    name: 'Jogos & Apostas',
-    icon: '🎮',
-    description: 'Carregamento de contas de jogo e plataformas',
-    prefixes: ['888', 'KWZ', 'ELEPHANT', 'BANTU', 'MOB', 'BET', 'ABET', 'EBET', 'MGM', 'MGMBET', 'NINTENDO', 'PLAYSTATION', 'STEAM', 'XBOX']
+
+  TELEVISÃO: {
+    id: "tv",
+    name: "Televisão",
+    logo: "TV.PNG"
   },
-  {
-    id: 'partners',
-    name: 'Parceiros',
-    icon: '🤝',
-    description: 'Serviços de Seguros e outros parceiros',
-    prefixes: ['STA_', 'SEG_', 'PART_', 'STAS']
+
+  TELEVISAO: {
+    id: "tv",
+    name: "Televisão",
+    logo: "TV.PNG"
   },
-  {
-    id: 'international',
-    name: 'Pagamentos Internacionais',
-    icon: '🌍',
-    description: 'Cartões-presente e serviços globais (Amazon, Google Play, etc.)',
-    prefixes: ['INT_VCH2', 'AMZ', 'GLG', 'APL']
+
+  "SERVIÇOS PÚBLICOS": {
+    id: "public",
+    name: "Serviços Públicos",
+    logo: "SERVICOSPUBLICOS.PNG"
   },
-  {
-    id: 'public',
-    name: 'Serviços Públicos',
-    icon: '🏛',
-    description: 'ENDE, EPAL, impostos e taxas',
-    prefixes: ['ENDE', 'EPAL', 'ELE_', 'AGU_', 'GOV_', 'TAX_']
+
+  "SERVICOS PUBLICOS": {
+    id: "public",
+    name: "Serviços Públicos",
+    logo: "SERVICOSPUBLICOS.PNG"
+  },
+
+  "SERVIÇOS INTERNACIONAIS": {
+    id: "international",
+    name: "Serviços Internacionais",
+    logo: "INTERNACIONAIS.PNG"
+  },
+
+  "SERVICOS INTERNACIONAIS": {
+    id: "international",
+    name: "Serviços Internacionais",
+    logo: "INTERNACIONAIS.PNG"
+  },
+
+  "JOGOS E APOSTAS": {
+    id: "games",
+    name: "Jogos e Apostas",
+    logo: "JOGOS.PNG"
   }
-];
+
+};

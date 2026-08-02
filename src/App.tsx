@@ -21,7 +21,6 @@ import DepositBanks from './pages/DepositBanks'
 import RechargeHistory from './pages/RechargeHistory'
 import Withdraw from './pages/Withdraw'
 import WithdrawHistory from './pages/WithdrawHistory'
-import RecargasList from "./components/RecargasList";
 import Dashboard from "./pages/dashboard/Dashboard";
 
 /* ===== PROFILE ===== */
@@ -33,6 +32,7 @@ import Security from './pages/Security'
 import Password from './pages/Password'
 import KYCPage from './pages/user/KYCPage'
 import Settings from './pages/Settings'
+import RecargasPage from "./pages/recharges/RecargasPage";
 
 /* ===== AGENT ===== */
 import AgentLayout from "./pages/agent/AgentLayout";
@@ -190,8 +190,11 @@ function App() {
 
           {/* RECHARGES */}
 
-<Route path="services" element={<RecargasList />} />
-<Route path="recharges" element={<RecargasList />} />
+          <Route
+            path="recharges"
+            element={<RecargasPage />}
+           />
+
 
           {/* DASHBOARD */}
 
