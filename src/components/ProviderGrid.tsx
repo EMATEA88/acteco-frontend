@@ -56,14 +56,15 @@ export default function ProviderGrid({ category, onBack, onSelect }: ProviderGri
                 onClick={() => onSelect(provider)}
                 className="flex flex-col items-center group cursor-pointer"
               >
-                {/* Círculo do Logótipo Maior e Preenchido */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#12161C] border border-[#2D333B] p-0.5 flex items-center justify-center shadow-lg group-hover:border-[#02C076] group-hover:scale-105 transition-all duration-200">
-                  <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#0B0E11] p-1">
+                {/* Círculo do Logótipo (Estilo Binance) */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#12161C] border border-[#2D333B] p-1 flex items-center justify-center shadow-lg group-hover:border-[#02C076] group-hover:scale-105 transition-all duration-200">
+                  <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#0B0E11] p-1.5">
                     {logo ? (
                       <img 
                         src={logo} 
                         alt={provider.name}
-                        className="w-full h-full object-contain rounded-full opacity-95 group-hover:opacity-100 transition-opacity scale-110"
+                        // CORREÇÃO AQUI: object-contain garante que o logo inteiro caiba no círculo
+                        className="w-full h-full object-contain rounded-full opacity-90 group-hover:opacity-100 transition-opacity"
                       />
                     ) : (
                       <span className="text-[10px] font-bold text-white uppercase text-center px-1">
