@@ -1,8 +1,5 @@
-import type {
-  CatalogCategory,
-  CatalogProvider
-} from "../types/catalog";
-
+import type { CatalogCategory, CatalogProvider } from "../types/catalog";
+import { ArrowLeft } from "lucide-react";
 import { getLogo } from "../utils/getLogo";
 import { providerBranding } from "../config/recharge-branding";
 
@@ -12,153 +9,80 @@ interface ProviderGridProps {
   onSelect: (provider: CatalogProvider) => void;
 }
 
-export default function ProviderGrid({
-  category,
-  onBack,
-  onSelect
-}: ProviderGridProps) {
-
+export default function ProviderGrid({ category, onBack, onSelect }: ProviderGridProps) {
   return (
-
-    <div className="max-w-6xl mx-auto px-4 pb-24">
-
-      <div className="flex items-center justify-between mb-8">
-
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] px-5 pt-4 pb-28 antialiased selection:bg-[#02C076]/20">
+      
+      {/* HEADER PROFISSIONAL E EQUILIBRADO */}
+      <div className="pt-2 pb-4 flex items-center justify-between border-b border-white/[0.05] sticky top-0 bg-[#0B0E11]/90 backdrop-blur-md z-40">
+        
+        {/* Botão Voltar Neutro / Estilo Binance */}
         <button
           onClick={onBack}
           className="
-            px-4
-            py-2
-            rounded-xl
-            bg-[#161b22]
-            border
-            border-[#30363d]
-            text-sm
-            text-emerald-400
-            hover:border-emerald-500
+            h-9 px-3.5 rounded-xl
+            bg-white/[0.03] border border-white/[0.08]
+            text-gray-300 text-xs font-semibold
+            flex items-center gap-2
+            hover:bg-white/[0.08] hover:text-white
+            transition-all duration-200
           "
         >
-          ← Voltar
+          <ArrowLeft size={16} className="text-gray-400" />
+          Voltar
         </button>
 
-        <div className="text-right">
-
-          <h1 className="text-2xl font-bold text-white">
-
+        {/* Título da Categoria Centralizado */}
+        <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none">
+          <h1 className="text-sm sm:text-base font-black tracking-wider text-white uppercase font-mono">
             {category.name}
-
           </h1>
-
-          <p className="text-gray-400 text-sm">
-
-            Escolha uma marca
-
-          </p>
-
         </div>
 
+        {/* Elemento vazio apenas para equilibrar o layout Flexbox */}
+        <div className="w-16"></div>
       </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6 gap-8 justify-items-center">
+      {/* GRELHA DE PROVEDORES */}
+      <div className="mt-8">
+        <div className="grid grid-cols-4 gap-3 sm:gap-4">
+          {category.providers && category.providers.map((provider) => {
+            const branding = providerBranding[provider.name.toUpperCase() as keyof typeof providerBranding];
+            const logo = getLogo(branding?.logo);
 
-        {category.providers.map(provider => {
-
-          const branding =
-            providerBranding[
-              provider.name.toUpperCase() as keyof typeof providerBranding
-            ];
-
-          const logo =
-            getLogo(branding?.logo);
-
-          return (
-
-            <button
-              key={provider.id}
-              onClick={() => onSelect(provider)}
-              className="
-                group
-                flex
-                flex-col
-                items-center
-                transition-all
-                hover:scale-105
-              "
-            >
-
-              <div
-                className="
-                  w-24
-                  h-24
-                  rounded-full
-                  overflow-hidden
-                  bg-[#12161C]
-                  border-2
-                  border-[#2D333B]
-                  group-hover:border-emerald-500
-                  shadow-lg
-                  flex
-                  items-center
-                  justify-center
-                "
+            return (
+              <div 
+                key={provider.id}
+                onClick={() => onSelect(provider)}
+                className="flex flex-col items-center group cursor-pointer"
               >
+                {/* Círculo do Logótipo Maior e Preenchido */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#12161C] border border-[#2D333B] p-0.5 flex items-center justify-center shadow-lg group-hover:border-[#02C076] group-hover:scale-105 transition-all duration-200">
+                  <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#0B0E11] p-1">
+                    {logo ? (
+                      <img 
+                        src={logo} 
+                        alt={provider.name}
+                        className="w-full h-full object-contain rounded-full opacity-95 group-hover:opacity-100 transition-opacity scale-110"
+                      />
+                    ) : (
+                      <span className="text-[10px] font-bold text-white uppercase text-center px-1">
+                        {provider.name}
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-                {logo ? (
-
-                  <img
-                    src={logo}
-                    alt={provider.name}
-                    className="
-                      w-full
-                      h-full
-                      object-cover
-                    "
-                  />
-
-                ) : (
-
-                  <span
-                    className="
-                      text-white
-                      text-xs
-                      font-semibold
-                      text-center
-                      px-2
-                    "
-                  >
-
-                    {provider.name}
-
-                  </span>
-
-                )}
-
+                {/* Nome do Provedor */}
+                <span className="text-[11px] sm:text-xs font-medium text-gray-300 mt-2 text-center tracking-wide group-hover:text-white transition-colors truncate w-full">
+                  {provider.name}
+                </span>
               </div>
-
-              <span
-                className="
-                  mt-3
-                  text-sm
-                  text-gray-300
-                  font-medium
-                  text-center
-                "
-              >
-
-                {provider.name}
-
-              </span>
-
-            </button>
-
-          );
-
-        })}
-
+            );
+          })}
+        </div>
       </div>
 
     </div>
-
   );
-
 }

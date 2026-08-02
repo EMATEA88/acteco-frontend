@@ -191,9 +191,14 @@ function App() {
           {/* RECHARGES */}
 
           <Route
-            path="recharges"
-            element={<RecargasPage />}
-           />
+    path="recharges"
+    element={<RecargasPage />}
+/>
+
+<Route
+    path="recharges/:providerCode"
+    element={<RecargasPage />}
+/>
 
 
           {/* DASHBOARD */}

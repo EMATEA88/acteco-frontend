@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 import type {
   CatalogCategory,
@@ -15,6 +16,8 @@ import PlanGrid from "./PlanGrid";
 import PurchaseModal from "./PurchaseModal";
 
 export default function CatalogLayout() {
+  const { providerCode } = useParams();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [catalog, setCatalog] = useState<CatalogCategory[]>([]);
@@ -26,6 +29,40 @@ export default function CatalogLayout() {
   useEffect(() => {
     loadCatalog();
   }, []);
+
+  useEffect(() => {
+    if (!providerCode || catalog.length === 0) {
+        return;
+    }
+
+    for (const category of catalog) {
+        const provider = category.providers.find(
+            p => p.code?.toLowerCase() === providerCode.toLowerCase()
+        );
+
+        if (!provider) {
+            continue;
+        }
+
+        setSelectedCategory(category);
+
+        const allPlans = provider.groups.flatMap(
+            group => group.plans
+        );
+
+        setSelectedProvider(provider);
+
+        setSelectedGroup({
+            id: provider.id,
+            name: provider.name,
+            slug: provider.code?.toLowerCase() || '',
+            providerCode: provider.code || '',
+            plans: allPlans
+        });
+
+        break;
+    }
+  }, [catalog, providerCode]);
 
   async function loadCatalog() {
     try {
@@ -49,13 +86,12 @@ export default function CatalogLayout() {
     setSelectedProvider(provider);
 
     if (provider.groups && provider.groups.length > 0) {
-      // Recolhe todos os planos de todos os grupos do provedor para evitar subpastas
       const allPlans = provider.groups.flatMap(g => g.plans || []);
       
       const unifiedGroup: CatalogGroup = {
         id: provider.id,
         name: provider.name,
-        slug: provider.code ? provider.code.toLowerCase() : String(provider.id),
+        slug: provider.code?.toLowerCase() || String(provider.id),
         providerCode: provider.code || '',
         plans: allPlans
       };
@@ -68,8 +104,26 @@ export default function CatalogLayout() {
 
   if (loading) {
     return (
-      <div className="text-center py-20 text-gray-400">
-        Carregando catálogo...
+      <div className="p-5 space-y-6 animate-pulse">
+        {/* Skeleton para Categorias / Grid estilo Binance */}
+        {[1, 2, 3].map((sectionIndex) => (
+          <div key={sectionIndex} className="space-y-3">
+            {/* Título Skeleton */}
+            <div className="w-32 h-3.5 bg-[#1E2329] rounded-md"></div>
+
+            {/* Grelha de Provedores Skeleton */}
+            <div className="grid grid-cols-4 gap-3 sm:gap-4">
+              {[1, 2, 3, 4].map((itemIndex) => (
+                <div key={itemIndex} className="flex flex-col items-center space-y-2">
+                  {/* Círculo do Logo Skeleton */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#1E2329] border border-[#2B313A]"></div>
+                  {/* Texto do Nome Skeleton */}
+                  <div className="w-12 h-2.5 bg-[#1E2329] rounded-sm"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     );
   }

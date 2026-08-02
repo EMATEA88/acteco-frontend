@@ -1,12 +1,36 @@
-import { useState } from "react"
-import { Headset, Users, X, MessageCircle, TrendingUp, Percent, ShieldCheck } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import { Headset, Users, X, MessageCircle } from "lucide-react"
 import Carousel from "./Carousel"
+import { purchaseService } from "../services/purchase.service"
+import type { CatalogCategory } from "../types/catalog"
+import { getLogo } from "../utils/getLogo"
+import { providerBranding } from "../config/recharge-branding"
 
 const WHATSAPP_MANAGER = "https://wa.me/244928270636"
 const WHATSAPP_GROUP = "https://chat.whatsapp.com/CaiU4nncaaa7vUnzO6HTzB?mode=gi_t"
 
 export default function Home() {
+  const navigate = useNavigate();
   const [supportOpen, setSupportOpen] = useState(false)
+  const [catalog, setCatalog] = useState<CatalogCategory[]>([])
+  const [loadingCatalog, setLoadingCatalog] = useState(true)
+
+  useEffect(() => {
+    loadDynamicCatalog()
+  }, [])
+
+  async function loadDynamicCatalog() {
+    try {
+      setLoadingCatalog(true)
+      const response = await purchaseService.getCatalog()
+      setCatalog(response.data || [])
+    } catch (error) {
+      console.error("Erro ao carregar catálogo na home:", error)
+    } finally {
+      setLoadingCatalog(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] px-5 pt-4 pb-28 antialiased selection:bg-[#02C076]/20">
@@ -48,56 +72,82 @@ export default function Home() {
         <Carousel />
       </div>
 
-      {/* MÉTRICAS DO MERCADO - CARDS AVANÇADOS */}
-      <SectionTitle title="MÉTRICAS DO MERCADO" />
-      
-      <div className="grid grid-cols-1 gap-4 mb-8">
-        {/* CARD LOMBO: VOLUME 24H */}
-        <div className="bg-gradient-to-br from-[#02C076]/[0.03] to-transparent bg-[#161A1E] border border-white/[0.03] p-5 rounded-2xl shadow-xl flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-              <TrendingUp size={12} className="text-[#02C076]" /> Volume 24h
-            </p>
-            <h3 className="text-lg font-mono font-black text-white">
-              +{Number(12500000).toLocaleString()} <span className="text-xs font-sans text-gray-400 font-bold">Kz</span>
-            </h3>
-          </div>
-          <div className="text-[10px] font-mono font-black text-[#02C076] bg-[#02C076]/10 px-2 py-1 rounded-md border border-[#02C076]/20">
-            ATIVO
-          </div>
-        </div>
+      {/* SECÇÕES DE SERVIÇOS DINÂMICOS (DADOS REAIS + BRANDING CONFIG) */}
+      <div className="space-y-8">
+        {loadingCatalog ? (
+          /* SKELETON LOADER ESTILO BINANCE (DARK THEME) */
+          <div className="space-y-6 animate-pulse">
+            {[1, 2].map((sectionIndex) => (
+              <div key={sectionIndex} className="space-y-3">
+                {/* Título Skeleton */}
+                <div className="w-28 h-3.5 bg-[#1E2329] rounded-md"></div>
 
-        {/* SUB-GRID PARA MEDIAS E TAXAS */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* CARD: MÉDIA JUROS */}
-          <div className="bg-[#161A1E] border border-white/[0.03] p-4 rounded-2xl shadow-lg flex flex-col justify-between space-y-3">
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-              <Percent size={12} className="text-blue-400" /> Média Juros
-            </p>
-            <div>
-              <span className="text-base font-mono font-black text-[#02C076] bg-[#02C076]/10 px-2 py-0.5 rounded-md">
-                7.15%
-              </span>
-              <p className="text-[9px] text-gray-400 font-medium mt-1">Por Mês contratado</p>
-            </div>
+                {/* Grelha de Provedores Skeleton */}
+                <div className="grid grid-cols-4 gap-3 sm:gap-4">
+                  {[1, 2, 3, 4].map((itemIndex) => (
+                    <div key={itemIndex} className="flex flex-col items-center space-y-2">
+                      {/* Círculo do Logo Skeleton */}
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#1E2329] border border-[#2B313A]"></div>
+                      {/* Texto do Nome Skeleton */}
+                      <div className="w-12 h-2.5 bg-[#1E2329] rounded-sm"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
+        ) : catalog.length === 0 ? (
+          <div className="text-center py-10 text-gray-500 text-xs font-mono">
+            Nenhum serviço disponível no momento.
+          </div>
+        ) : (
+          catalog.map((category) => (
+            <div key={category.id}>
+              <SectionTitle title={category.name} />
+              
+              <div className="grid grid-cols-4 gap-3 sm:gap-4">
+                {category.providers && category.providers.map((provider) => {
+                  const branding = providerBranding[provider.name.toUpperCase() as keyof typeof providerBranding];
+                  const logo = getLogo(branding?.logo);
 
-          {/* CARD: TAXAS OTC */}
-          <div className="bg-[#161A1E] border border-white/[0.03] p-4 rounded-2xl shadow-lg flex flex-col justify-between space-y-3">
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-              <ShieldCheck size={12} className="text-amber-400" /> Taxas OTC
-            </p>
-            <div>
-              <span className="text-base font-mono font-black text-white">
-                0.05%
-              </span>
-              <p className="text-[9px] text-gray-400 font-medium mt-1">Por Ordem executada</p>
+                  return (
+                    <div 
+                      key={provider.id}
+                      onClick={() => {
+                        navigate(`/recharges/${provider.code}`);
+                      }}
+                      className="flex flex-col items-center group cursor-pointer"
+                    >
+                      {/* Círculo do Logótipo (Perfeitamente Arredondado) */}
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#12161C] border border-[#2D333B] p-1 flex items-center justify-center shadow-lg group-hover:border-emerald-500 group-hover:scale-105 transition-all duration-200">
+                        <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#0B0E11] p-1.5">
+                          {logo ? (
+                            <img 
+                              src={logo} 
+                              alt={provider.name}
+                              className="w-full h-full object-cover rounded-full opacity-90 group-hover:opacity-100 transition-opacity"
+                            />
+                          ) : (
+                            <span className="text-[10px] font-bold text-white uppercase text-center px-1">
+                              {provider.name}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {/* Nome do Provedor */}
+                      <span className="text-[11px] sm:text-xs font-medium text-gray-300 mt-2 text-center tracking-wide group-hover:text-white transition-colors truncate w-full">
+                        {provider.name}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        </div>
+          ))
+        )}
       </div>
 
-      {/* MODAL SUPORTE - ADAPTADO PARA DARK MODE */}
+      {/* MODAL SUPORTE */}
       {supportOpen && (
         <div
           onClick={() => setSupportOpen(false)}
@@ -105,7 +155,7 @@ export default function Home() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm p-6 rounded-3xl bg-[#161A1E] border border-white/[0.05] shadow-2xl relative"
+            className="w-full max-w-sm p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl relative"
           >
             <button
               onClick={() => setSupportOpen(false)}
@@ -123,7 +173,7 @@ export default function Home() {
                 href={WHATSAPP_MANAGER}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full h-12 rounded-xl bg-[#02C076] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#00b06c] transition-all shadow-md shadow-[#02C076]/10"
+                className="w-full h-12 rounded-xl bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-md"
               >
                 <MessageCircle size={18} strokeWidth={2.5} />
                 Falar com Operadora
@@ -133,7 +183,7 @@ export default function Home() {
                 href={WHATSAPP_GROUP}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full h-12 rounded-xl bg-white/[0.04] border border-white/[0.05] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-white/[0.08] transition-all shadow-md"
+                className="w-full h-12 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#1b2129] transition-all shadow-md"
               >
                 <Users size={18} strokeWidth={2.5} />
                 Entrar no Grupo
@@ -149,7 +199,7 @@ export default function Home() {
 
 function SectionTitle({ title }: { title: string }) {
   return (
-    <h2 className="text-xs tracking-widest text-gray-400 mb-4 uppercase font-mono font-black border-l-2 border-[#02C076] pl-3">
+    <h2 className="text-xs tracking-widest text-gray-400 mb-4 uppercase font-mono font-black border-l-2 border-emerald-500 pl-3">
       {title}
     </h2>
   )
