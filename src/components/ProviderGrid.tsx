@@ -63,8 +63,7 @@ export default function ProviderGrid({ category, onBack, onSelect }: ProviderGri
                       <img 
                         src={logo} 
                         alt={provider.name}
-                        // CORREÇÃO AQUI: object-contain garante que o logo inteiro caiba no círculo
-                        className="w-full h-full object-contain rounded-full opacity-90 group-hover:opacity-100 transition-opacity"
+                        className="w-full h-full object-cover rounded-full opacity-90 group-hover:opacity-100 transition-opacity"
                       />
                     ) : (
                       <span className="text-[10px] font-bold text-white uppercase text-center px-1">
