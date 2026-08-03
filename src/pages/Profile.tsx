@@ -66,6 +66,7 @@ export default function Profile() {
     staleTime: 1000 * 60 * 5
   })
 
+  // Carregar status do KYC
   useEffect(() => {
     async function loadKYC() {
       try {
@@ -135,14 +136,27 @@ export default function Profile() {
             </div>
 
             <div className="flex items-center gap-4 pr-20">
-              <div className="w-14 h-14 rounded-full border border-white/[0.08] overflow-hidden bg-white/[0.02] p-1 flex-shrink-0">
-                <img src="/logo.png" className="w-full h-full object-contain rounded-full" alt="Logo" />
+              {/* LOGÓTIPO + BOTÃO DE VERIFICAÇÃO ABAIXO */}
+              <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                <div className="w-14 h-14 rounded-full border border-white/[0.08] overflow-hidden bg-white/[0.02] p-1">
+                  <img src="/logo.png" className="w-full h-full object-contain rounded-full" alt="Logo" />
+                </div>
+
+                {/* Botão Vermelho de Verificação / Estado (Aparece apenas se não estiver verificado) */}
+                {(!kyc || !kyc.isVerified) && (
+                  <button
+                    onClick={() => navigate('/kyc')}
+                    className="text-[9px] font-black uppercase tracking-tight text-red-500 hover:text-red-400 underline decoration-red-500/50 hover:decoration-red-400 transition-colors whitespace-nowrap text-center"
+                  >
+                    {kyc?.status === "PENDING" ? "Em Análise" : "Verificar Conta"}
+                  </button>
+                )}
               </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <h1 className="text-base font-bold tracking-tight text-white capitalize truncate">
-                    {user?.fullName?.toLowerCase() ?? user?.phone}
+                  <h1 className="text-base font-bold tracking-tight text-white uppercase truncate">
+                    {user?.fullName?.toUpperCase() ?? user?.phone}
                   </h1>
                   {kyc?.isVerified && <SealCheck size={16} weight="fill" className="text-blue-400 flex-shrink-0" />}
                 </div>
@@ -163,22 +177,18 @@ export default function Profile() {
               </div>
 
               <div className="flex items-center gap-3">
-                {user?.role !== "SUB_AGENT" && (
-                  <>
-                    <button onClick={() => navigate("/deposit")} className="flex flex-col items-center gap-1 group">
-                      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/[0.03] border border-white/[0.05] text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                        <Wallet size={18} weight="bold" />
-                      </div>
-                      <span className="text-[8px] font-black uppercase text-gray-500 tracking-wide">Depósito</span>
-                    </button>
-                    <button onClick={() => navigate("/withdraw")} className="flex flex-col items-center gap-1 group">
-                      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/[0.03] border border-white/[0.05] text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all">
-                        <ArrowDown size={18} weight="bold" />
-                      </div>
-                      <span className="text-[8px] font-black uppercase text-gray-500 tracking-wide">Saque</span>
-                    </button>
-                  </>
-                )}
+                <button onClick={() => navigate("/deposit")} className="flex flex-col items-center gap-1 group">
+                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/[0.03] border border-white/[0.05] text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                    <Wallet size={18} weight="bold" />
+                  </div>
+                  <span className="text-[8px] font-black uppercase text-gray-500 tracking-wide">Depósito</span>
+                </button>
+                <button onClick={() => navigate("/withdraw")} className="flex flex-col items-center gap-1 group">
+                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/[0.03] border border-white/[0.05] text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all">
+                    <ArrowDown size={18} weight="bold" />
+                  </div>
+                  <span className="text-[8px] font-black uppercase text-gray-500 tracking-wide">Saque</span>
+                </button>
               </div>
             </div>
           </div>
@@ -222,8 +232,8 @@ export default function Profile() {
 
       <AgentDrawer open={agentMenuOpen} onClose={() => setAgentMenuOpen(false)}>
         <AgentSidebar
-    onClose={() => setAgentMenuOpen(false)}
-/>
+          onClose={() => setAgentMenuOpen(false)}
+        />
       </AgentDrawer>
     </div>
   )
