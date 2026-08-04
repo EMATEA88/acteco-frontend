@@ -1,21 +1,3 @@
-export const categoryBranding = {
-  TELECOMUNICACOES: {
-    logo: "TELECOMUNICACOES.PNG"
-  },
-  TV: {
-    logo: "TV.PNG"
-  },
-  SERVICOS_PUBLICOS: {
-    logo: "SERVICOSPUBLICOS.PNG"
-  },
-  SERVICOS_INTERNACIONAIS: {
-    logo: "INTERNACIONAIS.PNG"
-  },
-  JOGOS_E_APOSTAS: {
-    logo: "JOGOS.PNG"
-  }
-};
-
 export const providerBranding: Record<string, { logo: string }> = {
   // Telecomunicações
   UNITEL: {
@@ -51,7 +33,7 @@ export const providerBranding: Record<string, { logo: string }> = {
     logo: "ZAP2.PNG"
   },
 
-  // Serviços Públicos
+  // Serviços Públicos e Parceiros (Incluindo 5linhas)
   ENDE: {
     logo: "ENDE.PNG"
   },
@@ -60,6 +42,15 @@ export const providerBranding: Record<string, { logo: string }> = {
   },
   STAS: {
     logo: "STAS.PNG"
+  },
+  "5LINHAS": {
+    logo: "CINCO.PNG"
+  },
+  "5 LINHAS": {
+    logo: "CINCO.PNG"
+  },
+  CINCO: {
+    logo: "CINCO.PNG"
   },
 
   // Serviços e Pagamentos Internacionais (Incluindo INT_VCH2)
