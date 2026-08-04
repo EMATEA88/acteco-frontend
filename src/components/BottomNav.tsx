@@ -1,18 +1,18 @@
 import { NavLink } from "react-router-dom"
 import {
-  House,
-  User,
-  Lightning,       // Ícone para Recargas Rápidas
-  Receipt,         // Ícone para Transações
-  ChartPieSlice,   // Ícone para o Dashboard
+  House,              // Home limpa e moderna
+  UserCircle,         // Perfil com silhueta corporativa/bancária
+  DeviceMobile,       // Recargas (muito mais intuitivo para telemóvel/serviços)
+  ClockCounterClockwise, // Transações (focado em histórico/movimentos)
+  SquaresFour,        // Dashboard / Visão Geral em grelha
 } from "@phosphor-icons/react"
 
 const links = [
   { to: "/home", label: "Home", icon: House },
-  { to: "/recharges", label: "Recargas", icon: Lightning }, // Ajustado para /recharges
-  { to: "/transactions", label: "Transações", icon: Receipt },
-  { to: "/dashboard", label: "Dashboard", icon: ChartPieSlice },
-  { to: "/profile", label: "Perfil", icon: User },
+  { to: "/recharges", label: "Recargas", icon: DeviceMobile },
+  { to: "/transactions", label: "Histórico", icon: ClockCounterClockwise },
+  { to: "/dashboard", label: "Painel", icon: SquaresFour },
+  { to: "/profile", label: "Perfil", icon: UserCircle },
 ]
 
 export default function BottomNav() {
@@ -21,9 +21,9 @@ export default function BottomNav() {
       className="
         fixed bottom-0 left-0 right-0 z-[100]
         w-screen
-        bg-[#0B0E11]
-        border-t border-white/[0.05]
-        h-[65px] flex items-center shadow-2xl backdrop-blur-md bg-opacity-95
+        bg-[#0B0E11]/95
+        border-t border-white/[0.06]
+        h-[68px] flex items-center shadow-2xl backdrop-blur-xl
       "
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
@@ -37,26 +37,26 @@ export default function BottomNav() {
             className={({ isActive }) =>
               `
               flex flex-col items-center gap-1 text-[9px] font-black uppercase tracking-wider
-              transition-all duration-200
-              ${isActive ? "text-white" : "text-gray-500 hover:text-gray-300"}
+              transition-all duration-200 group
+              ${isActive ? "text-emerald-400" : "text-gray-500 hover:text-gray-400"}
               `
             }
           >
             {({ isActive }) => (
               <>
-                {/* CONTAINER DO ÍCONE - CALIBRADO PARA MODO ESCURO */}
+                {/* CONTAINER DO ÍCONE - ESTILO FINTECH */}
                 <div
                   className={`
                     flex items-center justify-center
-                    w-10 h-7 rounded-lg border transition-all duration-300
+                    w-11 h-7 rounded-full transition-all duration-300
                     ${isActive 
-                      ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 scale-105" 
-                      : "bg-transparent border-transparent text-gray-500"}
+                      ? "bg-emerald-500/15 text-emerald-400 scale-105 shadow-lg shadow-emerald-500/10" 
+                      : "bg-transparent text-gray-500 group-hover:text-gray-300"}
                   `}
                 >
                   <Icon 
-                    size={20} 
-                    weight={isActive ? "fill" : "bold"} 
+                    size={21} 
+                    weight={isActive ? "fill" : "regular"} 
                   />
                 </div>
 
@@ -64,7 +64,7 @@ export default function BottomNav() {
                 <span
                   className={`
                     transition-all duration-200 tracking-wider text-[8px]
-                    ${isActive ? "font-black text-emerald-400" : "font-extrabold text-gray-500"}
+                    ${isActive ? "font-extrabold text-emerald-400" : "font-medium text-gray-500"}
                   `}
                 >
                   {label}

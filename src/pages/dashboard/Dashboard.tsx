@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Importado para navegação direta
+import { useNavigate } from "react-router-dom";
 import {
-  Wallet,
-  Receipt,
-  Trophy,
-  Activity,
+  WalletCards,
+  ArrowLeftRight,
+  Zap,
+  ShieldCheck,
   ArrowDownLeft,
-  ArrowUpRight,
-  TrendingUp
+  ArrowUpRight
 } from "lucide-react";
 import { dashboardService } from "../../services/dashboard.service";
 import type { DashboardStats } from "../../services/dashboard.service";
@@ -18,10 +17,11 @@ import {
 import toast from "react-hot-toast";
 
 export default function Dashboard() {
-  const navigate = useNavigate(); // Hook instanciado
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [dynamicOperator, setDynamicOperator] = useState<string>("Unitel");
 
   useEffect(() => {
     loadStats();
@@ -35,7 +35,11 @@ export default function Dashboard() {
       ]);
 
       setStats(statsData);
+      // Mantém apenas as 5 últimas transações para exibição na lista visual
       setTransactions(transactionsData.slice(0, 5));
+      
+      // Processa o histórico completo para descobrir o mais vendido real
+      calculateMostSoldService(transactionsData);
     } catch (error) {
       console.error(error);
       toast.error("Erro ao carregar dashboard");
@@ -44,7 +48,45 @@ export default function Dashboard() {
     }
   }
 
-  // Função centralizada para abrir o comprovativo reutilizável
+  // Função robusta que varre TODO o histórico real de transações
+  const calculateMostSoldService = (txs: Transaction[]) => {
+    if (!txs || txs.length === 0) {
+      setDynamicOperator("Unitel");
+      return;
+    }
+
+    const counts: Record<string, number> = {
+      "Unitel": 0,
+      "Movicel": 0,
+      "Bazza / Africell": 0,
+      "ZAP / TV": 0
+    };
+
+    txs.forEach((tx) => {
+      const text = `${tx.description || ""} ${tx.type || ""}`.toUpperCase();
+      
+      if (text.includes("UNITEL")) {
+        counts["Unitel"] += 1;
+      } else if (text.includes("MOVICEL")) {
+        counts["Movicel"] += 1;
+      } else if (text.includes("BAZZA") || text.includes("AFRICELL") || text.includes("AFRI")) {
+        counts["Bazza / Africell"] += 1;
+      } else if (text.includes("ZAP") || text.includes("TV")) {
+        counts["ZAP / TV"] += 1;
+      }
+    });
+
+    const entries = Object.entries(counts);
+    entries.sort((a, b) => b[1] - a[1]);
+
+    // Se houver contagem válida, pega o primeiro, senão mantém Unitel como padrão
+    if (entries[0][1] > 0) {
+      setDynamicOperator(entries[0][0]);
+    } else {
+      setDynamicOperator("Unitel");
+    }
+  };
+
   const openTransaction = (id: number) => {
     navigate(`/transactions/${id}`);
   };
@@ -53,32 +95,32 @@ export default function Dashboard() {
     {
       title: "Saldo Atual",
       value: loading ? null : `${Number(stats?.balance || 0).toLocaleString()} Kz`,
-      icon: Wallet,
-      color: "from-emerald-500/[0.02] to-transparent",
+      icon: WalletCards,
+      color: "from-emerald-500/[0.04] to-transparent",
       iconColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
       textColor: "text-emerald-400"
     },
     {
       title: "Total Gasto",
       value: loading ? null : `${Number(stats?.totalSpent || 0).toLocaleString()} Kz`,
-      icon: Receipt,
-      color: "from-rose-500/[0.01] to-transparent",
+      icon: ArrowLeftRight,
+      color: "from-rose-500/[0.03] to-transparent",
       iconColor: "text-rose-400 bg-rose-500/10 border-rose-500/20",
       textColor: "text-white"
     },
     {
       title: "Total Recargas",
       value: loading ? null : String(stats?.totalRequests || 0),
-      icon: Activity,
-      color: "from-blue-500/[0.01] to-transparent",
+      icon: Zap,
+      color: "from-blue-500/[0.03] to-transparent",
       iconColor: "text-blue-400 bg-blue-500/10 border-blue-500/20",
       textColor: "text-white"
     },
     {
-      title: "Mais Utilizado",
-      value: loading ? null : (stats?.mostUsedService ?? "Nenhum"),
-      icon: Trophy,
-      color: "from-amber-500/[0.01] to-transparent",
+      title: "Mais Vendidos",
+      value: loading ? null : dynamicOperator,
+      icon: ShieldCheck,
+      color: "from-amber-500/[0.03] to-transparent",
       iconColor: "text-amber-400 bg-amber-500/10 border-amber-500/20",
       textColor: "text-amber-400 font-extrabold"
     }
@@ -89,16 +131,12 @@ export default function Dashboard() {
       
       {/* HEADER FIXO */}
       <div className="px-6 pt-8 pb-4 flex items-center justify-between border-b border-white/[0.05] bg-[#0B0E11]/90 backdrop-blur-md sticky top-0 z-50">
-        <div>
-          <h1 className="text-xl font-black tracking-tight uppercase italic flex items-center gap-2 text-white">
-            <TrendingUp size={20} className="text-emerald-400" />
-            Visão Geral
-          </h1>
-          <p className="text-[11px] text-gray-400 uppercase font-mono font-bold tracking-wider mt-0.5">
+        <div className="w-full text-center">
+          <p className="text-xs text-gray-400 uppercase font-mono font-bold tracking-widest">
             Estatísticas em tempo real
           </p>
         </div>
-        <div className={`h-2 w-2 rounded-full bg-emerald-400 ${loading ? 'animate-ping' : 'animate-pulse'}`} />
+        <div className={`h-2 w-2 rounded-full bg-emerald-400 ${loading ? 'animate-ping' : 'animate-pulse'} absolute right-6`} />
       </div>
 
       {/* METRICS GRID */}
@@ -108,21 +146,21 @@ export default function Dashboard() {
           return (
             <div
               key={item.title || idx}
-              className={`bg-gradient-to-br ${item.color} bg-[#161A1E] border border-white/[0.03] rounded-2xl p-4 flex flex-col justify-between shadow-lg`}
+              className={`bg-gradient-to-br ${item.color} bg-[#161A1E] border border-white/[0.04] rounded-2xl p-4 flex flex-col justify-between shadow-xl transition-all hover:border-white/[0.08]`}
             >
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-gray-400 uppercase font-black tracking-wider">
                   {item.title}
                 </span>
-                <div className={`p-1.5 rounded-lg border ${item.iconColor}`}>
-                  <Icon size={16} />
+                <div className={`p-2 rounded-xl border ${item.iconColor} shadow-inner`}>
+                  <Icon size={18} />
                 </div>
               </div>
               <div className="mt-6">
                 {loading ? (
                   <div className="h-5 bg-gray-800 rounded w-3/4 animate-pulse mb-1" />
                 ) : (
-                  <h3 className={`text-base font-mono font-black tracking-tight ${item.textColor} truncate`}>
+                  <h3 className={`text-sm font-mono font-black tracking-tight ${item.textColor} truncate`}>
                     {item.value}
                   </h3>
                 )}
@@ -164,7 +202,16 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-3">
               {transactions.map((tx) => {
-                const isOut = tx.type?.toLowerCase().includes('spent') || tx.type?.toLowerCase().includes('out') || tx.type?.toLowerCase().includes('withdraw') || tx.type?.toLowerCase().includes('payment');
+                const descUpper = (tx.description || "").toUpperCase();
+                const typeUpper = (tx.type || "").toUpperCase();
+                
+                const isOut = 
+                  descUpper.includes("COMPRA") || 
+                  typeUpper.includes("SPENT") || 
+                  typeUpper.includes("OUT") || 
+                  typeUpper.includes("WITHDRAW") || 
+                  typeUpper.includes("PAYMENT") ||
+                  typeUpper.includes("DEBIT");
                 
                 return (
                   <div
@@ -177,8 +224,8 @@ export default function Dashboard() {
                     "
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg border ${isOut ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
-                        {isOut ? <ArrowUpRight size={14} /> : <ArrowDownLeft size={14} />}
+                      <div className={`p-2 rounded-xl border ${isOut ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
+                        {isOut ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
                       </div>
                       <div>
                         <p className="text-xs font-bold text-white tracking-tight">
@@ -241,12 +288,12 @@ export default function Dashboard() {
             </div>
 
             <div className="flex justify-between items-center pt-1">
-              <span className="text-gray-400 font-sans font-medium">Serviço mais Ativo</span>
+              <span className="text-gray-400 font-sans font-medium">Mais Vendidos</span>
               {loading ? (
                 <div className="h-5 bg-gray-800 rounded w-28 animate-pulse" />
               ) : (
-                <span className="text-amber-400 font-sans font-black text-[11px] bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
-                  {stats?.mostUsedService || "-"}
+                <span className="text-amber-400 font-sans font-black text-[11px] bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">
+                  {dynamicOperator}
                 </span>
               )}
             </div>

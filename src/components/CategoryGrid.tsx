@@ -48,17 +48,16 @@ export default function CategoryGrid({
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 pb-24">
-      <div className="text-center mb-10">
-        <h1 className="text-3xl font-bold text-white">
-          Recargas
-        </h1>
-        <p className="mt-2 text-gray-400">
+    <div className="max-w-5xl mx-auto px-5 pt-4 pb-24">
+      {/* TÍTULO CENTRALIZADO */}
+      <div className="text-center mb-6">
+        <p className="text-xs font-semibold text-gray-400 tracking-wider uppercase">
           Escolha uma categoria
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+      {/* GRELHA COM CARDS */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5">
         {categories.map(category => {
           const categoryImage = getCategoryAsset(category.name);
 
@@ -70,40 +69,40 @@ export default function CategoryGrid({
                 group
                 bg-[#12161C]
                 border
-                border-[#232A33]
-                rounded-3xl
+                border-white/[0.06]
+                rounded-2xl
                 p-5
                 transition-all
-                duration-300
-                hover:border-emerald-500
-                hover:bg-[#171C22]
-                hover:-translate-y-1
+                duration-200
+                hover:border-[#02C076]
+                hover:bg-[#161b22]
                 flex
                 flex-col
                 items-center
-                justify-between
+                justify-center
+                cursor-pointer
               "
             >
-              {/* Imagem do Setor */}
-              <div className="w-full flex items-center justify-center overflow-hidden rounded-2xl mb-4">
+              {/* Imagem do Setor com Tamanho Aumentado */}
+              <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center overflow-hidden rounded-2xl mb-3.5 bg-[#0B0E11]/50 border border-white/[0.04]">
                 {categoryImage ? (
                   <img
                     src={categoryImage}
                     alt={category.name}
-                    className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                    className="w-16 h-16 sm:w-20 sm:h-20 object-contain transition-transform duration-200 group-hover:scale-110"
                   />
                 ) : (
-                  <div className="w-20 h-20 bg-[#0B0E11] border border-[#30363d] rounded-2xl flex items-center justify-center">
-                    <span className="text-white text-xs text-center px-1">
+                  <div className="w-full h-full bg-[#0B0E11] flex items-center justify-center">
+                    <span className="text-white text-[11px] text-center px-1 font-semibold">
                       {category.name}
                     </span>
                   </div>
                 )}
               </div>
 
-              {/* Apenas o Nome do Serviço / Categoria */}
+              {/* Nome do Serviço / Categoria */}
               <div className="text-center w-full">
-                <h2 className="text-white font-semibold text-sm sm:text-base group-hover:text-emerald-400 transition-colors">
+                <h2 className="text-white font-medium text-xs sm:text-sm group-hover:text-[#02C076] transition-colors truncate">
                   {category.name}
                 </h2>
               </div>

@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { UserService } from '../services/user.service'
 import { KYCService } from '../services/kyc'
@@ -30,7 +30,7 @@ type User = {
   email: string
   publicId: string
   balance: number
-  role: "USER" | "AGENT" | "SUB_AGENT" | "ADMIN"
+  role: "USER" | "AGENT" | "SUB_AGENT" | "ADMIN" | string
 }
 
 type KYCState = {
@@ -39,8 +39,8 @@ type KYCState = {
   canSubmit: boolean
 }
 
-const ROLE_BADGES = {
-  USER: { label: "Cliente", className: "bg-gray-500/10 text-gray-400 border-gray-500/20" },
+const ROLE_BADGES: Record<string, { label: string; className: string }> = {
+  USER: { label: "Cliente", className: "bg-blue-500/10 text-blue-400 border-blue-500/25" },
   AGENT: { label: "Agente", className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
   SUB_AGENT: { label: "Sub-Agente", className: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
   ADMIN: { label: "Admin", className: "bg-rose-500/15 text-rose-400 border-rose-500/30" },
@@ -48,25 +48,25 @@ const ROLE_BADGES = {
 
 export default function Profile() {
   const navigate = useNavigate()
-  const location = useLocation();
+  const location = useLocation()
+  const queryClient = useQueryClient()
   const [kyc, setKyc] = useState<KYCState | null>(null)
-  const [agentMenuOpen, setAgentMenuOpen] = useState(false);
+  const [agentMenuOpen, setAgentMenuOpen] = useState(false)
 
-  // Efeito para fechar o menu ao mudar de rota
   useEffect(() => {
-    setAgentMenuOpen(false);
-  }, [location.pathname]);
+    setAgentMenuOpen(false)
+  }, [location.pathname])
 
   const { data: user, isLoading } = useQuery<User>({
     queryKey: ['me'],
     queryFn: async () => {
-      const res = await UserService.me()
-      return res as User
+      const res: any = await UserService.me()
+      return (res?.data || res) as User
     },
-    staleTime: 1000 * 60 * 5
+    staleTime: 0,
+    gcTime: 0,
   })
-
-  // Carregar status do KYC
+  
   useEffect(() => {
     async function loadKYC() {
       try {
@@ -86,6 +86,10 @@ export default function Profile() {
     }
     loadKYC()
   }, [])
+
+  // Força detecção segura da role em maiúsculas, assumindo USER se não vier nada
+  const rawRole = user?.role ? String(user.role).toUpperCase().trim() : "USER";
+  const currentRoleBadge = ROLE_BADGES[rawRole] || ROLE_BADGES["USER"];
 
   return (
     <div className="min-h-screen w-screen text-[#EAECEF] flex flex-col bg-[#0B0E11] antialiased">
@@ -109,29 +113,32 @@ export default function Profile() {
         ) : (
           <div className="bg-[#161A1E] py-5 px-6 rounded-[2rem] relative border border-white/[0.04] shadow-2xl">
             
-            {/* BOTÃO DE SETTINGS NO CANTO SUPERIOR DIREITO (PADRONIZADO) */}
-            <div className="absolute top-5 right-5 flex flex-col items-end gap-2.5">
+            {/* BOTÕES E BADGE DO CANTO SUPERIOR DIREITO */}
+            <div className="absolute top-5 right-5 flex flex-col items-end gap-2.5 z-10">
               <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => navigate('/settings')} 
-                  className="p-2 rounded-full bg-white/[0.03] border border-white/[0.05] text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
-                  title="Configurações"
-                >
-                  <Gear size={20} weight="bold" />
-                </button>
+                {/* Botão de Configurações visível para USER, SUB_AGENT ou qualquer role que não seja estritamente Agent/Admin puro */}
+                {(rawRole === "USER" || rawRole === "SUB_AGENT" || !["AGENT", "ADMIN"].includes(rawRole)) && (
+                  <button 
+                    onClick={() => navigate('/settings')} 
+                    className="p-2 rounded-full bg-white/[0.03] border border-white/[0.05] text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all cursor-pointer"
+                    title="Configurações"
+                  >
+                    <Gear size={20} weight="bold" />
+                  </button>
+                )}
 
-                {(user?.role === "AGENT" || user?.role === "ADMIN") && (
+                {/* Menu de agente visível para AGENT e ADMIN */}
+                {(rawRole === "AGENT" || rawRole === "ADMIN") && (
                   <div className="scale-90 origin-right">
                     <AgentMenuButton onClick={() => setAgentMenuOpen(true)} />
                   </div>
                 )}
               </div>
               
-              {user?.role && ROLE_BADGES[user.role] && (
-                <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${ROLE_BADGES[user.role].className}`}>
-                  {ROLE_BADGES[user.role].label}
-                </span>
-              )}
+              {/* Badge de Identificação Obrigatório */}
+              <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md border ${currentRoleBadge.className}`}>
+                {currentRoleBadge.label}
+              </span>
             </div>
 
             <div className="flex items-center gap-4 pr-16">
@@ -141,7 +148,6 @@ export default function Profile() {
                   <img src="/logo.png" className="w-full h-full object-contain rounded-full" alt="Logo" />
                 </div>
 
-                {/* Botão Vermelho de Verificação / Estado (Aparece apenas se não estiver verificado) */}
                 {(!kyc || !kyc.isVerified) && (
                   <button
                     onClick={() => navigate('/kyc')}
@@ -221,7 +227,11 @@ export default function Profile() {
 
         {!isLoading && (
           <button
-            onClick={() => { localStorage.clear(); navigate('/login') }}
+            onClick={() => { 
+              queryClient.clear();
+              localStorage.clear(); 
+              navigate('/login'); 
+            }}
             className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-400 mt-6 transition-colors self-center bg-white/[0.02] border border-white/[0.05] px-5 py-2.5 rounded-xl shadow-sm"
           >
             <SignOut size={16} weight="bold" /> Sair da conta
