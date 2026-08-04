@@ -8,8 +8,76 @@ import {
 } from "@phosphor-icons/react"
 import {
   TransactionService,
-  type TransactionDetails
+  type TransactionDetails as BaseTransactionDetails
 } from "../services/transaction.service"
+
+// Mapeamento exato de branding correspondente às imagens em src/assets/recharges/
+const providerBranding: Record<string, { logo: string }> = {
+  UNITEL: { logo: "UNITEL.PNG" },
+  MOVICEL: { logo: "MOVICEL.PNG" },
+  AFRICELL: { logo: "AFRICELL.PNG" },
+  NETONE: { logo: "NETONE.PNG" },
+  DSTV: { logo: "DSTV.PNG" },
+  ZAP: { logo: "ZAP1.PNG" },
+  ZAP_SAT: { logo: "ZAP1.PNG" },
+  "ZAP FIBRA": { logo: "ZAP2.PNG" },
+  ZAP_MEDIA: { logo: "ZAP2.PNG" },
+  ZAP2: { logo: "ZAP2.PNG" },
+  ENDE: { logo: "ENDE.PNG" },
+  EPAL: { logo: "EPAL.PNG" },
+  STAS: { logo: "STAS.PNG" },
+  INT_VCH2: { logo: "AMAZON.PNG" },
+  AMAZON: { logo: "AMAZON.PNG" },
+  APPLE: { logo: "APPLE.PNG" },
+  "GOOGLE PLAY": { logo: "GOOGLEPLAY.PNG" },
+  GOOGLE: { logo: "GOOGLEPLAY.PNG" },
+  NETFLIX: { logo: "NETFLIX.PNG" },
+  SPOTIFY: { logo: "SPOTIFY.PNG" },
+  PLAYSTATION: { logo: "TEAM.PNG" },
+  TEAM: { logo: "TEAM.PNG" },
+  XBOX: { logo: "XBOX.PNG" },
+  BOLT: { logo: "BOLT.PNG" },
+  FLIXBUS: { logo: "FLIXBUS.PNG" },
+  PREMIERBET: { logo: "Premiebet.png" },
+  PBET: { logo: "Premiebet.png" },
+  BANTUBET: { logo: "BantuBet.png" },
+  BBET: { logo: "BantuBet.png" },
+  ELEPHANTBET: { logo: "Elephantbet.png" },
+  EBET: { logo: "Elephantbet.png" },
+  AFRIBET: { logo: "AfriBet.png" },
+  ABET: { logo: "AfriBet.png" },
+  MOBET: { logo: "Mobet.png" },
+  MELBET: { logo: "MelBet.png" },
+  MGMBET: { logo: "MelBet.png" },
+  KWANZABET: { logo: "Kwanzabet.png" },
+  "888BETS": { logo: "888Bets.png" },
+  "888BET": { logo: "888Bets.png" },
+  "888": { logo: "888Bets.png" }
+}
+
+// Carregamento glob estático do Vite para os assets de recargas
+const rechargeImages = import.meta.glob<string>(
+  "../assets/recharges/*.{png,PNG,jpg,JPG,jpeg,JPEG,webp,WEBP}",
+  {
+    eager: true,
+    import: "default"
+  }
+)
+
+// Tipagem aprimorada para incluir o metadata customizado
+export interface TransactionDetails extends BaseTransactionDetails {
+  metadata?: {
+    categoryName?: string
+    providerName?: string
+    partnerName?: string
+    planName?: string
+    customerReference?: string
+    amount?: number
+    cost?: number
+    profit?: number
+    aki?: any
+  }
+}
 
 export default function TransactionDetails() {
   const navigate = useNavigate()
@@ -19,26 +87,62 @@ export default function TransactionDetails() {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-  if (!id) return
+    if (!id) return
 
-  TransactionService.details(Number(id))
-    .then((data) => {
-
-      console.log(data)
-
-      setTransaction(data)
-
-    })
-    .catch(console.error)
-    .finally(() => setLoading(false))
-
-}, [id])
+    TransactionService.details(Number(id))
+      .then((data: any) => {
+        console.log(data)
+        setTransaction(data)
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [id])
 
   const handleCopyId = () => {
     if (!transaction) return
     navigator.clipboard.writeText(String(transaction.id))
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  // Função robusta para extrair o nome da operadora da transação
+  const getOperatorName = () => {
+    const rawName = (
+      transaction?.metadata?.partnerName ?? 
+      transaction?.metadata?.providerName ?? 
+      transaction?.description ?? 
+      ""
+    ).toUpperCase()
+
+    if (rawName.includes("UNITEL")) return "UNITEL"
+    if (rawName.includes("MOVICEL")) return "MOVICEL"
+    if (rawName.includes("AFRICELL")) return "AFRICELL"
+    if (rawName.includes("BAZZA")) return "BAZZA"
+    if (rawName.includes("DSTV")) return "DSTV"
+    if (rawName.includes("ZAP")) return "ZAP"
+    if (rawName.includes("ENDE")) return "ENDE"
+    if (rawName.includes("EPAL")) return "EPAL"
+    if (rawName.includes("PREMIERBET") || rawName.includes("PBET")) return "PREMIERBET"
+    if (rawName.includes("BANTUBET") || rawName.includes("BBET")) return "BANTUBET"
+    if (rawName.includes("ELEPHANTBET") || rawName.includes("EBET")) return "ELEPHANTBET"
+
+    return transaction?.metadata?.partnerName ?? transaction?.metadata?.providerName ?? "EMATEA"
+  }
+
+  // Função para resolver o caminho exato da imagem a partir do import.meta.glob
+  const getOperatorLogo = (operatorKey: string) => {
+    const brand = providerBranding[operatorKey.toUpperCase().trim()]
+    if (!brand) return "/logo.png"
+
+    const targetFileName = brand.logo.toLowerCase()
+
+    for (const path in rechargeImages) {
+      if (path.toLowerCase().endsWith(targetFileName)) {
+        return rechargeImages[path]
+      }
+    }
+
+    return "/logo.png"
   }
 
   if (loading) {
@@ -60,6 +164,8 @@ export default function TransactionDetails() {
   }
 
   const formattedAmount = `${Number(transaction.amount).toLocaleString()} ${transaction.currency}`
+  const operatorName = getOperatorName()
+  const operatorLogoSrc = getOperatorLogo(operatorName)
 
   return (
     <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] antialiased flex flex-col">
@@ -84,12 +190,12 @@ export default function TransactionDetails() {
         {/* CARD DO COMPROVATIVO */}
         <div className="w-full max-w-sm bg-[#161A1E] border border-white/[0.06] rounded-[2.5rem] p-6 shadow-2xl flex flex-col items-center relative">
           
-          {/* LOGÓTIPO PROFISSIONAL: PREENCHIMENTO COMPLETO SEM BORDAS SOBRANDO */}
-          <div className="w-16 h-16 rounded-full bg-white shadow-lg mb-6 overflow-hidden flex items-center justify-center border border-white/[0.1]">
+          {/* LOGÓTIPO DA OPERADORA - Ajustado com w-20 h-20 (maior) e object-cover p-0 para preencher o espaço */}
+          <div className="w-20 h-20 rounded-full bg-white shadow-lg mb-6 overflow-hidden flex items-center justify-center border border-white/[0.1]">
             <img
-              src="/logo.png"
-              alt="EMATEA"
-              className="w-full h-full object-cover"
+              src={operatorLogoSrc}
+              alt={operatorName}
+              className="w-full h-full object-cover p-0"
             />
           </div>
 
@@ -117,37 +223,41 @@ export default function TransactionDetails() {
                 Tipo:
               </span>
               <span className="font-bold text-white">
-                Telecomunicações
+                {transaction.metadata?.categoryName ?? "Telecomunicações"}
               </span>
             </div>
 
-            {/* CLIENTE: EXIBE O NÚMERO USADO NO CARREGAMENTO */}
+            {/* CLIENTE: EXIBE O NÚMERO DO DESTINATÁRIO */}
             <div className="flex justify-between items-center">
               <span className="text-gray-400 font-semibold">
                 Cliente:
               </span>
               <span className="font-mono font-bold text-white tracking-wide">
-                {transaction.reference || "-"}
+                {transaction.metadata?.customerReference ?? transaction.reference ?? "-"}
               </span>
             </div>
 
+            {/* OPERADORA: LEITURA ROBUSTA E FLEXÍVEL */}
             <div className="flex justify-between items-center">
               <span className="text-gray-400 font-semibold">
                 Operadora:
               </span>
               <span className="font-bold text-white uppercase">
-                {transaction.gatewayProvider || "UNITEL"}
+                {operatorName}
               </span>
             </div>
 
-            <div className="flex justify-between items-start gap-3">
-              <span className="text-gray-400 font-semibold whitespace-nowrap">
-                Serviço/Plano:
-              </span>
-              <span className="text-right font-bold text-white break-words max-w-[180px]">
-                {transaction.description}
-              </span>
-            </div>
+            {/* SERVIÇO/PLANO CONDICIONAL (Exibido apenas se existir planName) */}
+            {transaction.metadata?.planName && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400 font-semibold">
+                  Serviço/Plano:
+                </span>
+                <span className="font-bold text-white text-right max-w-[180px] truncate">
+                  {transaction.metadata.planName}
+                </span>
+              </div>
+            )}
 
             <div className="flex justify-between items-center">
               <span className="text-gray-400 font-semibold">
@@ -189,7 +299,7 @@ export default function TransactionDetails() {
             </div>
 
           </div>
-
+          
           {/* RODAPÉ DO COMPROVATIVO */}
           <p className="text-[9px] text-gray-500 font-mono tracking-wider uppercase mt-5 text-center">
             Obrigado pela preferência

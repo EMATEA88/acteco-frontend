@@ -109,22 +109,21 @@ export default function Profile() {
         ) : (
           <div className="bg-[#161A1E] py-5 px-6 rounded-[2rem] relative border border-white/[0.04] shadow-2xl">
             
+            {/* BOTÃO DE SETTINGS NO CANTO SUPERIOR DIREITO (PADRONIZADO) */}
             <div className="absolute top-5 right-5 flex flex-col items-end gap-2.5">
               <div className="flex items-center gap-2">
-                {(user?.role === "USER" || user?.role === "SUB_AGENT") ? (
-                  <button 
-                    onClick={() => navigate('/settings')} 
-                    className="p-2 rounded-full bg-white/[0.03] border border-white/[0.05] text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
-                    title="Configurações"
-                  >
-                    <Gear size={20} weight="bold" />
-                  </button>
-                ) : (
-                  (user?.role === "AGENT" || user?.role === "ADMIN") && (
-                    <div className="scale-90 origin-right">
-                      <AgentMenuButton onClick={() => setAgentMenuOpen(true)} />
-                    </div>
-                  )
+                <button 
+                  onClick={() => navigate('/settings')} 
+                  className="p-2 rounded-full bg-white/[0.03] border border-white/[0.05] text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all"
+                  title="Configurações"
+                >
+                  <Gear size={20} weight="bold" />
+                </button>
+
+                {(user?.role === "AGENT" || user?.role === "ADMIN") && (
+                  <div className="scale-90 origin-right">
+                    <AgentMenuButton onClick={() => setAgentMenuOpen(true)} />
+                  </div>
                 )}
               </div>
               
@@ -135,7 +134,7 @@ export default function Profile() {
               )}
             </div>
 
-            <div className="flex items-center gap-4 pr-20">
+            <div className="flex items-center gap-4 pr-16">
               {/* LOGÓTIPO + BOTÃO DE VERIFICAÇÃO ABAIXO */}
               <div className="flex flex-col items-center gap-2 flex-shrink-0">
                 <div className="w-14 h-14 rounded-full border border-white/[0.08] overflow-hidden bg-white/[0.02] p-1">
