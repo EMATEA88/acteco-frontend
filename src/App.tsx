@@ -17,7 +17,6 @@ import Notifications from './pages/Notifications'
 
 /* ===== FINANCE ===== */
 import Deposit from './pages/Deposit'
-import DepositBanks from './pages/DepositBanks'
 import RechargeHistory from './pages/RechargeHistory'
 import Withdraw from './pages/Withdraw'
 import WithdrawHistory from './pages/WithdrawHistory'
@@ -169,12 +168,7 @@ function App() {
           <Route path="withdraw/aoa" element={<WithdrawAOA />} />
 
           {/* FINANCIAL */}
-          <Route path="deposit" element={<Deposit />} />
-
-          <Route
-            path="deposit/banks/:rechargeId"
-            element={<DepositBanks />}
-          />
+          <Route path="deposit/*" element={<Deposit />} />
 
           <Route
             path="recharge-history"

@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  WalletCards,
-  ArrowLeftRight,
-  Zap,
-  ShieldCheck,
+  Wallet,
+  TrendingDown,
+  Activity,
+  Award,
   ArrowDownLeft,
-  ArrowUpRight
+  ArrowUpRight,
+  Sparkles
 } from "lucide-react";
 import { dashboardService } from "../../services/dashboard.service";
 import type { DashboardStats } from "../../services/dashboard.service";
@@ -35,10 +36,7 @@ export default function Dashboard() {
       ]);
 
       setStats(statsData);
-      // Mantém apenas as 5 últimas transações para exibição na lista visual
       setTransactions(transactionsData.slice(0, 5));
-      
-      // Processa o histórico completo para descobrir o mais vendido real
       calculateMostSoldService(transactionsData);
     } catch (error) {
       console.error(error);
@@ -48,7 +46,6 @@ export default function Dashboard() {
     }
   }
 
-  // Função robusta que varre TODO o histórico real de transações
   const calculateMostSoldService = (txs: Transaction[]) => {
     if (!txs || txs.length === 0) {
       setDynamicOperator("Unitel");
@@ -79,7 +76,6 @@ export default function Dashboard() {
     const entries = Object.entries(counts);
     entries.sort((a, b) => b[1] - a[1]);
 
-    // Se houver contagem válida, pega o primeiro, senão mantém Unitel como padrão
     if (entries[0][1] > 0) {
       setDynamicOperator(entries[0][0]);
     } else {
@@ -94,73 +90,80 @@ export default function Dashboard() {
   const cards = [
     {
       title: "Saldo Atual",
-      value: loading ? null : `${Number(stats?.balance || 0).toLocaleString()} Kz`,
-      icon: WalletCards,
-      color: "from-emerald-500/[0.04] to-transparent",
-      iconColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-      textColor: "text-emerald-400"
+      value: loading ? null : `${Number(stats?.balance || 0).toLocaleString("pt-PT")} Kz`,
+      icon: Wallet,
+      badgeColor: "bg-cyan-500/10 border-cyan-500/20 text-cyan-400",
+      valueColor: "text-cyan-400"
     },
     {
       title: "Total Gasto",
-      value: loading ? null : `${Number(stats?.totalSpent || 0).toLocaleString()} Kz`,
-      icon: ArrowLeftRight,
-      color: "from-rose-500/[0.03] to-transparent",
-      iconColor: "text-rose-400 bg-rose-500/10 border-rose-500/20",
-      textColor: "text-white"
+      value: loading ? null : `${Number(stats?.totalSpent || 0).toLocaleString("pt-PT")} Kz`,
+      icon: TrendingDown,
+      badgeColor: "bg-blue-500/10 border-blue-500/20 text-blue-400",
+      valueColor: "text-white"
     },
     {
       title: "Total Recargas",
       value: loading ? null : String(stats?.totalRequests || 0),
-      icon: Zap,
-      color: "from-blue-500/[0.03] to-transparent",
-      iconColor: "text-blue-400 bg-blue-500/10 border-blue-500/20",
-      textColor: "text-white"
+      icon: Activity,
+      badgeColor: "bg-indigo-500/10 border-indigo-500/20 text-indigo-400",
+      valueColor: "text-white"
     },
     {
       title: "Mais Vendidos",
       value: loading ? null : dynamicOperator,
-      icon: ShieldCheck,
-      color: "from-amber-500/[0.03] to-transparent",
-      iconColor: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-      textColor: "text-amber-400 font-extrabold"
+      icon: Award,
+      badgeColor: "bg-sky-500/10 border-sky-500/20 text-sky-400",
+      valueColor: "text-sky-300 font-extrabold"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] pb-28 font-sans antialiased">
+    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] pb-28 font-sans antialiased selection:bg-cyan-500/20">
       
-      {/* HEADER FIXO */}
-      <div className="px-6 pt-8 pb-4 flex items-center justify-between border-b border-white/[0.05] bg-[#0B0E11]/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="w-full text-center">
-          <p className="text-xs text-gray-400 uppercase font-mono font-bold tracking-widest">
-            Estatísticas em tempo real
-          </p>
+      {/* HEADER SUPERIOR FINTECH */}
+      <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-white/[0.06] bg-[#0B0E11]/90 backdrop-blur-xl sticky top-0 z-50">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+            <Sparkles size={16} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-xs font-mono font-bold text-white uppercase tracking-wider">Visão Geral</h1>
+            <p className="text-[10px] text-gray-400 font-mono">Ambiente Seguro & Criptografado</p>
+          </div>
         </div>
-        <div className={`h-2 w-2 rounded-full bg-emerald-400 ${loading ? 'animate-ping' : 'animate-pulse'} absolute right-6`} />
+        <div className="flex items-center gap-2 bg-[#161A1F] border border-white/10 px-3 py-1.5 rounded-full shadow-inner">
+          <div className={`h-2 w-2 rounded-full bg-cyan-400 ${loading ? 'animate-ping' : 'animate-pulse'}`} />
+          <span className="text-[10px] font-mono font-bold uppercase text-gray-300 tracking-wider">Online</span>
+        </div>
       </div>
 
-      {/* METRICS GRID */}
+      {/* CARDS ESTILO CORPORATIVO / FINTECH AZUL */}
       <div className="grid grid-cols-2 gap-4 p-6">
         {cards.map((item, idx) => {
           const Icon = item.icon;
           return (
             <div
               key={item.title || idx}
-              className={`bg-gradient-to-br ${item.color} bg-[#161A1E] border border-white/[0.04] rounded-2xl p-4 flex flex-col justify-between shadow-xl transition-all hover:border-white/[0.08]`}
+              className="group relative overflow-hidden bg-[#161A1F] border border-white/[0.08] hover:border-cyan-500/40 rounded-2xl p-4 flex flex-col justify-between shadow-xl transition-all duration-300 hover:-translate-y-0.5"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-gray-400 uppercase font-black tracking-wider">
+              {/* Detalhe de fundo com brilho azulado sutil */}
+              <div className="absolute -right-6 -top-6 w-24 h-24 bg-cyan-500/[0.03] rounded-full blur-xl group-hover:bg-cyan-500/[0.08] transition-all" />
+
+              <div className="flex items-center justify-between relative z-10">
+                <span className="text-[10px] text-gray-400 uppercase font-mono font-bold tracking-wider">
                   {item.title}
                 </span>
-                <div className={`p-2 rounded-xl border ${item.iconColor} shadow-inner`}>
-                  <Icon size={18} />
+                <div className={`p-2.5 rounded-xl border ${item.badgeColor} shadow-md`}>
+                  <Icon size={16} />
                 </div>
               </div>
-              <div className="mt-6">
+
+              <div className="mt-6 relative z-10">
                 {loading ? (
-                  <div className="h-5 bg-gray-800 rounded w-3/4 animate-pulse mb-1" />
+                  <div className="h-5 bg-white/[0.06] rounded-md w-3/4 animate-pulse mb-1" />
                 ) : (
-                  <h3 className={`text-sm font-mono font-black tracking-tight ${item.textColor} truncate`}>
+                  <h3 className={`text-sm sm:text-base font-mono font-black tracking-tight ${item.valueColor} truncate`}>
                     {item.value}
                   </h3>
                 )}
@@ -170,33 +173,36 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* TRANSACTIONS & SUMMARY CONTAINER */}
+      {/* CONTAINER DE TRANSAÇÕES E RESUMO */}
       <div className="px-6 space-y-6">
         
-        {/* LAST TRANSACTIONS SECTION */}
-        <div className="bg-[#161A1E] border border-white/[0.04] rounded-3xl p-5 shadow-xl">
-          <h2 className="text-xs font-black uppercase tracking-widest text-gray-300 mb-5 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Últimas Transações
-          </h2>
+        {/* ÚLTIMAS TRANSAÇÕES */}
+        <div className="bg-[#161A1F] border border-white/[0.08] rounded-3xl p-5 shadow-2xl relative overflow-hidden">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2 font-mono">
+              <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.5)]" />
+              Últimas Transações
+            </h2>
+            <span className="text-[10px] text-gray-400 font-mono">Tempo real</span>
+          </div>
 
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, idx) => (
-                <div key={idx} className="flex justify-between items-center bg-white/[0.02] p-3 rounded-xl animate-pulse">
+                <div key={idx} className="flex justify-between items-center bg-white/[0.02] p-3.5 rounded-2xl animate-pulse border border-white/[0.04]">
                   <div className="flex items-center gap-3 w-full">
-                    <div className="w-8 h-8 rounded-lg bg-gray-800" />
+                    <div className="w-9 h-9 rounded-xl bg-white/[0.06]" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-3 bg-gray-800 rounded w-2/5" />
-                      <div className="h-2.5 bg-gray-800/60 rounded w-1/4" />
+                      <div className="h-3 bg-white/[0.06] rounded-md w-2/5" />
+                      <div className="h-2.5 bg-white/[0.04] rounded-md w-1/4" />
                     </div>
                   </div>
-                  <div className="h-3 bg-gray-800 rounded w-16" />
+                  <div className="h-3 bg-white/[0.06] rounded-md w-16" />
                 </div>
               ))}
             </div>
           ) : transactions.length === 0 ? (
-            <div className="text-center py-6 text-xs text-gray-400 font-mono font-bold tracking-wide">
+            <div className="text-center py-8 text-xs text-gray-400 font-mono font-bold tracking-wide">
               Nenhuma movimentação recente encontrada.
             </div>
           ) : (
@@ -218,13 +224,13 @@ export default function Dashboard() {
                     key={tx.id}
                     onClick={() => openTransaction(tx.id)}
                     className="
-                      flex justify-between items-center bg-white/[0.01] border border-white/[0.02] p-3 rounded-xl 
+                      flex justify-between items-center bg-[#0B0E11]/60 border border-white/[0.04] p-3.5 rounded-2xl 
                       cursor-pointer transition-all duration-200 
-                      hover:scale-[1.01] hover:bg-white/[0.03] active:scale-[0.98]
+                      hover:border-cyan-500/40 hover:bg-[#1C2128] active:scale-[0.98] shadow-md
                     "
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-xl border ${isOut ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
+                    <div className="flex items-center gap-3.5">
+                      <div className={`p-2.5 rounded-xl border shadow-inner ${isOut ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'}`}>
                         {isOut ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
                       </div>
                       <div>
@@ -236,8 +242,8 @@ export default function Dashboard() {
                         </p>
                       </div>
                     </div>
-                    <div className={`text-xs font-mono font-bold ${isOut ? 'text-rose-400' : 'text-emerald-400'}`}>
-                      {isOut ? '-' : '+'}{Number(tx.amount).toLocaleString()} <span className="text-[10px] font-sans font-bold text-gray-500">Kz</span>
+                    <div className={`text-xs font-mono font-bold ${isOut ? 'text-rose-400' : 'text-cyan-400'}`}>
+                      {isOut ? '-' : '+'}{Number(tx.amount).toLocaleString("pt-PT")} <span className="text-[10px] font-sans font-bold text-gray-500">Kz</span>
                     </div>
                   </div>
                 );
@@ -246,53 +252,56 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* DETAILED SUMMARY */}
-        <div className="bg-[#161A1E] border border-white/[0.04] rounded-3xl p-5 shadow-xl">
-          <h2 className="text-xs font-black uppercase tracking-widest text-gray-300 mb-5 flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-            Resumo Detalhado
-          </h2>
+        {/* RESUMO DETALHADO */}
+        <div className="bg-[#161A1F] border border-white/[0.08] rounded-3xl p-5 shadow-2xl">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2 font-mono">
+              <span className="h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+              Resumo Detalhado
+            </h2>
+            <span className="text-[10px] text-gray-400 font-mono">Consolidado</span>
+          </div>
 
-          <div className="space-y-3 text-xs font-mono font-bold">
-            <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
-              <span className="text-gray-400 font-sans font-medium">Saldo Atual</span>
+          <div className="space-y-3.5 text-xs font-mono font-bold">
+            <div className="flex justify-between items-center border-b border-white/[0.04] pb-3">
+              <span className="text-gray-400 font-sans font-medium">Saldo Atual Disponível</span>
               {loading ? (
-                <div className="h-3.5 bg-gray-800 rounded w-20 animate-pulse" />
+                <div className="h-3.5 bg-white/[0.06] rounded w-20 animate-pulse" />
               ) : (
-                <span className="text-emerald-400 font-black">
-                  {Number(stats?.balance || 0).toLocaleString()} Kz
+                <span className="text-cyan-400 font-black text-sm">
+                  {Number(stats?.balance || 0).toLocaleString("pt-PT")} Kz
                 </span>
               )}
             </div>
 
-            <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
+            <div className="flex justify-between items-center border-b border-white/[0.04] pb-3">
               <span className="text-gray-400 font-sans font-medium">Total Movimentado</span>
               {loading ? (
-                <div className="h-3.5 bg-gray-800 rounded w-24 animate-pulse" />
+                <div className="h-3.5 bg-white/[0.06] rounded w-24 animate-pulse" />
               ) : (
                 <span className="text-white">
-                  {Number(stats?.totalSpent || 0).toLocaleString()} Kz
+                  {Number(stats?.totalSpent || 0).toLocaleString("pt-PT")} Kz
                 </span>
               )}
             </div>
 
-            <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
+            <div className="flex justify-between items-center border-b border-white/[0.04] pb-3">
               <span className="text-gray-400 font-sans font-medium">Total de Requisições</span>
               {loading ? (
-                <div className="h-4 bg-gray-800 rounded w-8 animate-pulse" />
+                <div className="h-4 bg-white/[0.06] rounded w-8 animate-pulse" />
               ) : (
-                <span className="text-white font-black bg-white/[0.04] px-2 py-0.5 rounded border border-white/[0.05]">
+                <span className="text-white font-black bg-white/[0.04] px-2.5 py-1 rounded-lg border border-white/[0.06]">
                   {stats?.totalRequests || 0}
                 </span>
               )}
             </div>
 
             <div className="flex justify-between items-center pt-1">
-              <span className="text-gray-400 font-sans font-medium">Mais Vendidos</span>
+              <span className="text-gray-400 font-sans font-medium">Serviço Mais Vendido</span>
               {loading ? (
-                <div className="h-5 bg-gray-800 rounded w-28 animate-pulse" />
+                <div className="h-5 bg-white/[0.06] rounded w-28 animate-pulse" />
               ) : (
-                <span className="text-amber-400 font-sans font-black text-[11px] bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-md">
+                <span className="text-cyan-400 font-sans font-black text-[11px] bg-cyan-500/10 border border-cyan-500/20 px-3 py-1.5 rounded-xl shadow-sm">
                   {dynamicOperator}
                 </span>
               )}

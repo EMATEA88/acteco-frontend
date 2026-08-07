@@ -67,7 +67,7 @@ export default function DepositBanks() {
         </p>
         <button 
           onClick={() => navigate('/')} 
-          className="w-full py-4 bg-white text-black font-bold rounded-2xl text-sm"
+          className="w-full h-14 bg-white text-black font-bold rounded-2xl text-sm cursor-pointer"
         >
           VOLTAR AO INÍCIO
         </button>
@@ -76,11 +76,11 @@ export default function DepositBanks() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white px-5 py-6 flex flex-col">
+    <div className="min-h-screen bg-[#0B0E11] text-white px-5 py-6 flex flex-col pb-28">
       <Toaster position="top-center" />
       
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(-1)} className="p-2 bg-white/5 rounded-full">
+        <button onClick={() => navigate(-1)} className="p-2 bg-white/5 rounded-full cursor-pointer hover:bg-white/10 transition-all">
           <ArrowLeft size={16} />
         </button>
         <h1 className="text-sm font-semibold">Finalizar Depósito</h1>
@@ -93,13 +93,21 @@ export default function DepositBanks() {
           <div key={b.id} className="bg-[#111318] border border-white/5 rounded-2xl overflow-hidden shadow-lg">
             {/* Header do Banco */}
             <div className="bg-white/5 px-4 py-3 border-b border-white/5 flex justify-between items-center">
-              <span className="text-xs font-black text-emerald-500 uppercase tracking-tighter">{b.bank}</span>
+              <span className="text-xs font-black text-emerald-500 uppercase tracking-tighter">
+                {b.bank || b.name || "Banco"}
+              </span>
               <span className="text-[9px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-md font-bold">ATIVA</span>
             </div>
 
             {/* Conteúdo Detalhado */}
             <div className="p-4 space-y-4">
               <div className="grid grid-cols-1 gap-3">
+                {/* Campo Banco */}
+                <div>
+                  <label className="text-[9px] text-gray-500 uppercase font-bold block mb-1">Banco:</label>
+                  <p className="text-sm font-medium text-emerald-400 uppercase">{b.bank || "Não especificado"}</p>
+                </div>
+
                 {/* Campo Empresa */}
                 <div>
                   <label className="text-[9px] text-gray-500 uppercase font-bold block mb-1">Empresa:</label>
@@ -119,7 +127,7 @@ export default function DepositBanks() {
                         setCopied(b.id)
                         setTimeout(() => setCopied(null), 2000)
                       }}
-                      className="ml-3 p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-all shrink-0"
+                      className="ml-3 p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-all shrink-0 cursor-pointer"
                     >
                       {copied === b.id 
                         ? <CheckCircle size={18} className="text-emerald-500" /> 
@@ -155,14 +163,14 @@ export default function DepositBanks() {
         {file && !uploading && (
           <button 
             onClick={handleDirectUpload} 
-            className="w-full mt-4 h-12 bg-emerald-500 hover:bg-emerald-600 text-[#0B0E11] font-black rounded-xl text-[11px] uppercase tracking-wider transition-all"
+            className="w-full mt-4 h-14 bg-emerald-500 hover:bg-emerald-600 text-[#0B0E11] font-black rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg cursor-pointer"
           >
             CONFIRMAR DEPÓSITO
           </button>
         )}
 
         {uploading && (
-          <div className="w-full mt-4 h-12 bg-white/5 text-gray-400 font-bold rounded-xl text-xs flex items-center justify-center gap-2">
+          <div className="w-full mt-4 h-14 bg-white/5 text-gray-400 font-bold rounded-2xl text-xs flex items-center justify-center gap-2">
             <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent animate-spin rounded-full" />
             PROCESSANDO...
           </div>
@@ -171,7 +179,7 @@ export default function DepositBanks() {
 
       <button 
         onClick={handleWhatsAppSupport} 
-        className="w-full bg-[#25D366]/10 border border-[#25D366]/20 text-[#25D366] font-bold py-4 rounded-2xl flex items-center justify-center gap-2 text-xs hover:bg-[#25D366]/20 transition-all"
+        className="w-full bg-[#25D366]/10 border border-[#25D366]/20 text-[#25D366] font-bold h-14 rounded-2xl flex items-center justify-center gap-2 text-xs hover:bg-[#25D366]/20 transition-all cursor-pointer"
       >
         <WhatsappLogo weight="fill" size={20} /> SUPORTE VIA WHATSAPP
       </button>
