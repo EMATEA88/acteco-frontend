@@ -90,6 +90,11 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
     const categories: Record<string, CatalogPlan[]> = {};
 
     group.plans.forEach((plan) => {
+      // Filtrar e remover planos de 100 Kz se for casa de jogos/apostas
+      if (isBettingProvider && Number(plan.price) === 100) {
+        return;
+      }
+
       const nameUpper = plan.name.toUpperCase();
       let subCategory = "Planos Principais";
 
@@ -149,7 +154,7 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
     });
 
     return categories;
-  }, [group.plans, providerCode, group.name]);
+  }, [group.plans, providerCode, group.name, isBettingProvider]);
 
   return (
     <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] px-4 sm:px-6 pt-4 pb-28 antialiased selection:bg-cyan-500/20">
@@ -157,7 +162,7 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
       <div className="pt-3 pb-4 flex items-center justify-between border-b border-white/[0.06] sticky top-0 bg-[#0B0E11]/90 backdrop-blur-xl z-40">
         <button
           onClick={onBack}
-          className="h-10 px-4 rounded-xl bg-white/[0.03] border border-white/10 text-gray-300 text-xs font-semibold flex items-center gap-2 hover:bg-white/[0.08] hover:text-white transition-all duration-200 active:scale-95"
+          className="h-10 px-4 rounded-xl bg-white/[0.03] border border-white/10 text-gray-300 text-xs font-semibold flex items-center gap-2 hover:bg-white/[0.08] hover:text-white transition-all duration-200 active:scale-95 cursor-pointer"
         >
           <ArrowLeft size={16} className="text-gray-400" />
           <span>Voltar</span>
@@ -175,14 +180,14 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
         <div className="w-16"></div>
       </div>
 
-      {/* Sugestões Rápidas de Valores para Casas de Apostas */}
+      {/* Sugestões Rápidas de Valores para Casas de Apostas (Removido 100kz, ajustado para começar em 200/300kz) */}
       {isBettingProvider && (
         <div className="mt-6 mb-8 p-4 rounded-2xl bg-[#161A1F] border border-white/[0.08] shadow-lg">
           <p className="text-[11px] font-mono text-gray-400 uppercase tracking-wider mb-3">
             Carregamento Rápido — Selecione o Valor
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[100, 500, 1000, 3000, 5000, 10000].map((quickVal) => (
+            {[200, 300, 500, 1000, 3000, 5000, 10000].map((quickVal) => (
               <button
                 key={quickVal}
                 onClick={() => {
@@ -194,7 +199,7 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
                   } as unknown as CatalogPlan;
                   onSelect(syntheticPlan);
                 }}
-                className="h-11 rounded-xl bg-[#0B0E11] border border-white/10 hover:border-cyan-500 text-cyan-400 font-mono font-bold text-xs flex items-center justify-center transition-all shadow-sm active:scale-95"
+                className="h-11 rounded-xl bg-[#0B0E11] border border-white/10 hover:border-cyan-500 text-cyan-400 font-mono font-bold text-xs flex items-center justify-center transition-all shadow-sm active:scale-95 cursor-pointer"
               >
                 {quickVal.toLocaleString("pt-PT")} Kz
               </button>
@@ -234,6 +239,7 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
                         hover:border-cyan-500/60 hover:bg-[#1C2128]
                         transition-all duration-200
                         shadow-lg flex items-center justify-between
+                        cursor-pointer
                       "
                     >
                       <div className="flex items-center gap-5 pr-4 flex-1">

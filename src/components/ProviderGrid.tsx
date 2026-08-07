@@ -9,6 +9,32 @@ interface ProviderGridProps {
   onSelect: (provider: CatalogProvider) => void;
 }
 
+// Função auxiliar inteligente para encontrar o logo independentemente do formato da chave
+const getProviderLogoPath = (provider: CatalogProvider) => {
+  // 1. Tenta buscar pelo código do provedor (ex: "PBET", "ZAP_SAT")
+  if (provider.code) {
+    const cleanCode = provider.code.toUpperCase().replace(/\s+/g, "");
+    if (providerBranding[cleanCode]) {
+      return providerBranding[cleanCode].logo;
+    }
+  }
+
+  // 2. Tenta buscar pelo nome limpo (sem espaços e em maiúsculas)
+  if (provider.name) {
+    const cleanName = provider.name.toUpperCase().replace(/\s+/g, "");
+    if (providerBranding[cleanName]) {
+      return providerBranding[cleanName].logo;
+    }
+
+    // 3. Tenta buscar pelo nome exato atual
+    if (providerBranding[provider.name]) {
+      return providerBranding[provider.name].logo;
+    }
+  }
+
+  return undefined;
+};
+
 export default function ProviderGrid({ category, onBack, onSelect }: ProviderGridProps) {
   return (
     <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] px-5 pt-4 pb-28 antialiased selection:bg-[#02C076]/20">
@@ -47,8 +73,8 @@ export default function ProviderGrid({ category, onBack, onSelect }: ProviderGri
       <div className="mt-8">
         <div className="grid grid-cols-4 gap-3 sm:gap-4">
           {category.providers && category.providers.map((provider) => {
-            const branding = providerBranding[provider.name.toUpperCase() as keyof typeof providerBranding];
-            const logo = getLogo(branding?.logo);
+            const logoFilename = getProviderLogoPath(provider);
+            const logo = getLogo(logoFilename);
 
             return (
               <div 

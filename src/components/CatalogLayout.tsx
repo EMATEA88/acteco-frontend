@@ -15,6 +15,30 @@ import ProviderGrid from "./ProviderGrid";
 import PlanGrid from "./PlanGrid";
 import PurchaseModal from "./PurchaseModal";
 
+// Mapa global com os nomes completos oficiais para todas as casas de apostas e provedores
+const providerFullNameMap: Record<string, string> = {
+  PBET: "Premier Bet",
+  PREMIERBET: "Premier Bet",
+  BBET: "Bantu Bet",
+  BANTUBET: "Bantu Bet",
+  EBET: "Elephant Bet",
+  ELEPHANTBET: "Elephant Bet",
+  ABET: "Afri Bet",
+  AFRIBET: "Afri Bet",
+  MOBET: "Mobet",
+  MELBET: "Melbet",
+  MGMBET: "Melbet",
+  KWANZABET: "Kwanza Bet",
+  "888BETS": "888Bets",
+  "888BET": "888Bets",
+  "888": "888Bets",
+};
+
+export const getDisplayProviderName = (codeOrName: string) => {
+  const upper = (codeOrName || "").toUpperCase().trim();
+  return providerFullNameMap[upper] || codeOrName;
+};
+
 export default function CatalogLayout() {
   const { providerCode } = useParams();
 
@@ -52,9 +76,12 @@ export default function CatalogLayout() {
 
         setSelectedProvider(provider);
 
+        // Substitui pelo nome completo se existir no mapa
+        const fullName = getDisplayProviderName(provider.code || provider.name);
+
         setSelectedGroup({
             id: provider.id,
-            name: provider.name,
+            name: fullName,
             slug: provider.code?.toLowerCase() || '',
             providerCode: provider.code || '',
             plans: allPlans
@@ -70,7 +97,17 @@ export default function CatalogLayout() {
       setError("");
 
       const response = await purchaseService.getCatalog();
-      setCatalog(response.data);
+      
+      // Mapeia os dados da API para injetar os nomes completos logo na origem do catálogo
+      const formattedData = (response.data || []).map((category: CatalogCategory) => ({
+        ...category,
+        providers: (category.providers || []).map((provider: CatalogProvider) => ({
+          ...provider,
+          name: getDisplayProviderName(provider.code || provider.name)
+        }))
+      }));
+
+      setCatalog(formattedData);
     } catch (error: any) {
       setError(
         error?.response?.data?.message ??
@@ -81,16 +118,17 @@ export default function CatalogLayout() {
     }
   }
 
-  // Ao selecionar um provedor, juntamos todos os planos de todos os seus grupos num único grupo virtual
+  // Ao selecionar um provedor, juntamos todos os planos e aplicamos o nome completo amigável
   const handleSelectProvider = (provider: CatalogProvider) => {
     setSelectedProvider(provider);
 
     if (provider.groups && provider.groups.length > 0) {
       const allPlans = provider.groups.flatMap(g => g.plans || []);
+      const fullName = getDisplayProviderName(provider.code || provider.name);
       
       const unifiedGroup: CatalogGroup = {
         id: provider.id,
-        name: provider.name,
+        name: fullName,
         slug: provider.code?.toLowerCase() || String(provider.id),
         providerCode: provider.code || '',
         plans: allPlans
