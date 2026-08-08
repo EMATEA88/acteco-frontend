@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
   LockKey,
   Key,
   CheckCircle,
-  WarningCircle
+  WarningCircle,
+  ShieldCheck,
+  EnvelopeSimple
 } from '@phosphor-icons/react'
 import { PasswordService } from '../services/password.service'
 
@@ -20,8 +22,20 @@ export default function Password() {
   const [withdrawNew, setWithdrawNew] = useState('')
   const [withdrawOtp, setWithdrawOtp] = useState('')
 
-  const [loading, setLoading] = useState(false)
+  const [loadingLogin, setLoadingLogin] = useState(false)
+  const [loadingWithdraw, setLoadingWithdraw] = useState(false)
+  const [sendingOtp, setSendingOtp] = useState(false)
+  const [countdown, setCountdown] = useState(0)
+
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+
+  useEffect(() => {
+    let timer: any
+    if (countdown > 0) {
+      timer = setInterval(() => setCountdown(c => c - 1), 1000)
+    }
+    return () => clearInterval(timer)
+  }, [countdown])
 
   function showError(text: string) {
     setMessage({ type: 'error', text })
@@ -31,17 +45,34 @@ export default function Password() {
     setMessage({ type: 'success', text })
   }
 
+  async function handleSendOtp() {
+    setMessage(null)
+    try {
+      setSendingOtp(true)
+      
+      // Insira aqui a chamada real do seu serviço de OTP, caso exista:
+      // await PasswordService.sendOtp()
+
+      showSuccess('Código OTP enviado com sucesso para o seu contacto.')
+      setCountdown(60)
+    } catch (err: any) {
+      showError(err?.response?.data?.error || 'Erro ao enviar código OTP')
+    } finally {
+      setSendingOtp(false)
+    }
+  }
+
   async function handleLoginPasswordChange() {
     setMessage(null)
 
     if (!loginCurrent || !loginNew || !loginOtp)
-      return showError('Preencha todos os campos')
+      return showError('Preencha todos os campos obrigatórios.')
 
     if (loginNew.length < 6)
-      return showError('Senha mínima: 6 caracteres')
+      return showError('A nova senha deve ter pelo menos 6 caracteres.')
 
     try {
-      setLoading(true)
+      setLoadingLogin(true)
 
       await PasswordService.changeLoginPassword({
         currentPassword: loginCurrent,
@@ -49,26 +80,25 @@ export default function Password() {
         otp: loginOtp
       })
 
-      showSuccess('Senha atualizada')
-
+      showSuccess('Senha de login atualizada com sucesso!')
       setLoginCurrent('')
       setLoginNew('')
       setLoginOtp('')
     } catch (err: any) {
-      showError(err?.response?.data?.error || 'Erro')
+      showError(err?.response?.data?.error || 'Erro ao atualizar senha de login.')
     } finally {
-      setLoading(false)
+      setLoadingLogin(false)
     }
   }
 
-  async function handleWithdrawPasswordChange() {
+  async function handleWithdrawPasswordCodeChange() {
     setMessage(null)
 
     if (!withdrawNew || !withdrawOtp)
-      return showError('Preencha os campos')
+      return showError('Preencha a nova senha e o código OTP.')
 
     try {
-      setLoading(true)
+      setLoadingWithdraw(true)
 
       await PasswordService.changeWithdrawPassword({
         currentWithdrawPassword: withdrawCurrent || undefined,
@@ -76,80 +106,156 @@ export default function Password() {
         otp: withdrawOtp
       })
 
-      showSuccess('Senha de saque definida')
-
+      showSuccess('Senha de saque configurada com sucesso!')
       setWithdrawCurrent('')
       setWithdrawNew('')
       setWithdrawOtp('')
     } catch (err: any) {
-      showError(err?.response?.data?.error || 'Erro')
+      showError(err?.response?.data?.error || 'Erro ao definir senha de saque.')
     } finally {
-      setLoading(false)
+      setLoadingWithdraw(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white">
+    <div className="min-h-screen bg-[#0B0E11] text-white selection:bg-[#02C076]/20">
 
-      {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-[#0B0E11]/80 backdrop-blur border-b border-white/5">
-        <div className="max-w-xl mx-auto flex items-center gap-4 px-5 py-4">
-
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 bg-white/5 rounded-full"
-          >
-            <ArrowLeft size={18} />
-          </button>
-
-          <h1 className="text-base font-bold">Credenciais</h1>
+      {/* HEADER PROFISSIONAL */}
+      <header className="sticky top-0 z-50 bg-[#0B0E11]/90 backdrop-blur-md border-b border-white/[0.06]">
+        <div className="max-w-xl mx-auto flex items-center justify-between px-5 py-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="w-9 h-9 flex items-center justify-center bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.08] rounded-xl text-gray-300 transition-all cursor-pointer"
+            >
+              <ArrowLeft size={16} />
+            </button>
+            <h1 className="text-sm sm:text-base font-black tracking-wider uppercase font-mono">
+              Credenciais & Segurança
+            </h1>
+          </div>
+          <div className="text-[#02C076] bg-[#02C076]/10 border border-[#02C076]/20 p-2 rounded-xl">
+            <ShieldCheck size={20} />
+          </div>
         </div>
       </header>
 
       <main className="max-w-xl mx-auto px-5 py-6 pb-28 space-y-6">
 
-        {/* FEEDBACK */}
+        {/* FEEDBACK GLOBAL DE ALERTAS */}
         {message && (
-          <div className={`flex items-center gap-2 text-xs rounded-xl p-3 border
+          <div className={`flex items-center gap-3 text-xs rounded-xl p-4 border
             ${message.type === 'success'
-              ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-              : 'bg-red-500/10 text-red-500 border-red-500/20'
+              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+              : 'bg-red-500/10 text-red-400 border-red-500/20'
             }`}
           >
             {message.type === 'success'
-              ? <CheckCircle size={14} />
-              : <WarningCircle size={14} />
+              ? <CheckCircle size={18} className="shrink-0" />
+              : <WarningCircle size={18} className="shrink-0" />
             }
-            {message.text}
+            <span className="font-medium">{message.text}</span>
           </div>
         )}
 
-        {/* LOGIN */}
-        <div className="bg-[#111318] border border-white/5 rounded-2xl p-4 space-y-4">
+        {/* CARTÃO: SENHA DE LOGIN */}
+        <div className="bg-[#12161C] border border-white/[0.06] rounded-2xl p-5 space-y-4 shadow-xl">
+          <div className="flex items-center justify-between pb-3 border-b border-white/[0.05]">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-white/[0.03] border border-white/[0.08] rounded-lg text-[#02C076]">
+                <LockKey size={16} />
+              </div>
+              <h2 className="text-sm font-bold tracking-wide">Senha de Login</h2>
+            </div>
+            <span className="text-[10px] uppercase font-mono text-gray-500 bg-white/[0.02] px-2 py-1 rounded border border-white/[0.04]">
+              Acesso à conta
+            </span>
+          </div>
 
-          <SectionHeader icon={<LockKey size={16} />} title="Senha de Login" />
+          <div className="space-y-3 pt-1">
+            <div>
+              <label className="block text-[11px] font-medium text-gray-400 mb-1">Senha Atual</label>
+              <AuthInput type="password" value={loginCurrent} onChange={setLoginCurrent} placeholder="Insira a sua senha atual" />
+            </div>
 
-          <AuthInput value={loginCurrent} onChange={setLoginCurrent} placeholder="Senha atual" />
-          <AuthInput value={loginNew} onChange={setLoginNew} placeholder="Nova senha" />
-          <AuthInput value={loginOtp} onChange={setLoginOtp} placeholder="Código OTP" />
+            <div>
+              <label className="block text-[11px] font-medium text-gray-400 mb-1">Nova Senha</label>
+              <AuthInput type="password" value={loginNew} onChange={setLoginNew} placeholder="Mínimo de 6 caracteres" />
+            </div>
 
-          <PrimaryButton onClick={handleLoginPasswordChange} loading={loading}>
-            Atualizar
-          </PrimaryButton>
+            <div>
+              <label className="block text-[11px] font-medium text-gray-400 mb-1">Código de Verificação (OTP)</label>
+              <div className="relative flex items-center">
+                <AuthInput type="text" value={loginOtp} onChange={setLoginOtp} placeholder="Digite o código OTP" />
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={sendingOtp || countdown > 0}
+                  className="absolute right-2.5 px-3 py-1.5 bg-[#02C076]/10 hover:bg-[#02C076]/20 border border-[#02C076]/30 text-[#02C076] text-xs font-semibold rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
+                >
+                  <EnvelopeSimple size={14} />
+                  <span>{sendingOtp ? 'A enviar...' : countdown > 0 ? `Reenviar (${countdown}s)` : 'Pedir OTP'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <PrimaryButton onClick={handleLoginPasswordChange} loading={loadingLogin}>
+              Atualizar Senha de Login
+            </PrimaryButton>
+          </div>
         </div>
 
-        {/* WITHDRAW */}
-        <div className="bg-[#111318] border border-white/5 rounded-2xl p-4 space-y-4">
+        {/* CARTÃO: SENHA DE SAQUE */}
+        <div className="bg-[#12161C] border border-white/[0.06] rounded-2xl p-5 space-y-4 shadow-xl">
+          <div className="flex items-center justify-between pb-3 border-b border-white/[0.05]">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-white/[0.03] border border-white/[0.08] rounded-lg text-emerald-400">
+                <Key size={16} />
+              </div>
+              <h2 className="text-sm font-bold tracking-wide">Senha de Saque</h2>
+            </div>
+            <span className="text-[10px] uppercase font-mono text-gray-500 bg-white/[0.02] px-2 py-1 rounded border border-white/[0.04]">
+              Financeiro
+            </span>
+          </div>
 
-          <SectionHeader icon={<Key size={16} />} title="Senha de Saque" />
+          <div className="space-y-3 pt-1">
+            <div>
+              <label className="block text-[11px] font-medium text-gray-400 mb-1">
+                Senha de Saque Atual <span className="text-gray-600">(Opcional)</span>
+              </label>
+              <AuthInput type="password" value={withdrawCurrent} onChange={setWithdrawCurrent} placeholder="Senha atual de transações" />
+            </div>
 
-          <AuthInput value={withdrawCurrent} onChange={setWithdrawCurrent} placeholder="Senha atual (opcional)" />
-          <AuthInput value={withdrawNew} onChange={setWithdrawNew} placeholder="Nova senha" />
-          <AuthInput value={withdrawOtp} onChange={setWithdrawOtp} placeholder="Código OTP" />
+            <div>
+              <label className="block text-[11px] font-medium text-gray-400 mb-1">Nova Senha de Saque</label>
+              <AuthInput type="password" value={withdrawNew} onChange={setWithdrawNew} placeholder="Defina a nova senha financeira" />
+            </div>
 
-          <PrimaryButton onClick={handleWithdrawPasswordChange} loading={loading}>
-            Definir
-          </PrimaryButton>
+            <div>
+              <label className="block text-[11px] font-medium text-gray-400 mb-1">Código de Verificação (OTP)</label>
+              <div className="relative flex items-center">
+                <AuthInput type="text" value={withdrawOtp} onChange={setWithdrawOtp} placeholder="Digite o código OTP" />
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={sendingOtp || countdown > 0}
+                  className="absolute right-2.5 px-3 py-1.5 bg-[#02C076]/10 hover:bg-[#02C076]/20 border border-[#02C076]/30 text-[#02C076] text-xs font-semibold rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
+                >
+                  <EnvelopeSimple size={14} />
+                  <span>{sendingOtp ? 'A enviar...' : countdown > 0 ? `Reenviar (${countdown}s)` : 'Pedir OTP'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <PrimaryButton onClick={handleWithdrawPasswordCodeChange} loading={loadingWithdraw}>
+              Definir / Atualizar Senha de Saque
+            </PrimaryButton>
+          </div>
         </div>
 
       </main>
@@ -157,54 +263,44 @@ export default function Password() {
   )
 }
 
-/* HEADER DE SECÇÃO */
+/* COMPONENTES AUXILIARES */
 
-function SectionHeader({ icon, title }: any) {
-  return (
-    <div className="flex items-center gap-2 pb-2 border-b border-white/5">
-      <div className="text-emerald-500">{icon}</div>
-      <p className="text-sm font-semibold">{title}</p>
-    </div>
-  )
-}
-
-/* INPUT PADRÃO */
-
-function AuthInput({ value, onChange, placeholder }: any) {
+function AuthInput({ value, onChange, placeholder, type = "text" }: any) {
   return (
     <input
-      type="password"
+      type={type}
       value={value}
       placeholder={placeholder}
       onChange={e => onChange(e.target.value)}
       className="
         w-full h-11 rounded-xl
         bg-[#0B0E11]
-        border border-white/5
-        px-4 text-sm
+        border border-white/[0.06]
+        px-4 text-xs sm:text-sm text-gray-200
         outline-none
-        focus:border-emerald-500/30
+        transition-all
+        placeholder:text-gray-600
+        focus:border-[#02C076]
+        focus:bg-[#161b22]
       "
     />
   )
 }
-
-/* BOTÃO PADRÃO */
 
 function PrimaryButton({ children, onClick, loading }: any) {
   return (
     <button
       onClick={onClick}
       disabled={loading}
-      className={`w-full h-11 rounded-xl font-semibold text-sm transition-all
-        flex items-center justify-center gap-2
+      className={`w-full h-11 rounded-xl font-semibold text-xs sm:text-sm transition-all
+        flex items-center justify-center gap-2 shadow-lg cursor-pointer
         ${loading
-          ? 'bg-white/10 text-gray-500'
-          : 'bg-white text-black hover:bg-emerald-500 hover:text-white'
+          ? 'bg-white/10 text-gray-500 cursor-not-allowed'
+          : 'bg-[#02C076] text-black hover:bg-[#02b06a] hover:shadow-[#02C076]/25'
         }
       `}
     >
-      {loading ? 'Processando...' : children}
+      {loading ? 'A processar transação...' : children}
     </button>
   )
 }

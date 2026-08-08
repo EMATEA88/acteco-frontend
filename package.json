@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@capacitor/android": "^8.1.0",
+    "@capacitor/android": "^8.5.0",
     "@capacitor/cli": "^7.5.0",
     "@capacitor/core": "^8.1.0",
     "@fingerprintjs/fingerprintjs": "^5.2.0",
