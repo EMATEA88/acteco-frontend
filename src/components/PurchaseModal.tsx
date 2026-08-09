@@ -10,7 +10,6 @@ import {
   Hash,
   Calendar,
   FileText,
-  Phone,
   Copy,
   Check
 } from "@phosphor-icons/react";
