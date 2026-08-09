@@ -3,8 +3,6 @@ import type { CatalogPlan } from "../types/catalog";
 import { purchaseService } from "../services/purchase.service";
 import {
   X,
-  Copy,
-  Check,
   ShieldCheck,
   Receipt
 } from "@phosphor-icons/react";
@@ -64,6 +62,7 @@ export default function PurchaseModal({
   // ===================================================
 
   const [customerReference, setCustomerReference] = useState("");
+  const [epalQueryType, setEpalQueryType] = useState<"CUSTOMER" | "INVOICE" | "TAXPAYER">("CUSTOMER");
   const [customerNotification, setCustomerNotification] = useState("");
   const [amount, setAmount] = useState(
     plan.valueVariable ? "" : String(plan.price)
@@ -78,10 +77,6 @@ export default function PurchaseModal({
     errorMessage?: string;
   } | null>(null);
   
-  // Estados de cópia separados para ID e PIN
-  const [copiedId, setCopiedId] = useState(false);
-  const [copiedPin, setCopiedPin] = useState(false);
-
   // ===================================================
   // AUTO-PREENCHIMENTO DO TELEFONE
   // ===================================================
@@ -152,8 +147,6 @@ export default function PurchaseModal({
     };
   };
 
-  const operatorInfo = getOperatorInfo(plan.name);
-
   // ===================================================
   // PROVIDER CODE E REGRAS DE NOTIFICAÇÃO / PRODUTO
   // ===================================================
@@ -161,6 +154,10 @@ export default function PurchaseModal({
   const providerCode = String(
     (plan as CatalogPlan & { providerCode?: string }).providerCode ?? ""
   ).trim().toUpperCase();
+  
+  const operatorInfo = getOperatorInfo(
+  `${plan.name} ${providerCode}`
+);
 
   const notificationType = String(
     plan.notificationType ?? ""
@@ -193,11 +190,23 @@ export default function PurchaseModal({
     "ZAP_MEDIA",
     "DSTV",
     "ENDE",
-    "EPAL",
   ]);
 
   const requiresCustomerInfo =
     CUSTOMER_INFO_PROVIDER_CODES.has(providerCode);
+
+  // ===================================================
+  // PROVIDERS COM CONSULTA DE DOCUMENTOS
+  // ===================================================
+  const requiresDocumentQuery =
+    providerCode === "EPAL";
+
+  // ===================================================
+  // VALOR APURADO PARA PAGAMENTO (FASE 6)
+  // ===================================================
+  const payableAmount = requiresDocumentQuery
+    ? Number(customerInfo?.AmountDue ?? 0)
+    : Number(amount);
 
   // ===================================================
   // EXTRAÇÃO DO NOME DO CLIENTE
@@ -369,12 +378,192 @@ export default function PurchaseModal({
   }
 
   // ===================================================
-  // COMPRA
+  // CONSULTA DE DOCUMENTOS / FATURAS (FASE 1)
+  // ===================================================
+
+  async function handleDocumentQuery() {
+    try {
+      const queryValue = customerReference.trim();
+
+      if (!queryValue) {
+        const labels = {
+          CUSTOMER: "número de cliente",
+          INVOICE: "número da fatura emitida pela EPAL",
+          TAXPAYER: "número de contribuinte / BI"
+        };
+
+        setCustomerInfoError(
+          `Introduza o ${labels[epalQueryType]}.`
+        );
+        return;
+      }
+
+      if (providerCode !== "EPAL") {
+        setCustomerInfoError(
+          "Este serviço não possui consulta de documentos configurada."
+        );
+        return;
+      }
+
+      setCheckingCustomer(true);
+      setCustomerInfo(null);
+      setCustomerInfoError(null);
+
+      const akiQueryType =
+  epalQueryType === "CUSTOMER"
+    ? "CLIENT"
+    : epalQueryType;
+
+const response = await purchaseService.documentQuery({
+  providerCode: "EPAL",
+  queryType: akiQueryType,
+  queryValue
+});
+
+      const status = String(
+        response?.status ??
+        response?.data?.Status ??
+        ""
+      ).toUpperCase();
+
+      if (
+        status === "FAILED" ||
+        response?.success === false
+      ) {
+        setCustomerInfoError(
+          response?.data?.Response?.Description ??
+          response?.data?.Response?.Description ??
+          "A EPAL não conseguiu localizar os dados informados."
+        );
+        return;
+      }
+
+      const data = (response?.data ?? {}) as {
+        Clients?: Array<{
+          Number?: string;
+          Name?: string;
+          TaxNumber?: string;
+          Address?: string;
+        }>;
+        Invoices?: Array<{
+          Number?: string;
+          Client_Number?: string;
+          Amount?: number;
+          AmountPaid?: number;
+          AmountDue?: number;
+          Date?: string;
+          DateDue?: string;
+        }>;
+        Status?: string;
+        Response?: {
+          Code?: number;
+          Description?: string;
+          Runtime?: string;
+        };
+      };
+
+      const clients = Array.isArray(data.Clients)
+        ? data.Clients
+        : [];
+
+      const invoices = Array.isArray(data.Invoices)
+        ? data.Invoices
+        : [];
+
+      if (clients.length === 0 && invoices.length === 0) {
+        setCustomerInfoError(
+          "A EPAL não encontrou nenhum cliente ou fatura para os dados informados."
+        );
+        return;
+      }
+
+      /*
+       * Para consulta por fatura:
+       * - localizamos exatamente a fatura solicitada.
+       *
+       * Para consulta por cliente / contribuinte:
+       * - utilizamos o primeiro cliente devolvido;
+       * - se a EPAL devolver faturas, utilizamos a primeira fatura
+       *   devolvida para apresentar o valor disponível.
+       *
+       * Não inventamos dados: todos os valores apresentados vêm da resposta AKI.
+       */
+      let invoice: any = null;
+
+      if (epalQueryType === "INVOICE") {
+        invoice =
+          invoices.find(
+            (item: any) =>
+              String(item?.Number ?? "").trim() === queryValue
+          ) ??
+          invoices[0] ??
+          null;
+      } else {
+        invoice = invoices[0] ?? null;
+      }
+
+      const clientNumber = String(
+        invoice?.Client_Number ??
+        clients[0]?.Number ??
+        ""
+      ).trim();
+
+      const client =
+        clients.find(
+          (item: any) =>
+            String(item?.Number ?? "").trim() === clientNumber
+        ) ??
+        clients[0] ??
+        null;
+
+      /*
+       * Se a consulta encontrou apenas o cliente e nenhuma fatura,
+       * ainda mostramos os dados do cliente.
+       * O pagamento só poderá avançar quando existir um valor em dívida.
+       */
+      const normalizedInfo: Record<string, any> = {
+        ...(client ?? {}),
+        Query_Type: epalQueryType,
+        Query_Value: queryValue,
+        Invoice_Number: invoice?.Number ?? null,
+        Client_Number: clientNumber || (client?.Number ?? null),
+        Amount: invoice?.Amount ?? null,
+        AmountPaid: invoice?.AmountPaid ?? null,
+        AmountDue: invoice?.AmountDue ?? null,
+        Date: invoice?.Date ?? null,
+        DateDue: invoice?.DateDue ?? null
+      };
+
+      setCustomerInfo(normalizedInfo);
+    } catch (error: any) {
+      console.error(
+        "========== ERRO AO CONSULTAR EPAL ==========",
+        error
+      );
+
+      setCustomerInfoError(
+        error?.response?.data?.message ??
+        error?.response?.data?.error ??
+        error?.message ??
+        "Erro ao consultar os dados da EPAL."
+      );
+    } finally {
+      setCheckingCustomer(false);
+    }
+  }
+
+  // ===================================================
+  // COMPRA (FASE 2 E FASE 6)
   // ===================================================
 
   async function handlePurchase() {
     try {
       const reference = customerReference.trim();
+      const purchaseCustomerReference =
+        requiresDocumentQuery
+          ? String(customerInfo?.Client_Number ?? "").trim()
+          : reference;
+
       if (!reference) {
         setResultData({
           success: false,
@@ -383,7 +572,20 @@ export default function PurchaseModal({
         return;
       }
 
-      if (plan.valueVariable && (!amount || Number(amount) <= 0)) {
+      if (requiresDocumentQuery && !purchaseCustomerReference) {
+        setResultData({
+          success: false,
+          errorMessage:
+            "A fatura EPAL foi consultada, mas não foi possível identificar o cliente associado."
+        });
+        return;
+      }
+
+      if (
+        !requiresDocumentQuery &&
+        plan.valueVariable &&
+        (!amount || Number(amount) <= 0)
+      ) {
         setResultData({
           success: false,
           errorMessage: "Introduza um montante válido."
@@ -391,10 +593,23 @@ export default function PurchaseModal({
         return;
       }
 
-      if (requiresCustomerInfo && !customerInfo) {
+      if (requiresDocumentQuery && payableAmount <= 0) {
         setResultData({
           success: false,
-          errorMessage: "Consulte primeiro os dados do cliente antes de efetuar o pagamento."
+          errorMessage:
+            "A fatura EPAL não possui um valor em dívida válido para pagamento."
+        });
+        return;
+      }
+
+      if (
+        (requiresCustomerInfo || requiresDocumentQuery) &&
+        !customerInfo
+      ) {
+        setResultData({
+          success: false,
+          errorMessage:
+            "Consulte primeiro os dados do cliente antes de efetuar o pagamento."
         });
         return;
       }
@@ -412,9 +627,9 @@ export default function PurchaseModal({
 
       const response = (await purchaseService.purchase({
         planId: plan.id,
-        customerReference: reference,
+        customerReference: purchaseCustomerReference,
         customerNotification: notification,
-        amount: Number(amount)
+        amount: payableAmount
       })) as any;
 
       const akiResponse =
@@ -447,9 +662,9 @@ export default function PurchaseModal({
           akiResponse?.transactionId ??
           response?.serviceRequestId ??
           Math.floor(Math.random() * 10000),
-        client: reference,
+        client: purchaseCustomerReference,
         operator: plan.name,
-        amount: Number(amount),
+        amount: payableAmount,
         currency: "AOA",
         createdAt: new Date().toISOString(),
         status: akiResponse?.Status ?? akiResponse?.status ?? "SUCCESS",
@@ -479,19 +694,6 @@ export default function PurchaseModal({
     }
   }
 
-  // Funções de cópia para ID e PIN
-  const copyIdToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(true);
-    setTimeout(() => setCopiedId(false), 2000);
-  };
-
-  const copyPinToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedPin(true);
-    setTimeout(() => setCopiedPin(false), 2000);
-  };
-
   // ===================================================
   // RENDER
   // ===================================================
@@ -511,9 +713,17 @@ export default function PurchaseModal({
                 <h2 className="text-sm font-bold text-white tracking-wide">
                   Confirmar Operação
                 </h2>
-                <p className="text-xs text-gray-400 truncate max-w-[220px]">
-                  {operationType} · {plan.name}
-                </p>
+               <div className="flex items-center gap-2">
+              <img
+                 src={operatorInfo.logoUrl}
+                 alt={operatorInfo.name}
+                 className="w-5 h-5 rounded-md object-contain"
+                />
+
+               <p className="text-xs text-gray-400 truncate max-w-[220px]">
+               {operationType} · {operatorInfo.name}
+             </p>
+              </div>
               </div>
             </div>
             <button
@@ -526,14 +736,60 @@ export default function PurchaseModal({
 
           {/* CORPO COM ROLAGEM INTERNA */}
           <div className="p-5 space-y-3.5 overflow-y-auto custom-scrollbar flex-1">
-            {/* REFERÊNCIA */}
+            {/* REFERÊNCIA / CONSULTA EPAL */}
             <div>
+              {requiresDocumentQuery && (
+                <>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+                    Pesquisar EPAL por
+                  </label>
+
+                  <select
+                    value={epalQueryType}
+                    onChange={(e) => {
+                      setEpalQueryType(
+                        e.target.value as "CUSTOMER" | "INVOICE" | "TAXPAYER"
+                      );
+                      setCustomerReference("");
+                      setCustomerInfo(null);
+                      setCustomerInfoError(null);
+                    }}
+                    className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition-colors mb-2"
+                  >
+                    <option value="CUSTOMER">
+                      Número de Cliente
+                    </option>
+                    <option value="INVOICE">
+                      Número de Fatura
+                    </option>
+                    <option value="TAXPAYER">
+                      Número de Contribuinte / BI
+                    </option>
+                  </select>
+                </>
+              )}
+
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
-                Referência / Destino
+                {requiresDocumentQuery
+                  ? epalQueryType === "CUSTOMER"
+                    ? "Número de Cliente EPAL"
+                    : epalQueryType === "INVOICE"
+                      ? "Número da Fatura EPAL"
+                      : "Número de Contribuinte / BI"
+                  : "Referência / Destino"}
               </label>
+
               <input
                 className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
-                placeholder="Nº de Telemóvel, Contador ou ID"
+                placeholder={
+                  requiresDocumentQuery
+                    ? epalQueryType === "CUSTOMER"
+                      ? "Ex.: 123456"
+                      : epalQueryType === "INVOICE"
+                        ? "Ex.: 9010000001"
+                        : "Ex.: 000988522LA037"
+                    : "Nº de Telemóvel, Contador ou ID"
+                }
                 value={customerReference}
                 onChange={(e) => {
                   setCustomerReference(e.target.value);
@@ -541,7 +797,33 @@ export default function PurchaseModal({
                   setCustomerInfoError(null);
                 }}
               />
+
+              {requiresDocumentQuery && (
+                <p className="text-[10px] text-gray-500 mt-1">
+                  A consulta será feita na EPAL usando o método selecionado acima.
+                </p>
+              )}
             </div>
+
+            {/* BOTÃO DE CONSULTA */}
+            {(requiresCustomerInfo || requiresDocumentQuery) && (
+              <button
+                type="button"
+                onClick={requiresDocumentQuery ? handleDocumentQuery : handleCustomerInfo}
+                disabled={checkingCustomer}
+                className="w-full rounded-xl bg-white/[0.05] border border-white/10 py-2.5 text-xs font-semibold text-white hover:bg-white/[0.08] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {checkingCustomer ? (
+                  <span>A consultar...</span>
+                ) : (
+                  <span>
+                    {requiresDocumentQuery
+                      ? "Consultar EPAL"
+                      : "Consultar Cliente"}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* TELEFONE NOTIFICAÇÃO */}
             {requiresCustomerNotification && (
@@ -568,18 +850,91 @@ export default function PurchaseModal({
               </div>
             )}
 
-            {/* DADOS DO CLIENTE */}
+            {/* DADOS DO CLIENTE / FATURA (FASE 5) */}
             {customerInfo && (
               <div className="rounded-xl bg-[#0d1117] border border-emerald-500/20 p-3.5 space-y-2.5">
                 <div className="flex items-center justify-between border-b border-white/5 pb-2">
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
-                    Dados do Cliente
+                    {requiresDocumentQuery ? "Resultado da Consulta EPAL" : "Dados do Cliente"}
                   </span>
                   <span className="text-[10px] font-bold text-emerald-400 uppercase">
-                    Cliente Encontrado
+                    {requiresDocumentQuery ? "Fatura Encontrada" : "Cliente Encontrado"}
                   </span>
                 </div>
-                {Object.entries(customerInfo).map(([key, value]) => {
+
+                {requiresDocumentQuery && (
+                  <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/10 p-3 space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500">
+                        Método de Consulta
+                      </span>
+                      <span className="text-white font-semibold">
+                        {epalQueryType === "CUSTOMER"
+                          ? "Nº de Cliente"
+                          : epalQueryType === "INVOICE"
+                            ? "Nº de Fatura"
+                            : "Nº de Contribuinte / BI"}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500">
+                        Referência Consultada
+                      </span>
+                      <span className="text-white font-semibold text-right break-all max-w-[220px]">
+                        {customerInfo.Query_Value}
+                      </span>
+                    </div>
+
+                    {customerInfo.Client_Number && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">
+                          Nº do Cliente
+                        </span>
+                        <span className="text-white font-semibold">
+                          {customerInfo.Client_Number}
+                        </span>
+                      </div>
+                    )}
+
+                    {customerInfo.Invoice_Number && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">
+                          Nº da Fatura
+                        </span>
+                        <span className="text-white font-semibold">
+                          {customerInfo.Invoice_Number}
+                        </span>
+                      </div>
+                    )}
+
+                    {customerInfo.AmountDue !== null &&
+                      customerInfo.AmountDue !== undefined && (
+                        <div className="flex justify-between text-xs">
+                          <span className="text-gray-500">
+                            Valor em Dívida
+                          </span>
+                          <span className="text-emerald-400 font-bold">
+                            {Number(customerInfo.AmountDue ?? 0).toLocaleString("pt-PT")} Kz
+                          </span>
+                        </div>
+                      )}
+
+                    {customerInfo.DateDue && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">
+                          Data de Vencimento
+                        </span>
+                        <span className="text-white font-medium">
+                          {String(customerInfo.DateDue)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+
+                {!requiresDocumentQuery && Object.entries(customerInfo).map(([key, value]) => {
                   if (value === null || value === undefined || value === "") return null;
                   const label = key
                     .replace(/([A-Z])/g, " $1")
@@ -606,7 +961,7 @@ export default function PurchaseModal({
             )}
 
             {/* VALOR */}
-            {plan.valueVariable ? (
+            {plan.valueVariable && !requiresDocumentQuery ? (
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
                   Montante a Pagar (AOA)
@@ -626,208 +981,53 @@ export default function PurchaseModal({
             ) : (
               <div className="rounded-xl bg-[#0d1117] border border-white/5 p-3.5 flex items-center justify-between">
                 <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">
-                  Preço Fixo
+                  {requiresDocumentQuery ? "Montante da Fatura" : "Preço Fixo"}
                 </span>
-                <span className="text-base font-bold text-emerald-400">
-                  {plan.price.toLocaleString("pt-PT")} Kz
+                <span className="text-sm font-bold text-white">
+                  {requiresDocumentQuery 
+                    ? `${Number(customerInfo?.AmountDue ?? 0).toLocaleString("pt-PT")} Kz`
+                    : `${Number(amount).toLocaleString("pt-PT")} Kz`}
                 </span>
               </div>
             )}
-
-            {/* RESUMO */}
-            <div className="rounded-xl bg-[#0d1117] border border-white/5 p-3.5 space-y-1.5 text-xs">
-              <div className="flex justify-between">
-                <span className="text-gray-400">Serviço Selecionado</span>
-                <span className="text-white font-medium">{plan.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Categoria / Tipo</span>
-                <span className="text-gray-300">
-                  {operationType} · {plan.valueVariable ? "Valor Variável" : "Valor Fixo"}
-                </span>
-              </div>
-            </div>
           </div>
 
-          {/* RODAPÉ DE AÇÃO (FIXO) */}
-          <div className="border-t border-white/5 px-5 py-3.5 bg-[#161A1F]/90 flex gap-3 shrink-0">
+          {/* RODAPÉ / AÇÕES (FIXO) */}
+          <div className="p-5 border-t border-white/5 bg-[#161A1F]/90 shrink-0">
             <button
-              onClick={onClose}
-              className="flex-1 rounded-xl border border-white/10 py-2.5 text-xs font-semibold text-gray-300 hover:bg-white/[0.03] hover:text-white transition-all cursor-pointer"
+              onClick={handlePurchase}
+              disabled={loading}
+              className="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] py-3 text-xs font-bold text-slate-950 transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
             >
-              Cancelar
+              {loading ? (
+                <span>A processar...</span>
+              ) : (
+                <span>Efetuar Pagamento</span>
+              )}
             </button>
-
-            {!requiresCustomerInfo ? (
-              <button
-                disabled={loading || !customerReference.trim() || (plan.valueVariable && !amount)}
-                onClick={handlePurchase}
-                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>A processar...</span>
-                  </>
-                ) : (
-                  <span>Confirmar Pagamento</span>
-                )}
-              </button>
-            ) : !customerInfo ? (
-              <button
-                disabled={checkingCustomer || !customerReference.trim()}
-                onClick={handleCustomerInfo}
-                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {checkingCustomer ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>A consultar...</span>
-                  </>
-                ) : (
-                  <span>Consultar Cliente</span>
-                )}
-              </button>
-            ) : (
-              <button
-                disabled={
-                  loading ||
-                  !customerReference.trim() ||
-                  (requiresCustomerNotification && customerNotification.length !== 9) ||
-                  (plan.valueVariable && !amount)
-                }
-                onClick={handlePurchase}
-                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>A processar...</span>
-                  </>
-                ) : (
-                  <span>Confirmar Pagamento</span>
-                )}
-              </button>
-            )}
           </div>
 
         </div>
       ) : (
-        /* TELA DE RECIBO (LIGEIRAMENTE MAIOR E COM CÓPIA DO PIN) */
-        <div className="w-full max-w-md rounded-2xl bg-[#161A1F] border border-white/10 p-7 shadow-2xl flex flex-col items-center relative">
+        /* TELA DE SUCESSO / RESULTADO */
+        <div className="w-full max-w-md rounded-2xl bg-[#161A1F] border border-white/10 p-6 shadow-2xl text-center space-y-4">
+          <div className={`w-12 h-12 rounded-full mx-auto flex items-center justify-center ${resultData.success ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+            {resultData.success ? <ShieldCheck size={24} weight="bold" /> : <X size={24} weight="bold" />}
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-white">
+              {resultData.success ? "Operação Realizada com Sucesso" : "Falha na Operação"}
+            </h3>
+            <p className="text-xs text-gray-400 mt-1">
+              {resultData.success ? "O seu pagamento foi processado com sucesso." : (resultData.errorMessage || "Não foi possível concluir a operação.")}
+            </p>
+          </div>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-xl bg-white/[0.03] border border-white/5 text-gray-400 hover:text-white transition-all cursor-pointer"
+            className="w-full rounded-xl bg-white/10 hover:bg-white/20 py-2.5 text-xs font-semibold text-white transition-colors cursor-pointer"
           >
-            <X size={16} weight="bold" />
+            Fechar
           </button>
-
-          {resultData.success && resultData.transaction ? (
-            <>
-              <div className="w-16 h-16 rounded-2xl border border-white/10 bg-white/[0.02] p-2.5 mb-3 shadow-inner flex items-center justify-center">
-                <img
-                  src={operatorInfo.logoUrl}
-                  alt={operatorInfo.name}
-                  className="w-full h-full object-contain rounded-lg"
-                />
-              </div>
-
-              <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-semibold mb-1">
-                <ShieldCheck size={16} weight="fill" />
-                <span>Transação Bem-Sucedida</span>
-              </div>
-
-              <h3 className="text-lg font-bold text-white mb-4">
-                Comprovativo de Pagamento
-              </h3>
-
-              <div className="w-full space-y-3 text-xs bg-[#0d1117] border border-white/5 p-4.5 rounded-xl">
-                <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                  <span className="text-gray-500 font-mono">ID Operação:</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-white font-mono font-semibold">
-                      {resultData.transaction.id}
-                    </span>
-                    <button
-                      onClick={() => copyIdToClipboard(String(resultData.transaction.id))}
-                      className="text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer"
-                    >
-                      {copiedId ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex justify-between py-1.5 border-b border-white/5">
-                  <span className="text-gray-400">Cliente / Destino</span>
-                  <span className="text-white font-medium">{resultData.transaction.client}</span>
-                </div>
-
-                {resultData.transaction.customerName && (
-                  <div className="flex justify-between py-1.5 border-b border-white/5">
-                    <span className="text-gray-400">Nome do Titular</span>
-                    <span className="text-emerald-400 font-medium">{resultData.transaction.customerName}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-between py-1.5 border-b border-white/5">
-                  <span className="text-gray-400">Serviço</span>
-                  <span className="text-white font-medium">{resultData.transaction.operator}</span>
-                </div>
-
-                <div className="flex justify-between py-1.5 border-b border-white/5">
-                  <span className="text-gray-400">Montante</span>
-                  <span className="text-emerald-400 font-semibold text-sm">
-                    {Number(resultData.transaction.amount).toLocaleString("pt-PT")} {resultData.transaction.currency}
-                  </span>
-                </div>
-
-                {resultData.transaction.voucherPIN && (
-                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                    <span className="text-gray-400">PIN do Voucher</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-amber-400 font-mono font-bold tracking-wider">
-                        {resultData.transaction.voucherPIN}
-                      </span>
-                      <button
-                        onClick={() => copyPinToClipboard(String(resultData.transaction.voucherPIN))}
-                        className="text-gray-400 hover:text-amber-400 transition-colors cursor-pointer"
-                      >
-                        {copiedPin ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={onClose}
-                className="w-full mt-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-3 text-xs font-bold text-white shadow-lg shadow-emerald-950/40 transition-all cursor-pointer"
-              >
-                Concluir
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="w-16 h-16 rounded-2xl border border-rose-500/20 bg-rose-500/10 p-2.5 mb-3 shadow-inner flex items-center justify-center text-rose-400">
-                <X size={24} weight="bold" />
-              </div>
-
-              <h3 className="text-lg font-bold text-white mb-2">
-                Falha na Operação
-              </h3>
-
-              <p className="text-xs text-rose-400 text-center mb-5 bg-rose-500/10 border border-rose-500/20 p-3.5 rounded-xl w-full">
-                {resultData?.errorMessage || "Ocorreu um erro desconhecido ao processar a compra."}
-              </p>
-
-              <button
-                onClick={() => setResultData(null)}
-                className="w-full rounded-xl border border-white/10 py-3 text-xs font-semibold text-gray-300 hover:bg-white/[0.03] hover:text-white transition-all cursor-pointer"
-              >
-                Tentar Novamente
-              </button>
-            </>
-          )}
         </div>
       )}
     </div>

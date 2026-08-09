@@ -64,6 +64,41 @@ export interface CustomerInfoResponse {
   data?: CustomerInfoData | null;
 }
 
+export interface DocumentQueryRequest {
+  providerCode: string;
+  queryType: string;
+  queryValue: string;
+}
+
+export interface DocumentQueryResponse {
+  success: boolean;
+  orderId: string;
+  status: string | null;
+  data?: {
+    Clients?: Array<{
+      Number?: string;
+      Name?: string;
+      TaxNumber?: string;
+      Address?: string;
+    }>;
+    Invoices?: Array<{
+      Number?: string;
+      Client_Number?: string;
+      Amount?: number;
+      AmountPaid?: number;
+      AmountDue?: number;
+      Date?: string;
+      DateDue?: string;
+    }>;
+    Status?: string;
+    Response?: {
+      Code?: number;
+      Description?: string;
+      Runtime?: string;
+    };
+  } | null;
+}
+
 export const purchaseService = {
 
   /**
@@ -72,9 +107,9 @@ export const purchaseService = {
    * =====================================================
    *
    * Frontend
-   *    ↓
+   * ↓
    * /services/catalog
-   *    ↓
+   * ↓
    * Backend
    */
 
@@ -94,11 +129,11 @@ export const purchaseService = {
    * =====================================================
    *
    * Frontend
-   *    ↓
+   * ↓
    * /aki/customer-info
-   *    ↓
+   * ↓
    * AKI
-   *    ↓
+   * ↓
    * Dados do cliente
    */
 
@@ -139,15 +174,33 @@ export const purchaseService = {
 
   /**
    * =====================================================
+   * CONSULTA DE DOCUMENTOS / FATURAS
+   * =====================================================
+   */
+
+  async documentQuery(
+    payload: DocumentQueryRequest
+  ): Promise<DocumentQueryResponse> {
+    const { data } =
+      await api.post<DocumentQueryResponse>(
+        "/aki/documents-query",
+        payload
+      );
+
+    return data;
+  },
+
+  /**
+   * =====================================================
    * COMPRA AKI
    * =====================================================
    *
    * Frontend
-   *    ↓
+   * ↓
    * /aki/purchase
-   *    ↓
+   * ↓
    * Backend EMATEA
-   *    ↓
+   * ↓
    * AKI
    */
 
