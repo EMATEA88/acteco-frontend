@@ -3,7 +3,6 @@ import type { CatalogPlan } from "../types/catalog";
 import { purchaseService } from "../services/purchase.service";
 import {
   X,
-  ShieldCheck,
   Receipt
 } from "@phosphor-icons/react";
 
@@ -156,8 +155,8 @@ export default function PurchaseModal({
   ).trim().toUpperCase();
   
   const operatorInfo = getOperatorInfo(
-  `${plan.name} ${providerCode}`
-);
+    `${plan.name} ${providerCode}`
+  );
 
   const notificationType = String(
     plan.notificationType ?? ""
@@ -202,7 +201,7 @@ export default function PurchaseModal({
     providerCode === "EPAL";
 
   // ===================================================
-  // VALOR APURADO PARA PAGAMENTO (FASE 6)
+  // VALOR APURADO PARA PAGAMENTO
   // ===================================================
   const payableAmount = requiresDocumentQuery
     ? Number(customerInfo?.AmountDue ?? 0)
@@ -361,11 +360,6 @@ export default function PurchaseModal({
 
       setCustomerInfo(info);
     } catch (error: any) {
-      console.error(
-        "========== ERRO AO CONSULTAR CLIENTE ==========",
-        error
-      );
-
       setCustomerInfoError(
         error?.response?.data?.error ??
         error?.response?.data?.message ??
@@ -378,7 +372,7 @@ export default function PurchaseModal({
   }
 
   // ===================================================
-  // CONSULTA DE DOCUMENTOS / FATURAS (FASE 1)
+  // CONSULTA DE DOCUMENTOS / FATURAS (EPAL)
   // ===================================================
 
   async function handleDocumentQuery() {
@@ -410,15 +404,17 @@ export default function PurchaseModal({
       setCustomerInfoError(null);
 
       const akiQueryType =
-  epalQueryType === "CUSTOMER"
-    ? "CLIENT"
-    : epalQueryType;
+        epalQueryType === "CUSTOMER"
+          ? "CLIENT"
+          : epalQueryType === "TAXPAYER"
+            ? "TAXNUMBER"
+            : epalQueryType;
 
-const response = await purchaseService.documentQuery({
-  providerCode: "EPAL",
-  queryType: akiQueryType,
-  queryValue
-});
+      const response = await purchaseService.documentQuery({
+        providerCode: "EPAL",
+        queryType: akiQueryType,
+        queryValue
+      });
 
       const status = String(
         response?.status ??
@@ -431,7 +427,6 @@ const response = await purchaseService.documentQuery({
         response?.success === false
       ) {
         setCustomerInfoError(
-          response?.data?.Response?.Description ??
           response?.data?.Response?.Description ??
           "A EPAL não conseguiu localizar os dados informados."
         );
@@ -454,21 +449,10 @@ const response = await purchaseService.documentQuery({
           Date?: string;
           DateDue?: string;
         }>;
-        Status?: string;
-        Response?: {
-          Code?: number;
-          Description?: string;
-          Runtime?: string;
-        };
       };
 
-      const clients = Array.isArray(data.Clients)
-        ? data.Clients
-        : [];
-
-      const invoices = Array.isArray(data.Invoices)
-        ? data.Invoices
-        : [];
+      const clients = Array.isArray(data.Clients) ? data.Clients : [];
+      const invoices = Array.isArray(data.Invoices) ? data.Invoices : [];
 
       if (clients.length === 0 && invoices.length === 0) {
         setCustomerInfoError(
@@ -477,17 +461,6 @@ const response = await purchaseService.documentQuery({
         return;
       }
 
-      /*
-       * Para consulta por fatura:
-       * - localizamos exatamente a fatura solicitada.
-       *
-       * Para consulta por cliente / contribuinte:
-       * - utilizamos o primeiro cliente devolvido;
-       * - se a EPAL devolver faturas, utilizamos a primeira fatura
-       *   devolvida para apresentar o valor disponível.
-       *
-       * Não inventamos dados: todos os valores apresentados vêm da resposta AKI.
-       */
       let invoice: any = null;
 
       if (epalQueryType === "INVOICE") {
@@ -516,11 +489,6 @@ const response = await purchaseService.documentQuery({
         clients[0] ??
         null;
 
-      /*
-       * Se a consulta encontrou apenas o cliente e nenhuma fatura,
-       * ainda mostramos os dados do cliente.
-       * O pagamento só poderá avançar quando existir um valor em dívida.
-       */
       const normalizedInfo: Record<string, any> = {
         ...(client ?? {}),
         Query_Type: epalQueryType,
@@ -536,11 +504,6 @@ const response = await purchaseService.documentQuery({
 
       setCustomerInfo(normalizedInfo);
     } catch (error: any) {
-      console.error(
-        "========== ERRO AO CONSULTAR EPAL ==========",
-        error
-      );
-
       setCustomerInfoError(
         error?.response?.data?.message ??
         error?.response?.data?.error ??
@@ -553,7 +516,7 @@ const response = await purchaseService.documentQuery({
   }
 
   // ===================================================
-  // COMPRA (FASE 2 E FASE 6)
+  // COMPRA
   // ===================================================
 
   async function handlePurchase() {
@@ -575,8 +538,7 @@ const response = await purchaseService.documentQuery({
       if (requiresDocumentQuery && !purchaseCustomerReference) {
         setResultData({
           success: false,
-          errorMessage:
-            "A fatura EPAL foi consultada, mas não foi possível identificar o cliente associado."
+          errorMessage: "A fatura EPAL foi consultada, mas não foi possível identificar o cliente."
         });
         return;
       }
@@ -596,8 +558,7 @@ const response = await purchaseService.documentQuery({
       if (requiresDocumentQuery && payableAmount <= 0) {
         setResultData({
           success: false,
-          errorMessage:
-            "A fatura EPAL não possui um valor em dívida válido para pagamento."
+          errorMessage: "A fatura EPAL não possui um valor em dívida válido."
         });
         return;
       }
@@ -608,8 +569,7 @@ const response = await purchaseService.documentQuery({
       ) {
         setResultData({
           success: false,
-          errorMessage:
-            "Consulte primeiro os dados do cliente antes de efetuar o pagamento."
+          errorMessage: "Consulte primeiro os dados do cliente antes de efetuar o pagamento."
         });
         return;
       }
@@ -618,7 +578,7 @@ const response = await purchaseService.documentQuery({
       if (requiresCustomerNotification && notification.length !== 9) {
         setResultData({
           success: false,
-          errorMessage: "Introduza um número de telefone válido com 9 dígitos para receber a confirmação da operação."
+          errorMessage: "Introduza um número de telefone válido com 9 dígitos."
         });
         return;
       }
@@ -670,8 +630,6 @@ const response = await purchaseService.documentQuery({
         status: akiResponse?.Status ?? akiResponse?.status ?? "SUCCESS",
         voucherPIN: transactionExtraInfo?.VoucherPIN ?? transactionExtraInfo?.voucherPIN ?? null,
         voucherValue: transactionExtraInfo?.VoucherValue ?? transactionExtraInfo?.voucherValue ?? null,
-        voucherUnits: transactionExtraInfo?.VoucherUnits ?? transactionExtraInfo?.voucherUnits ?? null,
-        voucherVat: transactionExtraInfo?.VoucherVat ?? transactionExtraInfo?.voucherVat ?? null,
         customerName,
         extraInfo: transactionExtraInfo
       };
@@ -681,13 +639,12 @@ const response = await purchaseService.documentQuery({
         transaction
       });
     } catch (error: any) {
-      console.error("========== ERRO AO EFETUAR COMPRA ==========", error);
       setResultData({
         success: false,
         errorMessage:
           error?.response?.data?.message ??
           error?.response?.data?.error ??
-          "Erro ao efetuar compra. Verifique os dados e tente novamente."
+          "Erro ao efetuar compra. Tente novamente."
       });
     } finally {
       setLoading(false);
@@ -701,46 +658,46 @@ const response = await purchaseService.documentQuery({
   return (
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
       {!resultData ? (
-        <div className="w-full max-w-md max-h-[90vh] rounded-2xl bg-[#161A1F] border border-white/10 flex flex-col shadow-2xl overflow-hidden">
+        <div className="w-full max-w-md max-h-[82vh] rounded-2xl bg-[#161A1F] border border-white/10 flex flex-col shadow-2xl overflow-hidden">
           
           {/* CABEÇALHO (FIXO) */}
-          <div className="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-[#161A1F]/90 shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <Receipt size={18} weight="bold" />
+          <div className="px-4 py-3 border-b border-white/5 flex justify-between items-center bg-[#161A1F]/90 shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <Receipt size={16} weight="bold" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-white tracking-wide">
+                <h2 className="text-xs font-bold text-white tracking-wide">
                   Confirmar Operação
                 </h2>
-               <div className="flex items-center gap-2">
-              <img
-                 src={operatorInfo.logoUrl}
-                 alt={operatorInfo.name}
-                 className="w-5 h-5 rounded-md object-contain"
-                />
-
-               <p className="text-xs text-gray-400 truncate max-w-[220px]">
-               {operationType} · {operatorInfo.name}
-             </p>
-              </div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <img
+                    src={operatorInfo.logoUrl}
+                    alt={operatorInfo.name}
+                    className="w-4 h-4 rounded object-contain"
+                  />
+                  <p className="text-[11px] text-gray-400 truncate max-w-[200px]">
+                    {operationType} · {operatorInfo.name}
+                  </p>
+                </div>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-white/[0.03] border border-white/5 text-gray-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
+              className="p-1.5 rounded-lg bg-white/[0.03] border border-white/5 text-gray-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
             >
-              <X size={15} weight="bold" />
+              <X size={14} weight="bold" />
             </button>
           </div>
 
-          {/* CORPO COM ROLAGEM INTERNA */}
-          <div className="p-5 space-y-3.5 overflow-y-auto custom-scrollbar flex-1">
+          {/* CORPO COM ROLAGEM INTERNA E ESPAÇAMENTO COMPACTO */}
+          <div className="p-4 space-y-3 overflow-y-auto custom-scrollbar flex-1">
+            
             {/* REFERÊNCIA / CONSULTA EPAL */}
             <div>
               {requiresDocumentQuery && (
                 <>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
                     Pesquisar EPAL por
                   </label>
 
@@ -754,22 +711,16 @@ const response = await purchaseService.documentQuery({
                       setCustomerInfo(null);
                       setCustomerInfoError(null);
                     }}
-                    className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition-colors mb-2"
+                    className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition-colors mb-2"
                   >
-                    <option value="CUSTOMER">
-                      Número de Cliente
-                    </option>
-                    <option value="INVOICE">
-                      Número de Fatura
-                    </option>
-                    <option value="TAXPAYER">
-                      Número de Contribuinte / BI
-                    </option>
+                    <option value="CUSTOMER">Número de Cliente</option>
+                    <option value="INVOICE">Número de Fatura</option>
+                    <option value="TAXPAYER">Número de Contribuinte / BI</option>
                   </select>
                 </>
               )}
 
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
                 {requiresDocumentQuery
                   ? epalQueryType === "CUSTOMER"
                     ? "Número de Cliente EPAL"
@@ -780,7 +731,7 @@ const response = await purchaseService.documentQuery({
               </label>
 
               <input
-                className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder={
                   requiresDocumentQuery
                     ? epalQueryType === "CUSTOMER"
@@ -797,12 +748,6 @@ const response = await purchaseService.documentQuery({
                   setCustomerInfoError(null);
                 }}
               />
-
-              {requiresDocumentQuery && (
-                <p className="text-[10px] text-gray-500 mt-1">
-                  A consulta será feita na EPAL usando o método selecionado acima.
-                </p>
-              )}
             </div>
 
             {/* BOTÃO DE CONSULTA */}
@@ -811,15 +756,13 @@ const response = await purchaseService.documentQuery({
                 type="button"
                 onClick={requiresDocumentQuery ? handleDocumentQuery : handleCustomerInfo}
                 disabled={checkingCustomer}
-                className="w-full rounded-xl bg-white/[0.05] border border-white/10 py-2.5 text-xs font-semibold text-white hover:bg-white/[0.08] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full rounded-xl bg-white/[0.05] border border-white/10 py-2 text-xs font-semibold text-white hover:bg-white/[0.08] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {checkingCustomer ? (
                   <span>A consultar...</span>
                 ) : (
                   <span>
-                    {requiresDocumentQuery
-                      ? "Consultar EPAL"
-                      : "Consultar Cliente"}
+                    {requiresDocumentQuery ? "Consultar EPAL" : "Consultar Cliente"}
                   </span>
                 )}
               </button>
@@ -828,7 +771,7 @@ const response = await purchaseService.documentQuery({
             {/* TELEFONE NOTIFICAÇÃO */}
             {requiresCustomerNotification && (
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
                   Telefone para Notificações
                 </label>
                 <input
@@ -842,97 +785,77 @@ const response = await purchaseService.documentQuery({
                     )
                   }
                   placeholder="Ex.: 944272561"
-                  className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
-                <p className="text-[10px] text-gray-500 mt-1">
-                  Número de 9 dígitos para receber a confirmação da operação.
-                </p>
               </div>
             )}
 
-            {/* DADOS DO CLIENTE / FATURA (FASE 5) */}
+            {/* DADOS DO CLIENTE / FATURA */}
             {customerInfo && (
-              <div className="rounded-xl bg-[#0d1117] border border-emerald-500/20 p-3.5 space-y-2.5">
-                <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
+              <div className="rounded-xl bg-[#0d1117] border border-emerald-500/20 p-3 space-y-2">
+                <div className="flex items-center justify-between border-b border-white/5 pb-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
                     {requiresDocumentQuery ? "Resultado da Consulta EPAL" : "Dados do Cliente"}
                   </span>
-                  <span className="text-[10px] font-bold text-emerald-400 uppercase">
+                  <span className="text-[9px] font-bold text-emerald-400 uppercase">
                     {requiresDocumentQuery ? "Fatura Encontrada" : "Cliente Encontrado"}
                   </span>
                 </div>
 
                 {requiresDocumentQuery && (
-                  <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/10 p-3 space-y-2">
+                  <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/10 p-2.5 space-y-1.5">
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">
-                        Método de Consulta
-                      </span>
+                      <span className="text-gray-500">Método</span>
                       <span className="text-white font-semibold">
                         {epalQueryType === "CUSTOMER"
                           ? "Nº de Cliente"
                           : epalQueryType === "INVOICE"
                             ? "Nº de Fatura"
-                            : "Nº de Contribuinte / BI"}
+                            : "Nº Contribuinte / BI"}
                       </span>
                     </div>
 
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">
-                        Referência Consultada
-                      </span>
-                      <span className="text-white font-semibold text-right break-all max-w-[220px]">
+                      <span className="text-gray-500">Referência</span>
+                      <span className="text-white font-semibold text-right break-all max-w-[200px]">
                         {customerInfo.Query_Value}
                       </span>
                     </div>
 
+                    {customerInfo.Name && (
+                      <div className="flex justify-between gap-4 text-xs">
+                        <span className="text-gray-500">Cliente</span>
+                        <span className="text-white font-semibold text-right break-words max-w-[200px]">
+                          {customerInfo.Name}
+                        </span>
+                      </div>
+                    )}
+
                     {customerInfo.Client_Number && (
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">
-                          Nº do Cliente
-                        </span>
-                        <span className="text-white font-semibold">
-                          {customerInfo.Client_Number}
-                        </span>
+                        <span className="text-gray-500">Nº do Cliente</span>
+                        <span className="text-white font-semibold">{customerInfo.Client_Number}</span>
                       </div>
                     )}
 
                     {customerInfo.Invoice_Number && (
                       <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">
-                          Nº da Fatura
-                        </span>
-                        <span className="text-white font-semibold">
-                          {customerInfo.Invoice_Number}
-                        </span>
+                        <span className="text-gray-500">Nº da Fatura</span>
+                        <span className="text-white font-semibold">{customerInfo.Invoice_Number}</span>
                       </div>
                     )}
 
                     {customerInfo.AmountDue !== null &&
                       customerInfo.AmountDue !== undefined && (
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-500">
-                            Valor em Dívida
-                          </span>
+                        <div className="flex justify-between text-xs pt-1 border-t border-white/5">
+                          <span className="text-gray-400 font-medium">Valor em Dívida</span>
                           <span className="text-emerald-400 font-bold">
                             {Number(customerInfo.AmountDue ?? 0).toLocaleString("pt-PT")} Kz
                           </span>
                         </div>
                       )}
-
-                    {customerInfo.DateDue && (
-                      <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">
-                          Data de Vencimento
-                        </span>
-                        <span className="text-white font-medium">
-                          {String(customerInfo.DateDue)}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 )}
-
 
                 {!requiresDocumentQuery && Object.entries(customerInfo).map(([key, value]) => {
                   if (value === null || value === undefined || value === "") return null;
@@ -944,7 +867,7 @@ const response = await purchaseService.documentQuery({
                   return (
                     <div key={key} className="flex justify-between gap-4 text-xs">
                       <span className="text-gray-500">{label}</span>
-                      <span className="text-white font-medium text-right break-words max-w-[200px]">
+                      <span className="text-white font-medium text-right break-words max-w-[190px]">
                         {String(displayValue)}
                       </span>
                     </div>
@@ -955,52 +878,41 @@ const response = await purchaseService.documentQuery({
 
             {/* ERRO DE CONSULTA */}
             {customerInfoError && (
-              <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 px-3.5 py-2.5">
+              <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 px-3 py-2">
                 <p className="text-xs text-rose-400">{customerInfoError}</p>
               </div>
             )}
 
             {/* VALOR */}
-            {plan.valueVariable && !requiresDocumentQuery ? (
+            {plan.valueVariable && !requiresDocumentQuery && (
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
-                  Montante a Pagar (AOA)
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                  Montante (AOA)
                 </label>
                 <input
                   type="number"
-                  className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
-                  placeholder="Introduza o valor"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                 />
-                <p className="text-[10px] text-gray-500 mt-1 flex justify-between">
-                  <span>Mín: {plan.valueVariableMin?.toLocaleString("pt-PT")} Kz</span>
-                  <span>Máx: {plan.valueVariableMax?.toLocaleString("pt-PT")} Kz</span>
-                </p>
-              </div>
-            ) : (
-              <div className="rounded-xl bg-[#0d1117] border border-white/5 p-3.5 flex items-center justify-between">
-                <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">
-                  {requiresDocumentQuery ? "Montante da Fatura" : "Preço Fixo"}
-                </span>
-                <span className="text-sm font-bold text-white">
-                  {requiresDocumentQuery 
-                    ? `${Number(customerInfo?.AmountDue ?? 0).toLocaleString("pt-PT")} Kz`
-                    : `${Number(amount).toLocaleString("pt-PT")} Kz`}
-                </span>
               </div>
             )}
           </div>
 
-          {/* RODAPÉ / AÇÕES (FIXO) */}
-          <div className="p-5 border-t border-white/5 bg-[#161A1F]/90 shrink-0">
+          {/* RODAPÉ (FIXO) */}
+          <div className="p-3 border-t border-white/5 bg-[#161A1F] shrink-0">
             <button
+              type="button"
               onClick={handlePurchase}
               disabled={loading}
-              className="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] py-3 text-xs font-bold text-slate-950 transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+              className="w-full h-10 rounded-xl bg-emerald-500 font-semibold text-xs text-black hover:bg-emerald-400 active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/10"
             >
               {loading ? (
-                <span>A processar...</span>
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                  <span>A processar...</span>
+                </>
               ) : (
                 <span>Efetuar Pagamento</span>
               )}
@@ -1009,22 +921,18 @@ const response = await purchaseService.documentQuery({
 
         </div>
       ) : (
-        /* TELA DE SUCESSO / RESULTADO */
-        <div className="w-full max-w-md rounded-2xl bg-[#161A1F] border border-white/10 p-6 shadow-2xl text-center space-y-4">
-          <div className={`w-12 h-12 rounded-full mx-auto flex items-center justify-center ${resultData.success ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
-            {resultData.success ? <ShieldCheck size={24} weight="bold" /> : <X size={24} weight="bold" />}
+        /* TELA DE SUCESSO */
+        <div className="w-full max-w-sm rounded-2xl bg-[#161A1F] border border-white/10 p-6 text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center">
+            <Receipt size={24} weight="bold" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">
-              {resultData.success ? "Operação Realizada com Sucesso" : "Falha na Operação"}
-            </h3>
-            <p className="text-xs text-gray-400 mt-1">
-              {resultData.success ? "O seu pagamento foi processado com sucesso." : (resultData.errorMessage || "Não foi possível concluir a operação.")}
-            </p>
+            <h3 className="text-sm font-bold text-white">Operação Concluída</h3>
+            <p className="text-xs text-gray-400 mt-1">O pagamento foi efetuado com sucesso.</p>
           </div>
           <button
             onClick={onClose}
-            className="w-full rounded-xl bg-white/10 hover:bg-white/20 py-2.5 text-xs font-semibold text-white transition-colors cursor-pointer"
+            className="w-full h-10 rounded-xl bg-white/10 text-xs font-semibold text-white hover:bg-white/15 transition-colors cursor-pointer"
           >
             Fechar
           </button>
