@@ -48,67 +48,74 @@ export default function CategoryGrid({
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-5 pt-4 pb-24">
-      {/* TÍTULO CENTRALIZADO */}
-      <div className="text-center mb-6">
-        <p className="text-xs font-semibold text-gray-400 tracking-wider uppercase">
-          Escolha uma categoria
-        </p>
-      </div>
+    <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] flex flex-col justify-center items-center px-5 font-sans antialiased selection:bg-[#02C076]/25 z-50">
+      
+      {/* CONTAINER CENTRALIZADO SEM SCROLL */}
+      <div className="max-w-4xl w-full flex flex-col justify-center h-full py-6">
+        
+        {/* TÍTULO CENTRALIZADO */}
+        <div className="text-center mb-6 shrink-0">
+          <p className="text-xs font-semibold text-gray-400 tracking-wider uppercase">
+            Escolha uma categoria
+          </p>
+        </div>
 
-      {/* GRELHA COM CARDS */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-5">
-        {categories.map(category => {
-          const categoryImage = getCategoryAsset(category.name);
+        {/* GRELHA COM CARDS */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 w-full">
+          {categories.map(category => {
+            const categoryImage = getCategoryAsset(category.name);
 
-          return (
-            <button
-              key={category.id}
-              onClick={() => onSelect(category)}
-              className="
-                group
-                bg-[#12161C]
-                border
-                border-white/[0.06]
-                rounded-2xl
-                p-5
-                transition-all
-                duration-200
-                hover:border-[#02C076]
-                hover:bg-[#161b22]
-                flex
-                flex-col
-                items-center
-                justify-center
-                cursor-pointer
-              "
-            >
-              {/* Imagem do Setor com Tamanho Aumentado */}
-              <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center overflow-hidden rounded-2xl mb-3.5 bg-[#0B0E11]/50 border border-white/[0.04]">
-                {categoryImage ? (
-                  <img
-                    src={categoryImage}
-                    alt={category.name}
-                    className="w-16 h-16 sm:w-20 sm:h-20 object-contain transition-transform duration-200 group-hover:scale-110"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-[#0B0E11] flex items-center justify-center">
-                    <span className="text-white text-[11px] text-center px-1 font-semibold">
-                      {category.name}
-                    </span>
-                  </div>
-                )}
-              </div>
+            return (
+              <button
+                key={category.id}
+                onClick={() => onSelect(category)}
+                className="
+                  group
+                  bg-[#12161C]
+                  border
+                  border-white/[0.06]
+                  rounded-2xl
+                  p-4
+                  transition-all
+                  duration-200
+                  hover:border-[#02C076]
+                  hover:bg-[#161b22]
+                  flex
+                  flex-col
+                  items-center
+                  justify-center
+                  cursor-pointer
+                  shrink-0
+                "
+              >
+                {/* Imagem do Setor */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center overflow-hidden rounded-xl mb-3 bg-[#0B0E11]/50 border border-white/[0.04] shrink-0">
+                  {categoryImage ? (
+                    <img
+                      src={categoryImage}
+                      alt={category.name}
+                      className="w-12 h-12 sm:w-16 sm:h-16 object-contain transition-transform duration-200 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-[#0B0E11] flex items-center justify-center">
+                      <span className="text-white text-[11px] text-center px-1 font-semibold">
+                        {category.name}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-              {/* Nome do Serviço / Categoria */}
-              <div className="text-center w-full">
-                <h2 className="text-white font-medium text-xs sm:text-sm group-hover:text-[#02C076] transition-colors truncate">
-                  {category.name}
-                </h2>
-              </div>
-            </button>
-          );
-        })}
+                {/* Nome do Serviço / Categoria */}
+                <div className="text-center w-full">
+                  <h2 className="text-white font-medium text-xs sm:text-sm group-hover:text-[#02C076] transition-colors truncate">
+                    {category.name}
+                  </h2>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
       </div>
     </div>
   );
