@@ -180,34 +180,6 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
         <div className="w-16"></div>
       </div>
 
-      {/* Sugestões Rápidas de Valores para Casas de Apostas (Removido 100kz, ajustado para começar em 200/300kz) */}
-      {isBettingProvider && (
-        <div className="mt-6 mb-8 p-4 rounded-2xl bg-[#161A1F] border border-white/[0.08] shadow-lg">
-          <p className="text-[11px] font-mono text-gray-400 uppercase tracking-wider mb-3">
-            Carregamento Rápido — Selecione o Valor
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[200, 300, 500, 1000, 3000, 5000, 10000].map((quickVal) => (
-              <button
-                key={quickVal}
-                onClick={() => {
-                  const syntheticPlan = {
-                    id: quickVal,
-                    name: `Recarga ${quickVal.toLocaleString("pt-PT")} Kz`,
-                    price: quickVal,
-                    valueVariable: false
-                  } as unknown as CatalogPlan;
-                  onSelect(syntheticPlan);
-                }}
-                className="h-11 rounded-xl bg-[#0B0E11] border border-white/10 hover:border-cyan-500 text-cyan-400 font-mono font-bold text-xs flex items-center justify-center transition-all shadow-sm active:scale-95 cursor-pointer"
-              >
-                {quickVal.toLocaleString("pt-PT")} Kz
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="space-y-8 mt-6">
         {Object.keys(groupedPlans).length > 0 ? (
           Object.entries(groupedPlans).map(([categoryTitle, plansList]) => (
@@ -226,6 +198,7 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
               <div className="grid grid-cols-1 gap-3">
                 {plansList.map((plan) => {
                   const isVariable = plan.valueVariable;
+                  const isVoucher = plan.name.toUpperCase().includes("VOUCHER");
 
                   return (
                     <button
@@ -262,8 +235,14 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
 
                       <div className="text-right shrink-0 pl-4">
                         {isVariable ? (
-                          <span className="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-black uppercase font-mono tracking-wider bg-red-600 text-white shadow-md active:scale-95 transition-transform">
-                            Variável
+                          <span
+                            className={`inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-black uppercase font-mono tracking-wider shadow-md active:scale-95 transition-transform ${
+                              isVoucher
+                                ? "bg-red-600 text-white"
+                                : "bg-cyan-600 text-white"
+                            }`}
+                          >
+                            {isVoucher ? "Voucher" : "Recargas Diretas"}
                           </span>
                         ) : (
                           <div className="flex flex-col items-end">

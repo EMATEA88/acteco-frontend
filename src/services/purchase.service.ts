@@ -22,9 +22,16 @@ export interface CustomerInfoQueryRequest {
 
 export interface CustomerInfoData {
   Transaction_ID?: string | number | null;
+
   Provider_Code?: string | null;
-  Provider_ClientInfo?: string | Record<string, any> | null;
+
+  Provider_ClientInfo?:
+    | string
+    | Record<string, any>
+    | null;
+
   Status?: string | null;
+
   Response?: {
     Code?: number | null;
     Description?: string | null;
@@ -34,22 +41,45 @@ export interface CustomerInfoData {
 
 export interface CustomerInfoResponse {
   success: boolean;
+
   status: string | null;
+
   orderId: string;
+
   transactionId?: string | number | null;
+
   providerCode?: string | null;
-  client?: Record<string, any> | string | null;
+
+  client?:
+    | Record<string, any>
+    | string
+    | null;
+
   response?: {
     Code?: number | null;
     Description?: string | null;
     Runtime?: string | null;
   } | null;
+
   data?: CustomerInfoData | null;
 }
 
 export const purchaseService = {
 
+  /**
+   * =====================================================
+   * CATÁLOGO
+   * =====================================================
+   *
+   * Frontend
+   *    ↓
+   * /services/catalog
+   *    ↓
+   * Backend
+   */
+
   async getCatalog(): Promise<CatalogResponse> {
+
     const { data } =
       await api.get<CatalogResponse>(
         "/services/catalog"
@@ -59,16 +89,19 @@ export const purchaseService = {
   },
 
   /**
-   * Consulta os dados do cliente antes da compra.
+   * =====================================================
+   * CONSULTA DE CLIENTE
+   * =====================================================
    *
    * Frontend
-   * ↓
+   *    ↓
    * /aki/customer-info
-   * ↓
+   *    ↓
    * AKI
-   * ↓
+   *    ↓
    * Dados do cliente
    */
+
   async customerInfo(
     payload: CustomerInfoRequest
   ): Promise<CustomerInfoResponse> {
@@ -83,9 +116,14 @@ export const purchaseService = {
   },
 
   /**
-   * Consulta o resultado quando a AKI
-   * devolve RUNNING.
+   * =====================================================
+   * CONSULTA DE OPERAÇÃO
+   * =====================================================
+   *
+   * Utilizado quando a consulta AKI
+   * retorna uma operação em execução.
    */
+
   async customerInfoQuery(
     payload: CustomerInfoQueryRequest
   ): Promise<CustomerInfoResponse> {
@@ -100,22 +138,26 @@ export const purchaseService = {
   },
 
   /**
-   * Efetua a compra somente depois
-   * da confirmação do cliente.
+   * =====================================================
+   * COMPRA AKI
+   * =====================================================
    *
-   * customerReference:
-   * - número/contador/conta do cliente
-   *
-   * customerNotification:
-   * - telefone para notificação
+   * Frontend
+   *    ↓
+   * /aki/purchase
+   *    ↓
+   * Backend EMATEA
+   *    ↓
+   * AKI
    */
+
   async purchase(
     payload: PurchaseRequest
   ): Promise<PurchaseResponse> {
 
     const { data } =
       await api.post<PurchaseResponse>(
-        "/purchase",
+        "/aki/purchase",
         payload
       );
 

@@ -1,10 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CatalogPlan } from "../types/catalog";
 import { purchaseService } from "../services/purchase.service";
 import { formatCurrencyAOA } from "../utils/formatCurrency";
-import { XCircle, X, Copy, Check, ShieldCheck, Receipt } from "@phosphor-icons/react";
+import {
+  X,
+  Copy,
+  Check,
+  ShieldCheck,
+  Receipt
+} from "@phosphor-icons/react";
 
-// 1. Importação estática das imagens de recarga
+// =====================================================
+// IMAGENS DE RECARGA
+// =====================================================
+
 const rechargeImages = import.meta.glob<string>(
   "../assets/recharges/*.{png,PNG,jpg,JPG,jpeg,JPEG,webp,WEBP}",
   {
@@ -13,7 +22,10 @@ const rechargeImages = import.meta.glob<string>(
   }
 );
 
-// 2. Mapeamento de branding
+// =====================================================
+// BRANDING DOS PROVIDERS
+// =====================================================
+
 const providerBranding: Record<string, { logo: string }> = {
   UNITEL: { logo: "UNITEL.PNG" },
   BAZZA: { logo: "UNITEL.PNG" },
@@ -27,18 +39,31 @@ const providerBranding: Record<string, { logo: string }> = {
   EPAL: { logo: "EPAL.PNG" },
   BANTUBET: { logo: "BANTUBET.PNG" },
   PREMIERBET: { logo: "PREMIERBET.PNG" },
-  BETIKA: { logo: "BETIKA.PNG" },
+  BETIKA: { logo: "BETIKA.PNG" }
 };
+
+// =====================================================
+// PROPS
+// =====================================================
 
 interface PurchaseModalProps {
   plan: CatalogPlan;
   onClose: () => void;
 }
 
+// =====================================================
+// COMPONENT
+// =====================================================
+
 export default function PurchaseModal({
   plan,
   onClose
 }: PurchaseModalProps) {
+
+  // ===================================================
+  // ESTADO
+  // ===================================================
+
   const [customerReference, setCustomerReference] = useState("");
   const [customerNotification, setCustomerNotification] = useState("");
   const [amount, setAmount] = useState(
@@ -46,39 +71,67 @@ export default function PurchaseModal({
   );
   const [loading, setLoading] = useState(false);
   const [checkingCustomer, setCheckingCustomer] = useState(false);
-  const [customerInfo, setCustomerInfo] =
-    useState<Record<string, any> | null>(null);
-  const [customerInfoError, setCustomerInfoError] =
-    useState<string | null>(null);
-  
+  const [customerInfo, setCustomerInfo] = useState<Record<string, any> | null>(null);
+  const [customerInfoError, setCustomerInfoError] = useState<string | null>(null);
   const [resultData, setResultData] = useState<{
     success: boolean;
     transaction?: any;
     errorMessage?: string;
   } | null>(null);
-
   const [copied, setCopied] = useState(false);
 
-  // Identificação do tipo ENDE
-  const isEnde =
-    plan.name
-      .toUpperCase()
-      .includes("ENDE");
+  // ===================================================
+  // AUTO-PREENCHIMENTO DO TELEFONE
+  // ===================================================
+
+  useEffect(() => {
+    const reference = customerReference
+      .replace(/\D/g, "")
+      .slice(0, 9);
+
+    // Só copia automaticamente quando a referência
+    // for realmente um telefone de 9 dígitos.
+    if (reference.length === 9) {
+      setCustomerNotification((current) => {
+        // Não sobrescreve uma alteração manual do usuário.
+        if (current.trim() !== "") {
+          return current;
+        }
+
+        return reference;
+      });
+    }
+  }, [customerReference]);
+
+  // ===================================================
+  // TEXTO / PROVIDER
+  // ===================================================
 
   const getOperatorInfo = (text: string = "") => {
     const upperText = text.toUpperCase();
-    let operatorKey = null;
+    let operatorKey: string | null = null;
 
-    if (upperText.includes("UNITEL") || upperText.includes("BAZZA")) operatorKey = "UNITEL";
-    else if (upperText.includes("MOVICEL")) operatorKey = "MOVICEL";
-    else if (upperText.includes("AFRICELL")) operatorKey = "AFRICELL";
-    else if (upperText.includes("BANTUBET")) operatorKey = "BANTUBET";
-    else if (upperText.includes("PREMIERBET")) operatorKey = "PREMIERBET";
-    else if (upperText.includes("BETIKA")) operatorKey = "BETIKA";
-    else if (upperText.includes("DSTV")) operatorKey = "DSTV";
-    else if (upperText.includes("ZAP")) operatorKey = "ZAP";
-    else if (upperText.includes("ENDE")) operatorKey = "ENDE";
-    else if (upperText.includes("EPAL")) operatorKey = "EPAL";
+    if (upperText.includes("UNITEL") || upperText.includes("BAZZA")) {
+      operatorKey = "UNITEL";
+    } else if (upperText.includes("MOVICEL")) {
+      operatorKey = "MOVICEL";
+    } else if (upperText.includes("AFRICELL")) {
+      operatorKey = "AFRICELL";
+    } else if (upperText.includes("BANTUBET")) {
+      operatorKey = "BANTUBET";
+    } else if (upperText.includes("PREMIERBET")) {
+      operatorKey = "PREMIERBET";
+    } else if (upperText.includes("BETIKA")) {
+      operatorKey = "BETIKA";
+    } else if (upperText.includes("DSTV")) {
+      operatorKey = "DSTV";
+    } else if (upperText.includes("ZAP")) {
+      operatorKey = "ZAP";
+    } else if (upperText.includes("ENDE")) {
+      operatorKey = "ENDE";
+    } else if (upperText.includes("EPAL")) {
+      operatorKey = "EPAL";
+    }
 
     if (operatorKey) {
       const brand = providerBranding[operatorKey];
@@ -86,46 +139,102 @@ export default function PurchaseModal({
         const targetFileName = brand.logo.toLowerCase();
         for (const path in rechargeImages) {
           if (path.toLowerCase().endsWith(targetFileName)) {
-            return { name: operatorKey, logoUrl: rechargeImages[path] };
+            return {
+              name: operatorKey,
+              logoUrl: rechargeImages[path]
+            };
           }
         }
       }
     }
 
-    return { name: plan.name, logoUrl: "/logo.png" };
+    return {
+      name: plan.name,
+      logoUrl: "/logo.png"
+    };
   };
 
   const operatorInfo = getOperatorInfo(plan.name);
 
-  const planText = (
-    `${plan.name} ${(plan as CatalogPlan & {
-      providerCode?: string;
-    }).providerCode ?? ""}`
-  ).toUpperCase();
+  // ===================================================
+  // PROVIDER CODE E REGRAS DE NOTIFICAÇÃO / PRODUTO
+  // ===================================================
+
+  const providerCode = String(
+    (plan as CatalogPlan & { providerCode?: string }).providerCode ?? ""
+  ).trim().toUpperCase();
+
+  const notificationType = String(
+    plan.notificationType ?? ""
+  ).trim().toUpperCase();
+
+  const requiresCustomerNotification =
+    notificationType === "SMS";
+
+  const productCode = String(
+    plan.externalId ?? ""
+  ).trim().toUpperCase();
+
+  const productName = String(
+    plan.name ?? ""
+  ).trim();
+
+  const isVoucher =
+    productCode.includes("VCH") ||
+    /voucher/i.test(productName);
+
+  const operationType = isVoucher
+    ? "Voucher"
+    : "Recarga";
+
+  // ===================================================
+  // PROVIDERS COM CONSULTA DE CLIENTE SUPORTADA PELA AKI
+  // ===================================================
+  const CUSTOMER_INFO_PROVIDER_CODES = new Set([
+    "ZAP_SAT",
+    "ZAP_MEDIA",
+    "DSTV",
+  ]);
 
   const requiresCustomerInfo =
-    !(
-      planText.includes("UNITEL") ||
-      planText.includes("BAZZA") ||
-      planText.includes("MOVICEL") ||
-      planText.includes("AFRICELL") ||
-      planText.includes("NETONE")
+    CUSTOMER_INFO_PROVIDER_CODES.has(providerCode);
+
+  // ===================================================
+  // EXTRAÇÃO DO NOME DO CLIENTE
+  // ===================================================
+
+  const extractCustomerName = (
+    info: Record<string, any> | null | undefined
+  ): string | null => {
+    if (!info) return null;
+    const possibleNames = [
+      info.CustomerName,
+      info.customerName,
+      info.Customer_Name,
+      info.customer_name,
+      info.Name,
+      info.name
+    ];
+    const found = possibleNames.find(
+      value => value !== null && value !== undefined && String(value).trim() !== ""
     );
+    return found ? String(found).trim() : null;
+  };
+
+  // ===================================================
+  // CONSULTA DO CLIENTE
+  // ===================================================
 
   async function handleCustomerInfo() {
     try {
-      if (!customerReference.trim()) {
+      const customerId = customerReference.trim();
+
+      if (!customerId) {
         setCustomerInfoError(
           "Introduza a referência ou número do cliente."
         );
         return;
       }
-
-      const providerCode = String(
-        (plan as CatalogPlan & {
-          providerCode?: string;
-        }).providerCode ?? ""
-      ).trim();
 
       if (!providerCode) {
         setCustomerInfoError(
@@ -138,13 +247,83 @@ export default function PurchaseModal({
       setCustomerInfo(null);
       setCustomerInfoError(null);
 
-      const response =
-        await purchaseService.customerInfo({
-          providerCode,
-          customerId: customerReference.trim(),
-        });
+      // 1. PRIMEIRA CONSULTA
+      let response = await purchaseService.customerInfo({
+        providerCode,
+        customerId
+      });
 
-      if (response?.status !== "SUCCESS") {
+      // 2. PROCESSAR STATUS INICIAL
+      let status = String(
+        response?.status ??
+        response?.data?.Status ??
+        ""
+      ).toUpperCase();
+
+      // 3. SE ESTIVER RUNNING, CONSULTAR OPERAÇÃO
+      if (status === "RUNNING") {
+        const orderId = String(response?.orderId ?? "").trim();
+
+        if (!orderId) {
+          setCustomerInfoError(
+            "A consulta foi iniciada, mas a AKI não devolveu o Order ID."
+          );
+          return;
+        }
+
+        const maxAttempts = 10;
+        const intervalMs = 2000;
+
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+          await new Promise(resolve =>
+            setTimeout(resolve, intervalMs)
+          );
+
+          response = await purchaseService.customerInfoQuery({
+            orderId,
+            providerCode,
+            customerId
+          });
+
+          status = String(
+            response?.status ??
+            response?.data?.Status ??
+            ""
+          ).toUpperCase();
+
+          if (status === "SUCCESS") {
+            break;
+          }
+
+          if (status === "FAILED") {
+            setCustomerInfoError(
+              response?.response?.Description ??
+              response?.data?.Response?.Description ??
+              "A AKI não conseguiu localizar os dados do cliente."
+            );
+            return;
+          }
+
+          if (status !== "RUNNING") {
+            setCustomerInfoError(
+              response?.response?.Description ??
+              response?.data?.Response?.Description ??
+              "Não foi possível concluir a consulta do cliente."
+            );
+            return;
+          }
+
+          if (attempt === maxAttempts) {
+            setCustomerInfoError(
+              "A consulta do cliente ainda está em processamento. Tente novamente dentro de alguns segundos."
+            );
+            return;
+          }
+        }
+      }
+
+      // 4. VALIDAR RESULTADO FINAL
+      if (status !== "SUCCESS") {
         setCustomerInfoError(
           response?.response?.Description ??
           response?.data?.Response?.Description ??
@@ -153,6 +332,7 @@ export default function PurchaseModal({
         return;
       }
 
+      // 5. EXTRAIR DADOS DO CLIENTE
       let info =
         response?.client ??
         response?.data?.Provider_ClientInfo ??
@@ -168,10 +348,7 @@ export default function PurchaseModal({
         }
       }
 
-      if (
-        !info ||
-        typeof info !== "object"
-      ) {
+      if (!info || typeof info !== "object") {
         setCustomerInfoError(
           "A operadora não devolveu informações do cliente."
         );
@@ -179,7 +356,6 @@ export default function PurchaseModal({
       }
 
       setCustomerInfo(info);
-
     } catch (error: any) {
       console.error(
         "========== ERRO AO CONSULTAR CLIENTE ==========",
@@ -192,20 +368,57 @@ export default function PurchaseModal({
         error?.message ??
         "Erro ao consultar os dados do cliente."
       );
-
     } finally {
       setCheckingCustomer(false);
     }
   }
 
+  // ===================================================
+  // COMPRA
+  // ===================================================
+
   async function handlePurchase() {
     try {
+      const reference = customerReference.trim();
+      if (!reference) {
+        setResultData({
+          success: false,
+          errorMessage: "Introduza a referência ou número do cliente."
+        });
+        return;
+      }
+
+      if (plan.valueVariable && (!amount || Number(amount) <= 0)) {
+        setResultData({
+          success: false,
+          errorMessage: "Introduza um montante válido."
+        });
+        return;
+      }
+
+      if (requiresCustomerInfo && !customerInfo) {
+        setResultData({
+          success: false,
+          errorMessage: "Consulte primeiro os dados do cliente antes de efetuar o pagamento."
+        });
+        return;
+      }
+
+      const notification = customerNotification.replace(/\D/g, "").slice(0, 9);
+      if (requiresCustomerNotification && notification.length !== 9) {
+        setResultData({
+          success: false,
+          errorMessage: "Introduza um número de telefone válido com 9 dígitos para receber a confirmação da operação."
+        });
+        return;
+      }
+
       setLoading(true);
 
       const response = (await purchaseService.purchase({
         planId: plan.id,
-        customerReference,
-        customerNotification: customerNotification || "",
+        customerReference: reference,
+        customerNotification: notification,
         amount: Number(amount)
       })) as any;
 
@@ -218,15 +431,20 @@ export default function PurchaseModal({
       let transactionExtraInfo =
         akiResponse?.Transaction_ExtraInfo ??
         akiResponse?.transaction_ExtraInfo ??
+        akiResponse?.ExtraInfo ??
+        akiResponse?.extraInfo ??
         null;
 
       if (typeof transactionExtraInfo === "string") {
         try {
           transactionExtraInfo = JSON.parse(transactionExtraInfo);
-        } catch {
-          // Algumas respostas da AKI podem ser texto simples.
-        }
+        } catch {}
       }
+
+      const customerName =
+        transactionExtraInfo?.CustomerName ??
+        transactionExtraInfo?.customerName ??
+        extractCustomerName(customerInfo);
 
       const transaction = {
         id:
@@ -234,57 +452,26 @@ export default function PurchaseModal({
           akiResponse?.transactionId ??
           response?.serviceRequestId ??
           Math.floor(Math.random() * 10000),
-
-        client: customerReference,
-
+        client: reference,
         operator: plan.name,
-
         amount: Number(amount),
-
         currency: "AOA",
-
         createdAt: new Date().toISOString(),
-
-        status:
-          akiResponse?.Status ??
-          "SUCCESS",
-
-        voucherPIN:
-          transactionExtraInfo?.VoucherPIN ??
-          null,
-
-        voucherValue:
-          transactionExtraInfo?.VoucherValue ??
-          null,
-
-        voucherUnits:
-          transactionExtraInfo?.VoucherUnits ??
-          null,
-
-        voucherVat:
-          transactionExtraInfo?.VoucherVat ??
-          null,
-
-        customerName:
-          transactionExtraInfo?.CustomerName ??
-          null,
-
-        extraInfo:
-          transactionExtraInfo
+        status: akiResponse?.Status ?? akiResponse?.status ?? "SUCCESS",
+        voucherPIN: transactionExtraInfo?.VoucherPIN ?? transactionExtraInfo?.voucherPIN ?? null,
+        voucherValue: transactionExtraInfo?.VoucherValue ?? transactionExtraInfo?.voucherValue ?? null,
+        voucherUnits: transactionExtraInfo?.VoucherUnits ?? transactionExtraInfo?.voucherUnits ?? null,
+        voucherVat: transactionExtraInfo?.VoucherVat ?? transactionExtraInfo?.voucherVat ?? null,
+        customerName,
+        extraInfo: transactionExtraInfo
       };
 
       setResultData({
         success: true,
         transaction
       });
-
     } catch (error: any) {
-
-      console.error(
-        "========== ERRO AO EFETUAR COMPRA ==========",
-        error
-      );
-
+      console.error("========== ERRO AO EFETUAR COMPRA ==========", error);
       setResultData({
         success: false,
         errorMessage:
@@ -292,7 +479,6 @@ export default function PurchaseModal({
           error?.response?.data?.error ??
           "Erro ao efetuar compra. Verifique os dados e tente novamente."
       });
-
     } finally {
       setLoading(false);
     }
@@ -304,39 +490,47 @@ export default function PurchaseModal({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // ===================================================
+  // RENDER
+  // ===================================================
+
   return (
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
-      
       {!resultData ? (
-        <div className="w-full max-w-md rounded-2xl bg-[#161A1F] border border-white/10 overflow-hidden shadow-2xl">
+        <div className="w-full max-w-md max-h-[90vh] rounded-2xl bg-[#161A1F] border border-white/10 flex flex-col shadow-2xl overflow-hidden">
           
-          {/* Cabeçalho */}
-          <div className="px-6 py-5 border-b border-white/5 flex justify-between items-center bg-[#161A1F]/50">
+          {/* CABEÇALHO (FIXO) */}
+          <div className="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-[#161A1F]/90 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <Receipt size={20} weight="bold" />
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <Receipt size={18} weight="bold" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-white tracking-wide">Confirmar Operação</h2>
-                <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[220px]">{plan.name}</p>
+                <h2 className="text-sm font-bold text-white tracking-wide">
+                  Confirmar Operação
+                </h2>
+                <p className="text-xs text-gray-400 truncate max-w-[220px]">
+                  {operationType} · {plan.name}
+                </p>
               </div>
             </div>
-            <button 
+            <button
               onClick={onClose}
               className="p-2 rounded-xl bg-white/[0.03] border border-white/5 text-gray-400 hover:text-white hover:bg-white/[0.06] transition-all"
             >
-              <X size={16} weight="bold" />
+              <X size={15} weight="bold" />
             </button>
           </div>
 
-          {/* Corpo do Formulário */}
-          <div className="p-6 space-y-4">
+          {/* CORPO COM ROLAGEM INTERNA */}
+          <div className="p-5 space-y-3.5 overflow-y-auto custom-scrollbar flex-1">
+            {/* REFERÊNCIA */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
                 Referência / Destino
               </label>
               <input
-                className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 placeholder="Nº de Telemóvel, Contador ou ID"
                 value={customerReference}
                 onChange={(e) => {
@@ -347,13 +541,12 @@ export default function PurchaseModal({
               />
             </div>
 
-            {/* CAMPO TELEFONE EXCLUSIVO PARA ENDE */}
-            {isEnde && (
+            {/* TELEFONE NOTIFICAÇÃO */}
+            {requiresCustomerNotification && (
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
-                  Telefone para receber o comprovativo
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+                  Telefone para Notificações
                 </label>
-
                 <input
                   type="tel"
                   inputMode="numeric"
@@ -361,120 +554,101 @@ export default function PurchaseModal({
                   value={customerNotification}
                   onChange={(event) =>
                     setCustomerNotification(
-                      event.target.value
-                        .replace(/\D/g, "")
-                        .slice(0, 9)
+                      event.target.value.replace(/\D/g, "").slice(0, 9)
                     )
                   }
                   placeholder="Ex.: 944272561"
-                  className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
-              </div>
-            )}
-
-            {/* CONSULTA DO CLIENTE */}
-            {customerInfo && (
-              <div className="rounded-xl bg-[#0d1117] border border-emerald-500/20 p-4 space-y-3">
-
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
-                    Dados do Cliente
-                  </span>
-
-                  <span className="text-[10px] font-bold text-emerald-400 uppercase">
-                    Cliente encontrado
-                  </span>
-                </div>
-
-                {Object.entries(customerInfo).map(
-                  ([key, value]) => {
-
-                    if (
-                      value === null ||
-                      value === undefined ||
-                      value === ""
-                    ) {
-                      return null;
-                    }
-
-                    const label = key
-                      .replace(
-                        /([A-Z])/g,
-                        " $1"
-                      )
-                      .replace(/^./, char =>
-                        char.toUpperCase()
-                      );
-
-                    return (
-                      <div
-                        key={key}
-                        className="flex justify-between gap-4 border-b border-white/5 last:border-0 pb-2 last:pb-0"
-                      >
-                        <span className="text-xs text-gray-500">
-                          {label}
-                        </span>
-
-                        <span className="text-xs text-white font-medium text-right">
-                          {String(value)}
-                        </span>
-                      </div>
-                    );
-                  }
-                )}
-
-              </div>
-            )}
-
-            {customerInfoError && (
-              <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 px-4 py-3">
-                <p className="text-xs text-rose-400">
-                  {customerInfoError}
+                <p className="text-[10px] text-gray-500 mt-1">
+                  Número de 9 dígitos para receber a confirmação da operação.
                 </p>
               </div>
             )}
 
+            {/* DADOS DO CLIENTE */}
+            {customerInfo && (
+              <div className="rounded-xl bg-[#0d1117] border border-emerald-500/20 p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
+                    Dados do Cliente
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-400 uppercase">
+                    Cliente Encontrado
+                  </span>
+                </div>
+                {Object.entries(customerInfo).map(([key, value]) => {
+                  if (value === null || value === undefined || value === "") return null;
+                  const label = key
+                    .replace(/([A-Z])/g, " $1")
+                    .replace(/^./, char => char.toUpperCase());
+                  let displayValue = typeof value === "object" ? JSON.stringify(value) : value;
+
+                  return (
+                    <div key={key} className="flex justify-between gap-4 text-xs">
+                      <span className="text-gray-500">{label}</span>
+                      <span className="text-white font-medium text-right break-words max-w-[200px]">
+                        {String(displayValue)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ERRO DE CONSULTA */}
+            {customerInfoError && (
+              <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 px-3.5 py-2.5">
+                <p className="text-xs text-rose-400">{customerInfoError}</p>
+              </div>
+            )}
+
+            {/* VALOR */}
             {plan.valueVariable ? (
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
                   Montante a Pagar (AOA)
                 </label>
                 <input
                   type="number"
-                  className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
                   placeholder="Introduza o valor"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                 />
-                <p className="text-[11px] text-gray-500 mt-1.5 flex justify-between">
+                <p className="text-[10px] text-gray-500 mt-1 flex justify-between">
                   <span>Mín: {plan.valueVariableMin?.toLocaleString("pt-PT")} Kz</span>
                   <span>Máx: {plan.valueVariableMax?.toLocaleString("pt-PT")} Kz</span>
                 </p>
               </div>
             ) : (
-              <div className="rounded-xl bg-[#0d1117] border border-white/5 p-4 flex items-center justify-between">
-                <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">Preço Fixo</span>
-                <span className="text-lg font-bold text-emerald-400">
+              <div className="rounded-xl bg-[#0d1117] border border-white/5 p-3.5 flex items-center justify-between">
+                <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">
+                  Preço Fixo
+                </span>
+                <span className="text-base font-bold text-emerald-400">
                   {plan.price.toLocaleString("pt-PT")} Kz
                 </span>
               </div>
             )}
 
-            {/* Resumo compacto */}
-            <div className="rounded-xl bg-[#0d1117] border border-white/5 p-4 space-y-2 text-xs">
+            {/* RESUMO */}
+            <div className="rounded-xl bg-[#0d1117] border border-white/5 p-3.5 space-y-1.5 text-xs">
               <div className="flex justify-between">
                 <span className="text-gray-400">Serviço Selecionado</span>
                 <span className="text-white font-medium">{plan.name}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Categoria / Tipo</span>
-                <span className="text-gray-300">{plan.valueVariable ? "Valor Variável" : "Valor Fixo"}</span>
+                <span className="text-gray-300">
+                  {operationType} · {plan.valueVariable ? "Valor Variável" : "Valor Fixo"}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Rodapé / Ações */}
-          <div className="border-t border-white/5 px-6 py-4 bg-[#161A1F]/50 flex gap-3">
+          {/* RODAPÉ DE AÇÃO (FIXO) */}
+          <div className="border-t border-white/5 px-5 py-3.5 bg-[#161A1F]/90 flex gap-3 shrink-0">
             <button
               onClick={onClose}
               className="flex-1 rounded-xl border border-white/10 py-2.5 text-xs font-semibold text-gray-300 hover:bg-white/[0.03] hover:text-white transition-all"
@@ -484,12 +658,7 @@ export default function PurchaseModal({
 
             {!requiresCustomerInfo ? (
               <button
-                disabled={
-                  loading ||
-                  !customerReference.trim() ||
-                  (plan.valueVariable && !amount) ||
-                  (isEnde && customerNotification.length !== 9)
-                }
+                disabled={loading || !customerReference.trim() || (plan.valueVariable && !amount)}
                 onClick={handlePurchase}
                 className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
@@ -504,10 +673,7 @@ export default function PurchaseModal({
               </button>
             ) : !customerInfo ? (
               <button
-                disabled={
-                  checkingCustomer ||
-                  !customerReference.trim()
-                }
+                disabled={checkingCustomer || !customerReference.trim()}
                 onClick={handleCustomerInfo}
                 className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
@@ -525,8 +691,8 @@ export default function PurchaseModal({
                 disabled={
                   loading ||
                   !customerReference.trim() ||
-                  (plan.valueVariable && !amount) ||
-                  (isEnde && customerNotification.length !== 9)
+                  (requiresCustomerNotification && customerNotification.length !== 9) ||
+                  (plan.valueVariable && !amount)
                 }
                 onClick={handlePurchase}
                 className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -542,12 +708,12 @@ export default function PurchaseModal({
               </button>
             )}
           </div>
+
         </div>
       ) : (
-        /* Comprovativo Estilizado (Receipt) */
+        /* TELA DE RECIBO */
         <div className="w-full max-w-sm rounded-2xl bg-[#161A1F] border border-white/10 p-6 shadow-2xl flex flex-col items-center relative">
-          
-          <button 
+          <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 rounded-xl bg-white/[0.03] border border-white/5 text-gray-400 hover:text-white transition-all"
           >
@@ -556,11 +722,10 @@ export default function PurchaseModal({
 
           {resultData.success && resultData.transaction ? (
             <>
-              {/* Logo Operadora */}
               <div className="w-14 h-14 rounded-2xl border border-white/10 bg-white/[0.02] p-2 mb-3 shadow-inner flex items-center justify-center">
-                <img 
-                  src={operatorInfo.logoUrl} 
-                  alt={operatorInfo.name} 
+                <img
+                  src={operatorInfo.logoUrl}
+                  alt={operatorInfo.name}
                   className="w-full h-full object-contain rounded-lg"
                 />
               </div>
@@ -569,140 +734,92 @@ export default function PurchaseModal({
                 <ShieldCheck size={16} weight="fill" />
                 <span>Transação Bem-Sucedida</span>
               </div>
-              <h3 className="text-base font-bold text-white mb-4">Comprovativo de Pagamento</h3>
 
-              {/* Bloco de dados do recibo */}
+              <h3 className="text-base font-bold text-white mb-4">
+                Comprovativo de Pagamento
+              </h3>
+
               <div className="w-full space-y-2.5 text-xs bg-[#0d1117] border border-white/5 p-4 rounded-xl">
                 <div className="flex justify-between items-center py-1.5 border-b border-white/5">
                   <span className="text-gray-500 font-mono">ID Operação:</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-white font-mono font-semibold">{resultData.transaction.id}</span>
-                    <button onClick={() => copyToClipboard(String(resultData.transaction.id))} className="text-gray-400 hover:text-emerald-400 transition-colors">
+                    <span className="text-white font-mono font-semibold">
+                      {resultData.transaction.id}
+                    </span>
+                    <button
+                      onClick={() => copyToClipboard(String(resultData.transaction.id))}
+                      className="text-gray-400 hover:text-emerald-400 transition-colors"
+                    >
                       {copied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
                     </button>
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                  <span className="text-gray-500 font-mono">Referência:</span>
-                  <span className="text-white font-medium">{resultData.transaction.client || customerReference}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                  <span className="text-gray-500 font-mono">Operadora:</span>
-                  <span className="text-white font-semibold uppercase">{operatorInfo.name}</span>
+                <div className="flex justify-between py-1 border-b border-white/5">
+                  <span className="text-gray-400">Cliente / Destino</span>
+                  <span className="text-white font-medium">{resultData.transaction.client}</span>
                 </div>
 
                 {resultData.transaction.customerName && (
-                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                    <span className="text-gray-500 font-mono">Nome Cliente:</span>
-                    <span className="text-white font-medium text-right truncate max-w-[180px]">
-                      {resultData.transaction.customerName}
+                  <div className="flex justify-between py-1 border-b border-white/5">
+                    <span className="text-gray-400">Nome do Titular</span>
+                    <span className="text-emerald-400 font-medium">{resultData.transaction.customerName}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between py-1 border-b border-white/5">
+                  <span className="text-gray-400">Serviço</span>
+                  <span className="text-white font-medium">{resultData.transaction.operator}</span>
+                </div>
+
+                <div className="flex justify-between py-1 border-b border-white/5">
+                  <span className="text-gray-400">Montante</span>
+                  <span className="text-emerald-400 font-semibold">
+                    {Number(resultData.transaction.amount).toLocaleString("pt-PT")} {resultData.transaction.currency}
+                  </span>
+                </div>
+
+                {resultData.transaction.voucherPIN && (
+                  <div className="flex justify-between py-1 border-b border-white/5">
+                    <span className="text-gray-400">PIN do Voucher</span>
+                    <span className="text-amber-400 font-mono font-bold tracking-wider">
+                      {resultData.transaction.voucherPIN}
                     </span>
                   </div>
                 )}
-
-                <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                  <span className="text-gray-500 font-mono">Montante:</span>
-                  <span className="text-emerald-400 font-bold text-sm">
-                    {formatCurrencyAOA(resultData.transaction.amount || Number(amount))}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center py-1.5 border-b border-white/5">
-                  <span className="text-gray-500 font-mono">Data:</span>
-                  <span className="text-gray-300">
-                    {new Date(resultData.transaction.createdAt || Date.now()).toLocaleString('pt-AO')}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center pt-1">
-                  <span className="text-gray-500 font-mono">Estado:</span>
-                  <span className="text-emerald-400 font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[10px]">
-                    CONCLUÍDO
-                  </span>
-                </div>
               </div>
-
-              {/* SEÇÃO ENDE: PIN DE CARREGAMENTO */}
-              {resultData.transaction.operator
-                ?.toUpperCase()
-                .includes("ENDE") &&
-                resultData.transaction.voucherPIN && (
-                  <div className="w-full mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
-                        PIN de Carregamento
-                      </span>
-
-                      <button
-                        onClick={() =>
-                          copyToClipboard(
-                            String(resultData.transaction.voucherPIN)
-                          )
-                        }
-                        className="text-gray-400 hover:text-emerald-400 transition-colors"
-                      >
-                        {copied ? (
-                          <Check
-                            size={16}
-                            className="text-emerald-400"
-                          />
-                        ) : (
-                          <Copy size={16} />
-                        )}
-                      </button>
-                    </div>
-
-                    <div className="text-center">
-                      <span className="text-xl font-mono font-bold tracking-widest text-white break-all">
-                        {resultData.transaction.voucherPIN}
-                      </span>
-                    </div>
-
-                    {resultData.transaction.voucherValue != null && (
-                      <div className="mt-3 text-center text-xs text-gray-400">
-                        Energia:
-                        <span className="ml-1 text-white font-semibold">
-                          {resultData.transaction.voucherValue}
-                          {" "}
-                          {resultData.transaction.voucherUnits ?? "kWh"}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
 
               <button
                 onClick={onClose}
-                className="w-full mt-5 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-lg shadow-emerald-900/20"
+                className="w-full mt-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-950/40 transition-all"
               >
                 Concluir
               </button>
             </>
           ) : (
             <>
-              <div className="w-14 h-14 rounded-2xl border border-rose-500/25 bg-rose-500/10 p-1.5 mb-4 flex items-center justify-center">
-                <XCircle size={32} weight="fill" className="text-rose-500" />
+              <div className="w-14 h-14 rounded-2xl border border-rose-500/20 bg-rose-500/10 p-2 mb-3 shadow-inner flex items-center justify-center text-rose-400">
+                <X size={24} weight="bold" />
               </div>
 
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-2">Falha na Operação</h3>
-              <p className="text-xs text-gray-400 text-center mb-6 px-2 leading-relaxed">
-                {resultData.errorMessage}
+              <h3 className="text-base font-bold text-white mb-2">
+                Falha na Operação
+              </h3>
+
+              <p className="text-xs text-rose-400 text-center mb-5 bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl w-full">
+                {resultData?.errorMessage || "Ocorreu um erro desconhecido ao processar a compra."}
               </p>
 
               <button
                 onClick={() => setResultData(null)}
-                className="w-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+                className="w-full rounded-xl border border-white/10 py-2.5 text-xs font-semibold text-gray-300 hover:bg-white/[0.03] hover:text-white transition-all"
               >
                 Tentar Novamente
               </button>
             </>
           )}
-
         </div>
       )}
-
     </div>
   );
 }

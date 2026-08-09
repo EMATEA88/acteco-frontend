@@ -11,33 +11,104 @@ export interface Transaction {
 
   currency: string;
 
-  method?: string;
+  method?: string | null;
 
   status: string;
 
-  description?: string;
+  description?: string | null;
 
-  reference?: string;
+  reference?: string | null;
 
-  relatedPublicId?: string;
+  relatedPublicId?: string | null;
 
   createdAt: string;
 
-  processedAt?: string;
+  processedAt?: string | null;
 }
 
-// 1. Interface adicionada logo abaixo de Transaction
-export interface TransactionDetails extends Transaction {
-  externalId?: string;
+/* ================= SERVICE REQUEST ================= */
 
-  gatewayProvider?: string;
+export interface TransactionServiceRequest {
+  id: number;
 
-  gatewayStatus?: string;
+  planId: number;
 
-  merchantTransactionId?: string;
+  serviceId?: number | null;
 
-  metadata?: any;
+  serviceGroupId?: number | null;
+
+  providerId?: number | null;
+
+  providerName?: string | null;
+
+  amount: number;
+
+  cost?: number | null;
+
+  profit?: number | null;
+
+  customerReference?: string | null;
+
+  customerName?: string | null;
+
+  partnerName?: string | null;
+
+  partnerId?: number | null;
+
+  serviceName?: string | null;
+
+  serviceGroupName?: string | null;
+
+  planName?: string | null;
+
+  status: string;
+
+  transactionId?: number | null;
+
+  externalProviderRef?: string | null;
+
+  externalTransactionId?: string | null;
+
+  providerResponse?: Record<string, any> | string | null;
+
+  completedAt?: string | null;
+
+  providerFinalBalance?: number | null;
+
+  providerConfirmedAt?: string | null;
+
+  providerReconciledAt?: string | null;
+
+  providerOperationStatus?: string | null;
+
+  providerOperationCode?: number | null;
+
+  createdAt: string;
+
+  updatedAt: string;
 }
+
+/* ================= DETAILS ================= */
+
+export interface TransactionDetails
+  extends Transaction {
+
+  externalId?: string | null;
+
+  gatewayProvider?: string | null;
+
+  gatewayStatus?: string | null;
+
+  merchantTransactionId?: string | null;
+
+  providerOrderSn?: string | null;
+
+  metadata?: Record<string, any> | null;
+
+  serviceRequest?: TransactionServiceRequest | null;
+}
+
+/* ================= FILTER ================= */
 
 export interface TransactionFilter {
   type?: string;
@@ -58,7 +129,9 @@ export const TransactionService = {
     try {
 
       const { data } =
-        await api.get("/transactions");
+        await api.get<Transaction[]>(
+          "/transactions"
+        );
 
       return data;
 
@@ -68,7 +141,9 @@ export const TransactionService = {
         err?.response?.data?.error ||
         "Erro ao carregar transações"
       );
+
     }
+
   },
 
   /* ================= FILTER ================= */
@@ -80,7 +155,7 @@ export const TransactionService = {
     try {
 
       const { data } =
-        await api.get(
+        await api.get<Transaction[]>(
           "/transactions",
           {
             params
@@ -95,7 +170,9 @@ export const TransactionService = {
         err?.response?.data?.error ||
         "Erro ao filtrar transações"
       );
+
     }
+
   },
 
   /* ================= PAGINATION ================= */
@@ -108,7 +185,7 @@ export const TransactionService = {
     try {
 
       const { data } =
-        await api.get(
+        await api.get<Transaction[]>(
           "/transactions",
           {
             params: {
@@ -126,32 +203,35 @@ export const TransactionService = {
         err?.response?.data?.error ||
         "Erro ao carregar transações"
       );
+
     }
+
   },
 
-  // 2. Método adicionado no final do objeto TransactionService
   /* ================= DETAILS ================= */
 
   async details(
-    id: number
-  ): Promise<TransactionDetails> {
+  id: number
+): Promise<TransactionDetails> {
 
-    try {
+  try {
 
-      const { data } =
-        await api.get(
-          `/transactions/${id}`
-        );
-
-      return data;
-
-    } catch (err: any) {
-
-      throw new Error(
-        err?.response?.data?.error ||
-        "Erro ao carregar detalhes da transação"
+    const { data } =
+      await api.get<TransactionDetails>(
+        `/transactions/${id}`
       );
-    }
+
+    return data;
+
+  } catch (err: any) {
+
+    throw new Error(
+      err?.response?.data?.error ||
+      "Erro ao carregar detalhes da transação"
+    );
+
   }
+
+}
 
 };
