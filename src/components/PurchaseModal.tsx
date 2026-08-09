@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { CatalogPlan } from "../types/catalog";
 import { purchaseService } from "../services/purchase.service";
-import { formatCurrencyAOA } from "../utils/formatCurrency";
 import {
   X,
   Copy,

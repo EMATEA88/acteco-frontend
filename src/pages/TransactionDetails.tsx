@@ -694,12 +694,6 @@ export default function TransactionDetails() {
     extraInfo?.voucherUnits ??
     null
 
-  const voucherVat =
-    storedReceipt?.voucherVat ??
-    extraInfo?.VoucherVat ??
-    extraInfo?.voucherVat ??
-    null
-
   const formattedAmount =
     `${Number(
       transaction.amount
