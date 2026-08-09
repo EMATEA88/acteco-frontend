@@ -77,7 +77,10 @@ export default function PurchaseModal({
     transaction?: any;
     errorMessage?: string;
   } | null>(null);
-  const [copied, setCopied] = useState(false);
+  
+  // Estados de cópia separados para ID e PIN
+  const [copiedId, setCopiedId] = useState(false);
+  const [copiedPin, setCopiedPin] = useState(false);
 
   // ===================================================
   // AUTO-PREENCHIMENTO DO TELEFONE
@@ -88,15 +91,11 @@ export default function PurchaseModal({
       .replace(/\D/g, "")
       .slice(0, 9);
 
-    // Só copia automaticamente quando a referência
-    // for realmente um telefone de 9 dígitos.
     if (reference.length === 9) {
       setCustomerNotification((current) => {
-        // Não sobrescreve uma alteração manual do usuário.
         if (current.trim() !== "") {
           return current;
         }
-
         return reference;
       });
     }
@@ -193,6 +192,8 @@ export default function PurchaseModal({
     "ZAP_SAT",
     "ZAP_MEDIA",
     "DSTV",
+    "ENDE",
+    "EPAL",
   ]);
 
   const requiresCustomerInfo =
@@ -246,20 +247,17 @@ export default function PurchaseModal({
       setCustomerInfo(null);
       setCustomerInfoError(null);
 
-      // 1. PRIMEIRA CONSULTA
       let response = await purchaseService.customerInfo({
         providerCode,
         customerId
       });
 
-      // 2. PROCESSAR STATUS INICIAL
       let status = String(
         response?.status ??
         response?.data?.Status ??
         ""
       ).toUpperCase();
 
-      // 3. SE ESTIVER RUNNING, CONSULTAR OPERAÇÃO
       if (status === "RUNNING") {
         const orderId = String(response?.orderId ?? "").trim();
 
@@ -321,7 +319,6 @@ export default function PurchaseModal({
         }
       }
 
-      // 4. VALIDAR RESULTADO FINAL
       if (status !== "SUCCESS") {
         setCustomerInfoError(
           response?.response?.Description ??
@@ -331,7 +328,6 @@ export default function PurchaseModal({
         return;
       }
 
-      // 5. EXTRAIR DADOS DO CLIENTE
       let info =
         response?.client ??
         response?.data?.Provider_ClientInfo ??
@@ -483,10 +479,17 @@ export default function PurchaseModal({
     }
   }
 
-  const copyToClipboard = (text: string) => {
+  // Funções de cópia para ID e PIN
+  const copyIdToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedId(true);
+    setTimeout(() => setCopiedId(false), 2000);
+  };
+
+  const copyPinToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedPin(true);
+    setTimeout(() => setCopiedPin(false), 2000);
   };
 
   // ===================================================
@@ -515,7 +518,7 @@ export default function PurchaseModal({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-white/[0.03] border border-white/5 text-gray-400 hover:text-white hover:bg-white/[0.06] transition-all"
+              className="p-2 rounded-xl bg-white/[0.03] border border-white/5 text-gray-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
             >
               <X size={15} weight="bold" />
             </button>
@@ -650,7 +653,7 @@ export default function PurchaseModal({
           <div className="border-t border-white/5 px-5 py-3.5 bg-[#161A1F]/90 flex gap-3 shrink-0">
             <button
               onClick={onClose}
-              className="flex-1 rounded-xl border border-white/10 py-2.5 text-xs font-semibold text-gray-300 hover:bg-white/[0.03] hover:text-white transition-all"
+              className="flex-1 rounded-xl border border-white/10 py-2.5 text-xs font-semibold text-gray-300 hover:bg-white/[0.03] hover:text-white transition-all cursor-pointer"
             >
               Cancelar
             </button>
@@ -659,7 +662,7 @@ export default function PurchaseModal({
               <button
                 disabled={loading || !customerReference.trim() || (plan.valueVariable && !amount)}
                 onClick={handlePurchase}
-                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
                 {loading ? (
                   <>
@@ -674,7 +677,7 @@ export default function PurchaseModal({
               <button
                 disabled={checkingCustomer || !customerReference.trim()}
                 onClick={handleCustomerInfo}
-                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
                 {checkingCustomer ? (
                   <>
@@ -694,7 +697,7 @@ export default function PurchaseModal({
                   (plan.valueVariable && !amount)
                 }
                 onClick={handlePurchase}
-                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-900/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
                 {loading ? (
                   <>
@@ -710,18 +713,18 @@ export default function PurchaseModal({
 
         </div>
       ) : (
-        /* TELA DE RECIBO */
-        <div className="w-full max-w-sm rounded-2xl bg-[#161A1F] border border-white/10 p-6 shadow-2xl flex flex-col items-center relative">
+        /* TELA DE RECIBO (LIGEIRAMENTE MAIOR E COM CÓPIA DO PIN) */
+        <div className="w-full max-w-md rounded-2xl bg-[#161A1F] border border-white/10 p-7 shadow-2xl flex flex-col items-center relative">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-xl bg-white/[0.03] border border-white/5 text-gray-400 hover:text-white transition-all"
+            className="absolute top-4 right-4 p-2 rounded-xl bg-white/[0.03] border border-white/5 text-gray-400 hover:text-white transition-all cursor-pointer"
           >
             <X size={16} weight="bold" />
           </button>
 
           {resultData.success && resultData.transaction ? (
             <>
-              <div className="w-14 h-14 rounded-2xl border border-white/10 bg-white/[0.02] p-2 mb-3 shadow-inner flex items-center justify-center">
+              <div className="w-16 h-16 rounded-2xl border border-white/10 bg-white/[0.02] p-2.5 mb-3 shadow-inner flex items-center justify-center">
                 <img
                   src={operatorInfo.logoUrl}
                   alt={operatorInfo.name}
@@ -734,11 +737,11 @@ export default function PurchaseModal({
                 <span>Transação Bem-Sucedida</span>
               </div>
 
-              <h3 className="text-base font-bold text-white mb-4">
+              <h3 className="text-lg font-bold text-white mb-4">
                 Comprovativo de Pagamento
               </h3>
 
-              <div className="w-full space-y-2.5 text-xs bg-[#0d1117] border border-white/5 p-4 rounded-xl">
+              <div className="w-full space-y-3 text-xs bg-[#0d1117] border border-white/5 p-4.5 rounded-xl">
                 <div className="flex justify-between items-center py-1.5 border-b border-white/5">
                   <span className="text-gray-500 font-mono">ID Operação:</span>
                   <div className="flex items-center gap-1.5">
@@ -746,72 +749,80 @@ export default function PurchaseModal({
                       {resultData.transaction.id}
                     </span>
                     <button
-                      onClick={() => copyToClipboard(String(resultData.transaction.id))}
-                      className="text-gray-400 hover:text-emerald-400 transition-colors"
+                      onClick={() => copyIdToClipboard(String(resultData.transaction.id))}
+                      className="text-gray-400 hover:text-emerald-400 transition-colors cursor-pointer"
                     >
-                      {copied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                      {copiedId ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
                     </button>
                   </div>
                 </div>
 
-                <div className="flex justify-between py-1 border-b border-white/5">
+                <div className="flex justify-between py-1.5 border-b border-white/5">
                   <span className="text-gray-400">Cliente / Destino</span>
                   <span className="text-white font-medium">{resultData.transaction.client}</span>
                 </div>
 
                 {resultData.transaction.customerName && (
-                  <div className="flex justify-between py-1 border-b border-white/5">
+                  <div className="flex justify-between py-1.5 border-b border-white/5">
                     <span className="text-gray-400">Nome do Titular</span>
                     <span className="text-emerald-400 font-medium">{resultData.transaction.customerName}</span>
                   </div>
                 )}
 
-                <div className="flex justify-between py-1 border-b border-white/5">
+                <div className="flex justify-between py-1.5 border-b border-white/5">
                   <span className="text-gray-400">Serviço</span>
                   <span className="text-white font-medium">{resultData.transaction.operator}</span>
                 </div>
 
-                <div className="flex justify-between py-1 border-b border-white/5">
+                <div className="flex justify-between py-1.5 border-b border-white/5">
                   <span className="text-gray-400">Montante</span>
-                  <span className="text-emerald-400 font-semibold">
+                  <span className="text-emerald-400 font-semibold text-sm">
                     {Number(resultData.transaction.amount).toLocaleString("pt-PT")} {resultData.transaction.currency}
                   </span>
                 </div>
 
                 {resultData.transaction.voucherPIN && (
-                  <div className="flex justify-between py-1 border-b border-white/5">
+                  <div className="flex justify-between items-center py-1.5 border-b border-white/5">
                     <span className="text-gray-400">PIN do Voucher</span>
-                    <span className="text-amber-400 font-mono font-bold tracking-wider">
-                      {resultData.transaction.voucherPIN}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-amber-400 font-mono font-bold tracking-wider">
+                        {resultData.transaction.voucherPIN}
+                      </span>
+                      <button
+                        onClick={() => copyPinToClipboard(String(resultData.transaction.voucherPIN))}
+                        className="text-gray-400 hover:text-amber-400 transition-colors cursor-pointer"
+                      >
+                        {copiedPin ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
 
               <button
                 onClick={onClose}
-                className="w-full mt-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-950/40 transition-all"
+                className="w-full mt-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 py-3 text-xs font-bold text-white shadow-lg shadow-emerald-950/40 transition-all cursor-pointer"
               >
                 Concluir
               </button>
             </>
           ) : (
             <>
-              <div className="w-14 h-14 rounded-2xl border border-rose-500/20 bg-rose-500/10 p-2 mb-3 shadow-inner flex items-center justify-center text-rose-400">
+              <div className="w-16 h-16 rounded-2xl border border-rose-500/20 bg-rose-500/10 p-2.5 mb-3 shadow-inner flex items-center justify-center text-rose-400">
                 <X size={24} weight="bold" />
               </div>
 
-              <h3 className="text-base font-bold text-white mb-2">
+              <h3 className="text-lg font-bold text-white mb-2">
                 Falha na Operação
               </h3>
 
-              <p className="text-xs text-rose-400 text-center mb-5 bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl w-full">
+              <p className="text-xs text-rose-400 text-center mb-5 bg-rose-500/10 border border-rose-500/20 p-3.5 rounded-xl w-full">
                 {resultData?.errorMessage || "Ocorreu um erro desconhecido ao processar a compra."}
               </p>
 
               <button
                 onClick={() => setResultData(null)}
-                className="w-full rounded-xl border border-white/10 py-2.5 text-xs font-semibold text-gray-300 hover:bg-white/[0.03] hover:text-white transition-all"
+                className="w-full rounded-xl border border-white/10 py-3 text-xs font-semibold text-gray-300 hover:bg-white/[0.03] hover:text-white transition-all cursor-pointer"
               >
                 Tentar Novamente
               </button>
