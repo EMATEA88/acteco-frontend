@@ -5,7 +5,8 @@ import {
   ArrowLeft,
   Copy,
   Check,
-  ShareNetwork
+  ShareNetwork,
+  X
 } from "@phosphor-icons/react"
 
 import {
@@ -604,54 +605,14 @@ export default function TransactionDetails() {
   }
 
   // ===================================================
-  // LOADING
-  // ===================================================
-
-  if (loading) {
-
-    return (
-
-      <div className="min-h-screen bg-[#0B0E11] flex items-center justify-center">
-
-        <p className="text-[10px] text-gray-400 font-mono font-black animate-pulse tracking-widest">
-
-          GERANDO RECIBO...
-
-        </p>
-
-      </div>
-
-    )
-
-  }
-
-  // ===================================================
-  // NÃO ENCONTRADA
-  // ===================================================
-
-  if (!transaction) {
-
-    return (
-
-      <div className="min-h-screen bg-[#0B0E11] flex items-center justify-center text-sm font-bold text-gray-400">
-
-        Transação não encontrada.
-
-      </div>
-
-    )
-
-  }
-
-  // ===================================================
-  // DADOS DO RECIBO
+  // DADOS DO RECIBO (SEGURO PARA O SKELETON)
   // ===================================================
 
   const storedReceipt =
-    transaction.metadata?.receipt ?? null
+    transaction?.metadata?.receipt ?? null
 
   const serviceRequest =
-    transaction.serviceRequest ?? null
+    transaction?.serviceRequest ?? null
 
   const providerResponse =
     parseJsonValue(
@@ -659,7 +620,7 @@ export default function TransactionDetails() {
     )
 
   const rawExtraInfo =
-    transaction.metadata?.extraInfo ??
+    transaction?.metadata?.extraInfo ??
     providerResponse?.Transaction_ExtraInfo ??
     providerResponse?.transaction_ExtraInfo ??
     providerResponse?.ExtraInfo ??
@@ -694,12 +655,11 @@ export default function TransactionDetails() {
     extraInfo?.voucherUnits ??
     null
 
-  const formattedAmount =
-    `${Number(
-      transaction.amount
-    ).toLocaleString(
-      "pt-AO"
-    )} ${transaction.currency}`
+  const formattedAmount = transaction ? `${Number(
+    transaction.amount
+  ).toLocaleString(
+    "pt-AO"
+  )} ${transaction.currency}` : ""
 
   const operatorName =
     getOperatorName()
@@ -711,20 +671,20 @@ export default function TransactionDetails() {
 
   const operationId =
     storedReceipt?.transactionId ??
-    transaction.externalId ??
+    transaction?.externalId ??
     serviceRequest?.externalProviderRef ??
-    transaction.id
+    transaction?.id
 
   const customerReference =
     storedReceipt?.customerReference ??
     serviceRequest?.customerReference ??
-    transaction.metadata?.customerReference ??
-    transaction.reference ??
+    transaction?.metadata?.customerReference ??
+    transaction?.reference ??
     "-"
 
   const isPaid =
-    transaction.status === "PAID" ||
-    transaction.status === "COMPLETED" ||
+    transaction?.status === "PAID" ||
+    transaction?.status === "COMPLETED" ||
     serviceRequest?.status === "COMPLETED" ||
     storedReceipt?.status === "SUCCESS" ||
     storedReceipt?.status === "COMPLETED" ||
@@ -737,19 +697,20 @@ export default function TransactionDetails() {
 
   return (
 
-    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] antialiased flex flex-col">
+    <div className="h-screen w-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] antialiased flex flex-col fixed inset-0">
 
       {/* ============================================
-          HEADER
+          HEADER FIXO NO TOPO
       ============================================ */}
 
-      <div className="px-5 py-5 flex items-center justify-between border-b border-white/[0.05] bg-[#0B0E11]">
+      <div className="px-5 py-4 flex items-center justify-between border-b border-white/[0.05] bg-[#0B0E11]/90 backdrop-blur-md shrink-0 z-50">
 
         <button
           onClick={() =>
             navigate(-1)
           }
-          className="p-2 bg-white/[0.03] border border-white/[0.05] text-gray-300 rounded-xl hover:bg-white/[0.08]"
+          className="p-2 bg-white/[0.03] border border-white/[0.05] text-gray-300 rounded-xl hover:bg-white/[0.08] cursor-pointer transition"
+          title="Voltar"
         >
 
           <ArrowLeft
@@ -759,365 +720,367 @@ export default function TransactionDetails() {
 
         </button>
 
-        <h1 className="text-sm font-black uppercase tracking-wider text-white">
+        <h1 className="text-xs font-black uppercase tracking-wider text-white">
 
           Comprovativo de Venda
 
         </h1>
 
-        <button
-          onClick={handleCopyId}
-          className="p-2 text-gray-400 hover:text-white relative"
-        >
+        <div className="flex items-center gap-2">
 
-          {copied ? (
+          <button
+            onClick={handleCopyId}
+            className="p-2 text-gray-400 hover:text-white relative cursor-pointer"
+            title="Copiar ID"
+          >
 
-            <Check
+            {copied ? (
+
+              <Check
+                size={16}
+                className="text-emerald-400"
+              />
+
+            ) : (
+
+              <ShareNetwork
+                size={16}
+              />
+
+            )}
+
+          </button>
+
+          {/* BOTÃO X PARA FECHAR IMEDIATAMENTE (COM UM CLIQUE) */}
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 bg-white/[0.03] border border-white/[0.05] text-gray-400 hover:text-white rounded-xl hover:bg-white/[0.08] cursor-pointer transition"
+            title="Fechar"
+          >
+
+            <X
               size={16}
-              className="text-emerald-400"
+              weight="bold"
             />
 
-          ) : (
+          </button>
 
-            <ShareNetwork
-              size={16}
-            />
-
-          )}
-
-        </button>
+        </div>
 
       </div>
 
       {/* ============================================
-          CARD
+          ÁREA DE CONTEÚDO COM SCROLL SEGURO E ESTÁVEL
       ============================================ */}
 
-      <div className="flex-1 flex items-center justify-center p-6 bg-[#0B0E11]">
+      <div
+        onClick={() => navigate(-1)}
+        className="flex-1 overflow-y-auto overflow-x-hidden flex items-center justify-center p-4 sm:p-6 bg-[#0B0E11]/80 backdrop-blur-sm cursor-pointer"
+      >
 
-        <div className="w-full max-w-sm bg-[#161A1E] border border-white/[0.06] rounded-[2.5rem] p-6 shadow-2xl flex flex-col items-center relative">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="w-full max-w-sm bg-[#161A1E] border border-white/[0.06] rounded-3xl p-5 shadow-2xl flex flex-col items-center relative cursor-default my-auto"
+        >
 
-          {/* ========================================
-              LOGO
-          ======================================== */}
+          {loading ? (
 
-          <div className="w-20 h-20 rounded-full bg-white shadow-lg mb-6 overflow-hidden flex items-center justify-center border border-white/[0.1]">
+            /* SKELETON LOADER MODERNO E COMPACTO */
+            <div className="w-full space-y-4 animate-pulse py-2">
+              <div className="w-16 h-16 rounded-full bg-[#1E2329] mx-auto border border-[#2B313A]"></div>
+              <div className="w-36 h-4 bg-[#1E2329] rounded-md mx-auto"></div>
+              
+              <div className="w-full space-y-3 border-t border-b border-white/[0.05] py-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex justify-between items-center">
+                    <div className="w-20 h-3 bg-[#1E2329] rounded-sm"></div>
+                    <div className="w-28 h-3 bg-[#1E2329] rounded-sm"></div>
+                  </div>
+                ))}
+              </div>
 
-            <img
-              src={operatorLogoSrc}
-              alt={operatorName}
-              className="w-full h-full object-cover p-0"
-            />
-
-          </div>
-
-          {/* ========================================
-              SUCESSO
-          ======================================== */}
-
-          {isPaid && (
-
-            <div className="flex items-center gap-2 mb-2">
-
-              <span className="text-emerald-400 text-xs font-black">
-
-                ✓
-
-              </span>
-
-              <span className="text-emerald-400 text-xs font-black">
-
-                Transação Bem-Sucedida
-
-              </span>
-
+              <div className="w-full h-10 bg-[#1E2329] rounded-xl"></div>
             </div>
 
-          )}
+          ) : !transaction ? (
 
-          {/* ========================================
-              TÍTULO
-          ======================================== */}
+            <div className="text-center py-8 text-sm font-bold text-gray-400 font-mono">
+              Transação não encontrada.
+            </div>
 
-          <h2 className="text-lg font-black text-white mb-5">
+          ) : (
 
-            Comprovativo de Pagamento
+            <>
+              {/* ========================================
+                  LOGO
+              ======================================== */}
 
-          </h2>
+              <div className="w-16 h-16 rounded-full bg-white shadow-lg mb-4 overflow-hidden flex items-center justify-center border border-white/[0.1] shrink-0">
 
-          {/* ========================================
-              DADOS PRINCIPAIS
-          ======================================== */}
-
-          <div className="w-full space-y-5 border-t border-b border-white/[0.05] py-6">
-
-            {/* ID OPERAÇÃO */}
-
-            <div className="flex justify-between items-center gap-4">
-
-              <span className="text-gray-400 font-semibold">
-
-                ID Operação:
-
-              </span>
-
-              <button
-                onClick={() =>
-                  navigator.clipboard.writeText(
-                    String(operationId)
-                  )
-                }
-                className="flex items-center gap-2 font-mono font-bold text-white text-right"
-              >
-
-                {operationId}
-
-                <Copy
-                  size={13}
-                  className="text-gray-500"
+                <img
+                  src={operatorLogoSrc}
+                  alt={operatorName}
+                  className="w-full h-full object-cover p-0"
                 />
 
-              </button>
-
-            </div>
-
-            {/* REFERÊNCIA */}
-
-            <div className="flex justify-between items-center gap-4">
-
-              <span className="text-gray-400 font-semibold">
-
-                Referência:
-
-              </span>
-
-              <span className="font-mono font-bold text-white text-right">
-
-                {customerReference}
-
-              </span>
-
-            </div>
-
-            {/* NOME DO CLIENTE */}
-
-            {customerName && (
-
-              <div className="flex justify-between items-center gap-4">
-
-                <span className="text-gray-400 font-semibold">
-
-                  Nome Cliente:
-
-                </span>
-
-                <span className="font-bold text-white text-right max-w-[210px] truncate">
-
-                  {customerName}
-
-                </span>
-
               </div>
 
-            )}
+              {/* ========================================
+                  SUCESSO
+              ======================================== */}
 
-            {/* OPERADORA */}
+              {isPaid && (
 
-            <div className="flex justify-between items-center gap-4">
+                <div className="flex items-center gap-1.5 mb-1">
 
-              <span className="text-gray-400 font-semibold">
+                  <span className="text-emerald-400 text-xs font-black">
+                    ✓
+                  </span>
 
-                Operadora:
-
-              </span>
-
-              <span className="font-bold text-white uppercase">
-
-                {operatorName}
-
-              </span>
-
-            </div>
-
-            {/* SERVIÇO / PLANO */}
-
-            {(
-              storedReceipt?.plan ||
-              serviceRequest?.planName ||
-              serviceRequest?.serviceName ||
-              transaction.metadata?.planName
-            ) && (
-
-              <div className="flex justify-between items-center gap-4">
-
-                <span className="text-gray-400 font-semibold">
-
-                  Serviço:
-
-                </span>
-
-                <span className="font-bold text-white text-right max-w-[200px] truncate">
-
-                  {storedReceipt?.plan ??
-                    serviceRequest?.planName ??
-                    serviceRequest?.serviceName ??
-                    transaction.metadata?.planName}
-
-                </span>
-
-              </div>
-
-            )}
-
-            {/* VALOR */}
-
-            <div className="flex justify-between items-center gap-4">
-
-              <span className="text-gray-400 font-semibold">
-
-                Montante:
-
-              </span>
-
-              <span className="text-emerald-400 font-black text-lg">
-
-                {formattedAmount}
-
-              </span>
-
-            </div>
-
-            {/* DATA */}
-
-            <div className="flex justify-between items-center gap-4">
-
-              <span className="text-gray-400 font-semibold">
-
-                Data:
-
-              </span>
-
-              <span className="font-mono text-gray-200 text-right">
-
-                {new Date(
-                  transaction.createdAt
-                ).toLocaleString(
-                  "pt-AO",
-                  {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit"
-                  }
-                )}
-
-              </span>
-
-            </div>
-
-            {/* STATUS */}
-
-            <div className="flex justify-between items-center">
-
-              <span className="text-gray-400 font-semibold">
-
-                Estado:
-
-              </span>
-
-              <span
-                className={`font-black uppercase ${
-                  isPaid
-                    ? "text-emerald-400"
-                    : "text-yellow-400"
-                }`}
-              >
-
-                {isPaid
-                  ? "CONCLUÍDO"
-                  : "PROCESSANDO"}
-
-              </span>
-
-            </div>
-
-          </div>
-
-          {/* ========================================
-              PIN DE CARREGAMENTO
-              SOMENTE QUANDO EXISTIR
-          ======================================== */}
-
-          {voucherPin && (
-
-            <div className="w-full mt-5 bg-emerald-500/[0.10] border border-emerald-500/[0.35] rounded-2xl p-5">
-
-              <div className="flex items-center justify-between mb-3">
-
-                <span className="text-emerald-400 text-[10px] font-black uppercase tracking-wider">
-
-                  PIN DE CARREGAMENTO
-
-                </span>
-
-                <button
-                  onClick={() =>
-                    navigator.clipboard.writeText(
-                      String(voucherPin)
-                    )
-                  }
-                  className="text-gray-400 hover:text-white"
-                >
-
-                  <Copy
-                    size={15}
-                  />
-
-                </button>
-
-              </div>
-
-              <div className="text-white text-xl font-black font-mono tracking-wider break-all text-center">
-
-                {voucherPin}
-
-              </div>
-
-              {voucherValue != null && (
-
-                <div className="text-gray-300 text-xs text-center mt-3">
-
-                  Energia:{" "}
-
-                  <span className="text-white font-bold">
-
-                    {voucherValue}
-
-                    {voucherUnits
-                      ? ` ${voucherUnits}`
-                      : ""}
-
+                  <span className="text-emerald-400 text-[11px] font-black uppercase tracking-wide">
+                    Transação Bem-Sucedida
                   </span>
 
                 </div>
 
               )}
 
-            </div>
+              {/* ========================================
+                  TÍTULO
+              ======================================== */}
+
+              <h2 className="text-base font-black text-white mb-4">
+                Comprovativo de Pagamento
+              </h2>
+
+              {/* ========================================
+                  DADOS PRINCIPAIS
+              ======================================== */}
+
+              <div className="w-full space-y-3 border-t border-b border-white/[0.05] py-4 text-xs">
+
+                {/* ID OPERAÇÃO */}
+
+                <div className="flex justify-between items-center gap-4">
+
+                  <span className="text-gray-400 font-medium">
+                    ID Operação:
+                  </span>
+
+                  <button
+                    onClick={() =>
+                      navigator.clipboard.writeText(
+                        String(operationId)
+                      )
+                    }
+                    className="flex items-center gap-1.5 font-mono font-bold text-white text-right hover:text-emerald-400 transition cursor-pointer"
+                  >
+
+                    {operationId}
+
+                    <Copy
+                      size={12}
+                      className="text-gray-500"
+                    />
+
+                  </button>
+
+                </div>
+
+                {/* REFERÊNCIA */}
+
+                <div className="flex justify-between items-center gap-4">
+
+                  <span className="text-gray-400 font-medium">
+                    Referência:
+                  </span>
+
+                  <span className="font-mono font-bold text-white text-right">
+                    {customerReference}
+                  </span>
+
+                </div>
+
+                {/* NOME DO CLIENTE */}
+
+                {customerName && (
+
+                  <div className="flex justify-between items-center gap-4">
+
+                    <span className="text-gray-400 font-medium">
+                      Nome Cliente:
+                    </span>
+
+                    <span className="font-bold text-white text-right max-w-[180px] truncate">
+                      {customerName}
+                    </span>
+
+                  </div>
+
+                )}
+
+                {/* OPERADORA */}
+
+                <div className="flex justify-between items-center gap-4">
+
+                  <span className="text-gray-400 font-medium">
+                    Operadora:
+                  </span>
+
+                  <span className="font-bold text-white uppercase">
+                    {operatorName}
+                  </span>
+
+                </div>
+
+                {/* SERVIÇO / PLANO */}
+
+                {(
+                  storedReceipt?.plan ||
+                  serviceRequest?.planName ||
+                  serviceRequest?.serviceName ||
+                  transaction.metadata?.planName
+                ) && (
+
+                  <div className="flex justify-between items-center gap-4">
+
+                    <span className="text-gray-400 font-medium">
+                      Serviço:
+                    </span>
+
+                    <span className="font-bold text-white text-right max-w-[180px] truncate">
+                      {storedReceipt?.plan ??
+                        serviceRequest?.planName ??
+                        serviceRequest?.serviceName ??
+                        transaction.metadata?.planName}
+                    </span>
+
+                  </div>
+
+                )}
+
+                {/* VALOR */}
+
+                <div className="flex justify-between items-center gap-4">
+
+                  <span className="text-gray-400 font-medium">
+                    Montante:
+                  </span>
+
+                  <span className="text-emerald-400 font-black text-sm">
+                    {formattedAmount}
+                  </span>
+
+                </div>
+
+                {/* DATA */}
+
+                <div className="flex justify-between items-center gap-4">
+
+                  <span className="text-gray-400 font-medium">
+                    Data:
+                  </span>
+
+                  <span className="font-mono text-gray-300 text-right text-[11px]">
+                    {new Date(
+                      transaction.createdAt
+                    ).toLocaleString(
+                      "pt-AO",
+                      {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit"
+                      }
+                    )}
+                  </span>
+
+                </div>
+
+                {/* STATUS */}
+
+                <div className="flex justify-between items-center">
+
+                  <span className="text-gray-400 font-medium">
+                    Estado:
+                  </span>
+
+                  <span
+                    className={`font-black uppercase text-[11px] ${
+                      isPaid
+                        ? "text-emerald-400"
+                        : "text-yellow-400"
+                    }`}
+                  >
+                    {isPaid
+                      ? "CONCLUÍDO"
+                      : "PROCESSANDO"}
+                  </span>
+
+                </div>
+
+              </div>
+
+              {/* ========================================
+                  PIN DE CARREGAMENTO
+              ======================================== */}
+
+              {voucherPin && (
+
+                <div className="w-full mt-4 bg-emerald-500/[0.10] border border-emerald-500/[0.35] rounded-2xl p-4">
+
+                  <div className="flex items-center justify-between mb-2">
+
+                    <span className="text-emerald-400 text-[10px] font-black uppercase tracking-wider">
+                      PIN DE CARREGAMENTO
+                    </span>
+
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(
+                          String(voucherPin)
+                        )
+                      }
+                      className="text-gray-400 hover:text-white cursor-pointer"
+                    >
+                      <Copy size={14} />
+                    </button>
+
+                  </div>
+
+                  <div className="text-white text-base font-black font-mono tracking-wider break-all text-center">
+                    {voucherPin}
+                  </div>
+
+                  {voucherValue != null && (
+
+                    <div className="text-gray-300 text-[11px] text-center mt-2">
+                      Energia:{" "}
+                      <span className="text-white font-bold">
+                        {voucherValue}
+                        {voucherUnits
+                          ? ` ${voucherUnits}`
+                          : ""}
+                      </span>
+                    </div>
+
+                  )}
+
+                </div>
+
+              )}
+
+              {/* ========================================
+                  RODAPÉ
+              ======================================== */}
+
+              <p className="text-[9px] text-gray-500 font-mono tracking-wider uppercase mt-4 text-center">
+                Obrigado pela preferência
+              </p>
+            </>
 
           )}
-
-          {/* ========================================
-              RODAPÉ
-          ======================================== */}
-
-          <p className="text-[9px] text-gray-500 font-mono tracking-wider uppercase mt-5 text-center">
-
-            Obrigado pela preferência
-
-          </p>
 
         </div>
 

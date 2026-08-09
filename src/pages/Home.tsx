@@ -3,12 +3,53 @@ import { useNavigate } from "react-router-dom"
 import { Headset, Users, X, MessageCircle } from "lucide-react"
 import Carousel from "./Carousel"
 import { purchaseService } from "../services/purchase.service"
-import type { CatalogCategory } from "../types/catalog"
+import type { CatalogCategory, CatalogProvider } from "../types/catalog"
 import { getLogo } from "../utils/getLogo"
 import { providerBranding } from "../config/recharge-branding"
 
 const WHATSAPP_MANAGER = "https://wa.me/244928270636"
 const WHATSAPP_GROUP = "https://chat.whatsapp.com/CaiU4nncaaa7vUnzO6HTzB?mode=gi_t"
+
+const getProviderLogoPath = (provider: CatalogProvider) => {
+  // 1. Procurar pelo código do provedor
+  if (provider.code) {
+    const cleanCode = provider.code
+      .toUpperCase()
+      .replace(/\s+/g, "");
+
+    if (providerBranding[cleanCode]) {
+      return providerBranding[cleanCode].logo;
+    }
+  }
+
+  // 2. Procurar pelo nome sem espaços
+  if (provider.name) {
+    const cleanName = provider.name
+      .toUpperCase()
+      .replace(/\s+/g, "");
+
+    if (providerBranding[cleanName]) {
+      return providerBranding[cleanName].logo;
+    }
+
+    // 3. Procurar pelo nome exato
+    if (providerBranding[provider.name]) {
+      return providerBranding[provider.name].logo;
+    }
+  }
+
+  return undefined;
+};
+
+// Função para formatar o nome do provedor de apostas específico para exibição
+const getDisplayName = (name: string) => {
+  const upper = name.toUpperCase().trim();
+  if (upper === "AFRIBET" || upper === "ABET") return "Afri Bet";
+  if (upper === "PREMIERBET" || upper === "PBET") return "Premier Bet";
+  if (upper === "BANTUBET" || upper === "BBET") return "Bantu Bet";
+  if (upper === "ELEPHANTBET" || upper === "EBET") return "Elephant Bet";
+  return name;
+};
 
 export default function Home() {
   const navigate = useNavigate();
@@ -33,10 +74,10 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] px-5 pt-4 pb-28 antialiased selection:bg-[#02C076]/20">
+    <div className="h-screen w-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] flex flex-col fixed inset-0 font-sans antialiased selection:bg-[#02C076]/20">
 
-      {/* HEADER LIMPO E PROFISSIONAL - DARK MODE */}
-      <div className="pt-4 pb-5 flex items-center justify-between border-b border-white/[0.05] sticky top-0 bg-[#0B0E11]/90 backdrop-blur-md z-50">
+      {/* HEADER LIMPO E PROFISSIONAL - DARK MODE (FIXO NO TOPO) */}
+      <div className="px-5 pt-4 pb-5 flex items-center justify-between border-b border-white/[0.05] bg-[#0B0E11]/90 backdrop-blur-md shrink-0 z-50">
         <div>
           <p className="text-[11px] text-gray-400 font-medium tracking-wide">
             Bem-vindo à
@@ -59,7 +100,7 @@ export default function Home() {
             text-white text-xs font-bold
             flex items-center gap-2
             hover:bg-white/[0.08] hover:border-white/[0.1]
-            transition-all duration-200 shadow-sm
+            transition-all duration-200 shadow-sm cursor-pointer
           "
         >
           <Headset size={15} className="text-[#02C076]" strokeWidth={2.5} />
@@ -67,84 +108,90 @@ export default function Home() {
         </button>
       </div>
 
-      {/* CARROSSEL PRINCIPAL */}
-      <div className="mt-5 mb-8">
-        <Carousel />
-      </div>
+      {/* ÁREA DE CONTEÚDO COM SCROLL REAL E ESTÁVEL */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 pt-5 pb-32">
+        
+        {/* CARROSSEL PRINCIPAL */}
+        <div className="mb-8">
+          <Carousel />
+        </div>
 
-      {/* SECÇÕES DE SERVIÇOS DINÂMICOS (DADOS REAIS + BRANDING CONFIG) */}
-      <div className="space-y-8">
-        {loadingCatalog ? (
-          /* SKELETON LOADER ESTILO BINANCE (DARK THEME) */
-          <div className="space-y-6 animate-pulse">
-            {[1, 2].map((sectionIndex) => (
-              <div key={sectionIndex} className="space-y-3">
-                {/* Título Skeleton */}
-                <div className="w-28 h-3.5 bg-[#1E2329] rounded-md"></div>
+        {/* SECÇÕES DE SERVIÇOS DINÂMICOS (DADOS REAIS + BRANDING CONFIG) */}
+        <div className="space-y-8">
+          {loadingCatalog ? (
+            /* SKELETON LOADER ESTILO BINANCE (DARK THEME) */
+            <div className="space-y-6 animate-pulse">
+              {[1, 2].map((sectionIndex) => (
+                <div key={sectionIndex} className="space-y-3">
+                  {/* Título Skeleton */}
+                  <div className="w-28 h-3.5 bg-[#1E2329] rounded-md"></div>
 
-                {/* Grelha de Provedores Skeleton */}
+                  {/* Grelha de Provedores Skeleton */}
+                  <div className="grid grid-cols-4 gap-3 sm:gap-4">
+                    {[1, 2, 3, 4].map((itemIndex) => (
+                      <div key={itemIndex} className="flex flex-col items-center space-y-2">
+                        {/* Círculo do Logo Skeleton */}
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#1E2329] border border-[#2B313A]"></div>
+                        {/* Texto do Nome Skeleton */}
+                        <div className="w-12 h-2.5 bg-[#1E2329] rounded-sm"></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : catalog.length === 0 ? (
+            <div className="text-center py-10 text-gray-500 text-xs font-mono">
+              Nenhum serviço disponível no momento.
+            </div>
+          ) : (
+            catalog.map((category) => (
+              <div key={category.id}>
+                <SectionTitle title={category.name} />
+                
                 <div className="grid grid-cols-4 gap-3 sm:gap-4">
-                  {[1, 2, 3, 4].map((itemIndex) => (
-                    <div key={itemIndex} className="flex flex-col items-center space-y-2">
-                      {/* Círculo do Logo Skeleton */}
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#1E2329] border border-[#2B313A]"></div>
-                      {/* Texto do Nome Skeleton */}
-                      <div className="w-12 h-2.5 bg-[#1E2329] rounded-sm"></div>
-                    </div>
-                  ))}
+                  {category.providers && category.providers.map((provider) => {
+                    const logoFilename = getProviderLogoPath(provider);
+                    const logo = getLogo(logoFilename);
+                    const displayName = getDisplayName(provider.name);
+
+                    return (
+                      <div 
+                        key={provider.id}
+                        onClick={() => {
+                          navigate(`/recharges/${provider.code}`);
+                        }}
+                        className="flex flex-col items-center group cursor-pointer"
+                      >
+                        {/* Círculo do Logótipo (Perfeitamente Arredondado) */}
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#12161C] border border-[#2D333B] p-1 flex items-center justify-center shadow-lg group-hover:border-emerald-500 group-hover:scale-105 transition-all duration-200">
+                          <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#0B0E11] p-1.5">
+                            {logo ? (
+                              <img 
+                                src={logo} 
+                                alt={displayName}
+                                className="w-full h-full object-cover rounded-full opacity-90 group-hover:opacity-100 transition-opacity"
+                              />
+                            ) : (
+                              <span className="text-[10px] font-bold text-white uppercase text-center px-1">
+                                {displayName}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {/* Nome do Provedor */}
+                        <span className="text-[11px] sm:text-xs font-medium text-gray-300 mt-2 text-center tracking-wide group-hover:text-white transition-colors truncate w-full">
+                          {displayName}
+                        </span>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
-            ))}
-          </div>
-        ) : catalog.length === 0 ? (
-          <div className="text-center py-10 text-gray-500 text-xs font-mono">
-            Nenhum serviço disponível no momento.
-          </div>
-        ) : (
-          catalog.map((category) => (
-            <div key={category.id}>
-              <SectionTitle title={category.name} />
-              
-              <div className="grid grid-cols-4 gap-3 sm:gap-4">
-                {category.providers && category.providers.map((provider) => {
-                  const branding = providerBranding[provider.name.toUpperCase() as keyof typeof providerBranding];
-                  const logo = getLogo(branding?.logo);
+            ))
+          )}
+        </div>
 
-                  return (
-                    <div 
-                      key={provider.id}
-                      onClick={() => {
-                        navigate(`/recharges/${provider.code}`);
-                      }}
-                      className="flex flex-col items-center group cursor-pointer"
-                    >
-                      {/* Círculo do Logótipo (Perfeitamente Arredondado) */}
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#12161C] border border-[#2D333B] p-1 flex items-center justify-center shadow-lg group-hover:border-emerald-500 group-hover:scale-105 transition-all duration-200">
-                        <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#0B0E11] p-1.5">
-                          {logo ? (
-                            <img 
-                              src={logo} 
-                              alt={provider.name}
-                              className="w-full h-full object-cover rounded-full opacity-90 group-hover:opacity-100 transition-opacity"
-                            />
-                          ) : (
-                            <span className="text-[10px] font-bold text-white uppercase text-center px-1">
-                              {provider.name}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {/* Nome do Provedor */}
-                      <span className="text-[11px] sm:text-xs font-medium text-gray-300 mt-2 text-center tracking-wide group-hover:text-white transition-colors truncate w-full">
-                        {provider.name}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          ))
-        )}
       </div>
 
       {/* MODAL SUPORTE */}
@@ -159,7 +206,7 @@ export default function Home() {
           >
             <button
               onClick={() => setSupportOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition cursor-pointer"
             >
               <X size={20}/>
             </button>

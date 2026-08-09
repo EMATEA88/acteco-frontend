@@ -92,8 +92,10 @@ export default function Profile() {
   const currentRoleBadge = ROLE_BADGES[rawRole] || ROLE_BADGES["USER"];
 
   return (
-    <div className="min-h-screen w-screen text-[#EAECEF] flex flex-col bg-[#0B0E11] antialiased">
-      <div className="flex-1 px-5 pt-8 pb-32 flex flex-col gap-6">
+    <div className="h-screen w-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] flex flex-col fixed inset-0 font-sans antialiased">
+      
+      {/* ÁREA COM SCROLL REAL E ESTÁVEL */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 pt-8 pb-32 flex flex-col gap-6">
 
         {/* 1. CARD CENTRAL (HEADER) */}
         {isLoading ? (
@@ -226,16 +228,31 @@ export default function Profile() {
         </div>
 
         {!isLoading && (
-          <button
-            onClick={() => { 
-              queryClient.clear();
-              localStorage.clear(); 
-              navigate('/login'); 
-            }}
-            className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-400 mt-6 transition-colors self-center bg-white/[0.02] border border-white/[0.05] px-5 py-2.5 rounded-xl shadow-sm"
-          >
-            <SignOut size={16} weight="bold" /> Sair da conta
-          </button>
+          <div className="flex justify-center mt-2 mb-4">
+            <button
+              onClick={() => { 
+                queryClient.clear();
+                localStorage.clear(); 
+                navigate('/login'); 
+              }}
+              className="
+                group relative flex items-center justify-center gap-2.5 
+                w-44 h-12 rounded-full 
+                bg-rose-500/10 border-2 border-rose-500/40 
+                hover:bg-rose-500 hover:border-rose-500 
+                text-rose-400 hover:text-white 
+                text-[11px] font-black uppercase tracking-wider 
+                shadow-[0_0_20px_rgba(244,63,94,0.15)] 
+                hover:shadow-[0_0_25px_rgba(244,63,94,0.4)] 
+                transition-all duration-300 active:scale-95 cursor-pointer
+              "
+            >
+              <div className="w-7 h-7 rounded-full bg-rose-500/20 group-hover:bg-white/20 flex items-center justify-center transition-colors">
+                <SignOut size={15} weight="bold" />
+              </div>
+              <span>Sair da Conta</span>
+            </button>
+          </div>
         )}
       </div>
 
@@ -253,7 +270,7 @@ function SessionCard({ label, sub, icon, to }: any) {
   return (
     <button
       onClick={() => navigate(to)}
-      className="bg-[#161A1E] flex items-center gap-3 p-4 rounded-2xl border border-white/[0.02] hover:border-blue-500/30 hover:bg-[#1c2127] transition-all duration-200 group text-left shadow-lg"
+      className="bg-[#161A1E] flex items-center gap-3 p-4 rounded-2xl border border-white/[0.02] hover:border-blue-500/30 hover:bg-[#1c2127] transition-all duration-200 group text-left shadow-lg cursor-pointer"
     >
       <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center border border-white/[0.04] text-blue-400 group-hover:text-blue-300 group-hover:bg-white/[0.06] transition-colors">
         {icon}
