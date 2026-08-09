@@ -3,7 +3,16 @@ import type { CatalogPlan } from "../types/catalog";
 import { purchaseService } from "../services/purchase.service";
 import {
   X,
-  Receipt
+  Receipt,
+  CheckCircle,
+  ShieldCheck,
+  User,
+  Hash,
+  Calendar,
+  FileText,
+  Phone,
+  Copy,
+  Check
 } from "@phosphor-icons/react";
 
 // =====================================================
@@ -70,6 +79,7 @@ export default function PurchaseModal({
   const [checkingCustomer, setCheckingCustomer] = useState(false);
   const [customerInfo, setCustomerInfo] = useState<Record<string, any> | null>(null);
   const [customerInfoError, setCustomerInfoError] = useState<string | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [resultData, setResultData] = useState<{
     success: boolean;
     transaction?: any;
@@ -621,7 +631,7 @@ export default function PurchaseModal({
           akiResponse?.Transaction_ID ??
           akiResponse?.transactionId ??
           response?.serviceRequestId ??
-          Math.floor(Math.random() * 10000),
+          `TXN-${Math.floor(100000 + Math.random() * 900000)}`,
         client: purchaseCustomerReference,
         operator: plan.name,
         amount: payableAmount,
@@ -631,6 +641,9 @@ export default function PurchaseModal({
         voucherPIN: transactionExtraInfo?.VoucherPIN ?? transactionExtraInfo?.voucherPIN ?? null,
         voucherValue: transactionExtraInfo?.VoucherValue ?? transactionExtraInfo?.voucherValue ?? null,
         customerName,
+        customerAddress: customerInfo?.Address ?? customerInfo?.address ?? null,
+        invoiceNumber: customerInfo?.Invoice_Number ?? customerInfo?.invoiceNumber ?? null,
+        clientNumber: customerInfo?.Client_Number ?? customerInfo?.clientNumber ?? purchaseCustomerReference,
         extraInfo: transactionExtraInfo
       };
 
@@ -651,6 +664,12 @@ export default function PurchaseModal({
     }
   }
 
+  const copyToClipboard = (text: string, fieldKey: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldKey);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
   // ===================================================
   // RENDER
   // ===================================================
@@ -658,41 +677,55 @@ export default function PurchaseModal({
   return (
     <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
       {!resultData ? (
-        <div className="w-full max-w-md max-h-[82vh] rounded-2xl bg-[#161A1F] border border-white/10 flex flex-col shadow-2xl overflow-hidden">
+        <div className="w-full max-w-md max-h-[85vh] rounded-2xl bg-[#161A1F] border border-white/15 flex flex-col shadow-2xl overflow-hidden">
           
           {/* CABEÇALHO (FIXO) */}
-          <div className="px-4 py-3 border-b border-white/5 flex justify-between items-center bg-[#161A1F]/90 shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                <Receipt size={16} weight="bold" />
+          <div className="px-4 py-3.5 border-b border-white/10 flex justify-between items-center bg-[#161A1F]/95 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <Receipt size={18} weight="bold" />
               </div>
               <div>
-                <h2 className="text-xs font-bold text-white tracking-wide">
-                  Confirmar Operação
+                <h2 className="text-xs font-bold text-white tracking-wide uppercase">
+                  Checkout de Pagamento
                 </h2>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <img
                     src={operatorInfo.logoUrl}
                     alt={operatorInfo.name}
-                    className="w-4 h-4 rounded object-contain"
+                    className="w-4 h-4 rounded object-contain bg-white/5 p-0.5"
                   />
                   <p className="text-[11px] text-gray-400 truncate max-w-[200px]">
-                    {operationType} · {operatorInfo.name}
+                    {operationType} · <span className="text-white font-medium">{operatorInfo.name}</span>
                   </p>
                 </div>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg bg-white/[0.03] border border-white/5 text-gray-400 hover:text-white hover:bg-white/[0.06] transition-all cursor-pointer"
+              className="p-1.5 rounded-lg bg-white/[0.05] border border-white/10 text-gray-400 hover:text-white hover:bg-white/[0.1] transition-all cursor-pointer"
             >
               <X size={14} weight="bold" />
             </button>
           </div>
 
-          {/* CORPO COM ROLAGEM INTERNA E ESPAÇAMENTO COMPACTO */}
-          <div className="p-4 space-y-3 overflow-y-auto custom-scrollbar flex-1">
+          {/* CORPO COM ROLAGEM INTERNA */}
+          <div className="p-4 space-y-3.5 overflow-y-auto custom-scrollbar flex-1">
             
+            {/* PLANO SELECIONADO CARD */}
+            <div className="rounded-xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/10 p-3.5 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">Plano Selecionado</span>
+                <h4 className="text-xs font-bold text-white mt-0.5">{plan.name}</h4>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Preço Base</span>
+                <p className="text-xs font-bold text-emerald-400 mt-0.5">
+                  {plan.valueVariable ? "Valor Variável" : `${Number(plan.price).toLocaleString("pt-PT")} Kz`}
+                </p>
+              </div>
+            </div>
+
             {/* REFERÊNCIA / CONSULTA EPAL */}
             <div>
               {requiresDocumentQuery && (
@@ -711,7 +744,7 @@ export default function PurchaseModal({
                       setCustomerInfo(null);
                       setCustomerInfoError(null);
                     }}
-                    className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 transition-colors mb-2"
+                    className="w-full rounded-xl bg-[#0d1117] border border-white/15 px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition-colors mb-2.5"
                   >
                     <option value="CUSTOMER">Número de Cliente</option>
                     <option value="INVOICE">Número de Fatura</option>
@@ -731,7 +764,7 @@ export default function PurchaseModal({
               </label>
 
               <input
-                className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                className="w-full rounded-xl bg-[#0d1117] border border-white/15 px-3 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors font-mono"
                 placeholder={
                   requiresDocumentQuery
                     ? epalQueryType === "CUSTOMER"
@@ -756,13 +789,16 @@ export default function PurchaseModal({
                 type="button"
                 onClick={requiresDocumentQuery ? handleDocumentQuery : handleCustomerInfo}
                 disabled={checkingCustomer}
-                className="w-full rounded-xl bg-white/[0.05] border border-white/10 py-2 text-xs font-semibold text-white hover:bg-white/[0.08] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full rounded-xl bg-white/[0.06] border border-white/15 py-2.5 text-xs font-semibold text-white hover:bg-white/[0.1] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-sm"
               >
                 {checkingCustomer ? (
-                  <span>A consultar...</span>
+                  <>
+                    <span className="w-3.5 h-3.5 border-2 border-white/20 border-t-emerald-400 rounded-full animate-spin" />
+                    <span>A consultar dados oficiais...</span>
+                  </>
                 ) : (
                   <span>
-                    {requiresDocumentQuery ? "Consultar EPAL" : "Consultar Cliente"}
+                    {requiresDocumentQuery ? "Consultar Fatura / Cliente EPAL" : "Consultar Dados do Cliente"}
                   </span>
                 )}
               </button>
@@ -772,7 +808,7 @@ export default function PurchaseModal({
             {requiresCustomerNotification && (
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
-                  Telefone para Notificações
+                  Telefone para Notificações (SMS)
                 </label>
                 <input
                   type="tel"
@@ -785,75 +821,70 @@ export default function PurchaseModal({
                     )
                   }
                   placeholder="Ex.: 944272561"
-                  className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full rounded-xl bg-[#0d1117] border border-white/15 px-3 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors font-mono"
                 />
               </div>
             )}
 
-            {/* DADOS DO CLIENTE / FATURA */}
+            {/* DADOS DETALHADOS DO CLIENTE (ESTILO PROFISSIONAL) */}
             {customerInfo && (
-              <div className="rounded-xl bg-[#0d1117] border border-emerald-500/20 p-3 space-y-2">
-                <div className="flex items-center justify-between border-b border-white/5 pb-1.5">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
-                    {requiresDocumentQuery ? "Resultado da Consulta EPAL" : "Dados do Cliente"}
-                  </span>
-                  <span className="text-[9px] font-bold text-emerald-400 uppercase">
-                    {requiresDocumentQuery ? "Fatura Encontrada" : "Cliente Encontrado"}
+              <div className="rounded-xl bg-[#0d1117] border border-emerald-500/30 p-3.5 space-y-3 animate-fadeIn">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-emerald-400" />
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                      {requiresDocumentQuery ? "Detalhes da Fatura & Cliente" : "Dados Verificados"}
+                    </span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-300 uppercase tracking-wider">
+                    Válido
                   </span>
                 </div>
 
                 {requiresDocumentQuery && (
-                  <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/10 p-2.5 space-y-1.5">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Método</span>
-                      <span className="text-white font-semibold">
-                        {epalQueryType === "CUSTOMER"
-                          ? "Nº de Cliente"
-                          : epalQueryType === "INVOICE"
-                            ? "Nº de Fatura"
-                            : "Nº Contribuinte / BI"}
-                      </span>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between items-center py-1 border-b border-white/5">
+                      <span className="text-gray-400 flex items-center gap-1.5"><User size={13} /> Nome do Titular</span>
+                      <span className="text-white font-semibold text-right max-w-[190px] truncate">{customerInfo.Name || "N/D"}</span>
                     </div>
 
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Referência</span>
-                      <span className="text-white font-semibold text-right break-all max-w-[200px]">
-                        {customerInfo.Query_Value}
-                      </span>
+                    <div className="flex justify-between items-center py-1 border-b border-white/5">
+                      <span className="text-gray-400 flex items-center gap-1.5"><Hash size={13} /> Nº de Cliente</span>
+                      <span className="text-emerald-300 font-mono font-semibold">{customerInfo.Client_Number || "N/D"}</span>
                     </div>
 
-                    {customerInfo.Name && (
-                      <div className="flex justify-between gap-4 text-xs">
-                        <span className="text-gray-500">Cliente</span>
-                        <span className="text-white font-semibold text-right break-words max-w-[200px]">
-                          {customerInfo.Name}
-                        </span>
+                    <div className="flex justify-between items-center py-1 border-b border-white/5">
+                      <span className="text-gray-400 flex items-center gap-1.5"><FileText size={13} /> Nº da Fatura</span>
+                      <span className="text-white font-mono font-semibold">{customerInfo.Invoice_Number || "N/D"}</span>
+                    </div>
+
+                    {customerInfo.Address && (
+                      <div className="flex justify-between items-center py-1 border-b border-white/5">
+                        <span className="text-gray-400">Endereço</span>
+                        <span className="text-white text-right max-w-[180px] truncate">{customerInfo.Address}</span>
                       </div>
                     )}
 
-                    {customerInfo.Client_Number && (
-                      <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Nº do Cliente</span>
-                        <span className="text-white font-semibold">{customerInfo.Client_Number}</span>
+                    {customerInfo.TaxNumber && (
+                      <div className="flex justify-between items-center py-1 border-b border-white/5">
+                        <span className="text-gray-400">NIF / BI</span>
+                        <span className="text-white font-mono">{customerInfo.TaxNumber}</span>
                       </div>
                     )}
 
-                    {customerInfo.Invoice_Number && (
-                      <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">Nº da Fatura</span>
-                        <span className="text-white font-semibold">{customerInfo.Invoice_Number}</span>
+                    {customerInfo.DateDue && (
+                      <div className="flex justify-between items-center py-1 border-b border-white/5">
+                        <span className="text-gray-400 flex items-center gap-1.5"><Calendar size={13} /> Vencimento</span>
+                        <span className="text-white font-mono">{customerInfo.DateDue}</span>
                       </div>
                     )}
 
-                    {customerInfo.AmountDue !== null &&
-                      customerInfo.AmountDue !== undefined && (
-                        <div className="flex justify-between text-xs pt-1 border-t border-white/5">
-                          <span className="text-gray-400 font-medium">Valor em Dívida</span>
-                          <span className="text-emerald-400 font-bold">
-                            {Number(customerInfo.AmountDue ?? 0).toLocaleString("pt-PT")} Kz
-                          </span>
-                        </div>
-                      )}
+                    <div className="flex justify-between items-center pt-2">
+                      <span className="text-gray-300 font-bold">Montante em Dívida</span>
+                      <span className="text-emerald-400 font-extrabold text-sm font-mono">
+                        {Number(customerInfo.AmountDue ?? 0).toLocaleString("pt-PT")} Kz
+                      </span>
+                    </div>
                   </div>
                 )}
 
@@ -865,9 +896,9 @@ export default function PurchaseModal({
                   let displayValue = typeof value === "object" ? JSON.stringify(value) : value;
 
                   return (
-                    <div key={key} className="flex justify-between gap-4 text-xs">
-                      <span className="text-gray-500">{label}</span>
-                      <span className="text-white font-medium text-right break-words max-w-[190px]">
+                    <div key={key} className="flex justify-between gap-4 text-xs py-1 border-b border-white/5 last:border-0">
+                      <span className="text-gray-400">{label}</span>
+                      <span className="text-white font-medium text-right break-words max-w-[190px] font-mono">
                         {String(displayValue)}
                       </span>
                     </div>
@@ -878,8 +909,8 @@ export default function PurchaseModal({
 
             {/* ERRO DE CONSULTA */}
             {customerInfoError && (
-              <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 px-3 py-2">
-                <p className="text-xs text-rose-400">{customerInfoError}</p>
+              <div className="rounded-xl bg-rose-500/10 border border-rose-500/30 px-3.5 py-3">
+                <p className="text-xs text-rose-400 font-medium">{customerInfoError}</p>
               </div>
             )}
 
@@ -887,54 +918,141 @@ export default function PurchaseModal({
             {plan.valueVariable && !requiresDocumentQuery && (
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
-                  Montante (AOA)
+                  Montante a Pagar (AOA)
                 </label>
                 <input
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full rounded-xl bg-[#0d1117] border border-white/10 px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full rounded-xl bg-[#0d1117] border border-white/15 px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
                 />
               </div>
             )}
           </div>
 
           {/* RODAPÉ (FIXO) */}
-          <div className="p-3 border-t border-white/5 bg-[#161A1F] shrink-0">
+          <div className="p-4 border-t border-white/10 bg-[#161A1F] shrink-0">
+            <div className="flex items-center justify-between mb-3 text-xs">
+              <span className="text-gray-400">Total a Debitar:</span>
+              <span className="text-emerald-400 font-bold text-sm font-mono">
+                {payableAmount > 0 ? `${payableAmount.toLocaleString("pt-PT")} Kz` : "0,00 Kz"}
+              </span>
+            </div>
             <button
               type="button"
               onClick={handlePurchase}
               disabled={loading}
-              className="w-full h-10 rounded-xl bg-emerald-500 font-semibold text-xs text-black hover:bg-emerald-400 active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/10"
+              className="w-full h-11 rounded-xl bg-emerald-500 font-bold text-xs text-black hover:bg-emerald-400 active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20 uppercase tracking-wide"
             >
               {loading ? (
                 <>
-                  <span className="w-3.5 h-3.5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                  <span>A processar...</span>
+                  <span className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                  <span>A processar transação...</span>
                 </>
               ) : (
-                <span>Efetuar Pagamento</span>
+                <span>Confirmar e Efetuar Pagamento</span>
               )}
             </button>
           </div>
 
         </div>
       ) : (
-        /* TELA DE SUCESSO */
-        <div className="w-full max-w-sm rounded-2xl bg-[#161A1F] border border-white/10 p-6 text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center">
-            <Receipt size={24} weight="bold" />
+        /* TELA DE SUCESSO PROFISSIONAL (RECIBO DETALHADO) */
+        <div className="w-full max-w-md max-h-[90vh] rounded-2xl bg-[#161A1F] border border-emerald-500/40 p-5 space-y-4 shadow-2xl overflow-y-auto custom-scrollbar animate-fadeIn">
+          
+          <div className="text-center space-y-2 pt-2">
+            <div className="w-14 h-14 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/10">
+              <CheckCircle size={32} weight="fill" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Pagamento Bem-Sucedido</h3>
+              <p className="text-[11px] text-gray-400 mt-0.5">A transação foi processada e registada com sucesso.</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-white">Operação Concluída</h3>
-            <p className="text-xs text-gray-400 mt-1">O pagamento foi efetuado com sucesso.</p>
+
+          {/* RECIBO DETALHADO COM DADOS REAIS */}
+          <div className="rounded-xl bg-[#0d1117] border border-white/10 p-4 space-y-3 font-mono text-xs">
+            <div className="flex justify-between items-center border-b border-white/10 pb-2.5">
+              <span className="text-gray-400 text-[10px] uppercase">ID da Transação</span>
+              <div className="flex items-center gap-1.5 text-white font-bold">
+                <span>{resultData.transaction?.id}</span>
+                <button 
+                  onClick={() => copyToClipboard(String(resultData.transaction?.id), 'txId')}
+                  className="p-1 hover:text-emerald-400 transition-colors"
+                  title="Copiar ID"
+                >
+                  {copiedField === 'txId' ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-[11px]">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Operadora / Serviço:</span>
+                <span className="text-white font-sans font-semibold">{resultData.transaction?.operator}</span>
+              </div>
+
+              {resultData.transaction?.customerName && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Titular / Cliente:</span>
+                  <span className="text-white font-sans font-semibold text-right max-w-[180px] truncate">{resultData.transaction?.customerName}</span>
+                </div>
+              )}
+
+              {resultData.transaction?.clientNumber && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Número de Cliente:</span>
+                  <span className="text-emerald-300">{resultData.transaction?.clientNumber}</span>
+                </div>
+              )}
+
+              {resultData.transaction?.invoiceNumber && (
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Número da Fatura:</span>
+                  <span className="text-white">{resultData.transaction?.invoiceNumber}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">Referência / Destino:</span>
+                <span className="text-white">{resultData.transaction?.client}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">Data e Hora:</span>
+                <span className="text-white">{new Date(resultData.transaction?.createdAt).toLocaleString("pt-PT")}</span>
+              </div>
+
+              {resultData.transaction?.voucherPIN && (
+                <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2.5 my-2 space-y-1">
+                  <span className="text-[10px] text-emerald-400 uppercase tracking-wider block font-sans font-bold">PIN do Voucher Gerado</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-bold text-emerald-300 font-mono tracking-widest">{resultData.transaction.voucherPIN}</span>
+                    <button 
+                      onClick={() => copyToClipboard(resultData.transaction.voucherPIN, 'pin')}
+                      className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-300 text-[10px] hover:bg-emerald-500/30 transition-colors"
+                    >
+                      {copiedField === 'pin' ? 'Copiado!' : 'Copiar PIN'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-between items-center pt-3 border-t border-white/10 font-sans">
+              <span className="text-gray-400 text-xs font-semibold">Montante Pago</span>
+              <span className="text-emerald-400 font-extrabold text-sm font-mono">
+                {Number(resultData.transaction?.amount ?? 0).toLocaleString("pt-PT")} Kz
+              </span>
+            </div>
           </div>
+
           <button
             onClick={onClose}
-            className="w-full h-10 rounded-xl bg-white/10 text-xs font-semibold text-white hover:bg-white/15 transition-colors cursor-pointer"
+            className="w-full h-11 rounded-xl bg-white/10 text-xs font-bold text-white hover:bg-white/15 transition-colors cursor-pointer uppercase tracking-wide font-sans shadow-md"
           >
-            Fechar
+            Fechar Janela
           </button>
         </div>
       )}
