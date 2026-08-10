@@ -1,8 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Wallet, 
-  Cpu, 
+import {  
   Globe, 
   Palette, 
   ArrowRight, 
@@ -10,7 +8,9 @@ import {
   Phone, 
   Mail,
   Eye,
-  EyeOff
+  EyeOff,
+  Zap,
+  BarChart3
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { loginUser } from "../services/api"; 
@@ -105,10 +105,10 @@ export default function Landing() {
         <div className="my-12 lg:my-0 space-y-8 max-w-xl">
           <div className="space-y-3">
             <h1 className="text-3xl lg:text-5xl font-black tracking-tight leading-none bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent">
-              Soluções financeiras e tecnológicas para o seu dia a dia.
+              Soluções financeiras e tecnológicas para o seu negócio.
             </h1>
             <p className="text-sm text-gray-400 max-w-sm">
-              Conectamos inovação, agilidade e segurança para impulsionar o ecossistema digital em Angola.
+              Conectamos inovação, agilidade e segurança para impulsionar a gestão e os serviços digitais em Angola.
             </p>
           </div>
 
@@ -201,6 +201,15 @@ export default function Landing() {
                 </>
               )}
             </button>
+            <div className="flex justify-end pt-1">
+              <button
+                type="button"
+                onClick={() => navigate("/reset-password")}
+                className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
+              >
+                Esqueceu a palavra-passe?
+              </button>
+            </div>
           </form>
 
           <div className="space-y-4 text-center">
@@ -229,14 +238,14 @@ export default function Landing() {
 
 const services = [
   {
-    title: "Mercado Crypto",
-    desc: "Compra e venda ágil de USDT, BTC, BNB e outras criptomoedas em Angola.",
-    icon: Wallet
+    title: "Recargas Eletrónicas",
+    desc: "Distribuição instantânea de serviços digitais e recargas para todo o território nacional.",
+    icon: Zap
   },
   {
-    title: "Recargas Globais",
-    desc: "Distribuição instantânea de recargas eletrónicas para todos os serviços nacionais.",
-    icon: Cpu
+    title: "Gestão Financeira",
+    desc: "Controlo avançado de saldos, transações automatizadas e relatórios em tempo real.",
+    icon: BarChart3
   },
   {
     title: "Web & Mobile",

@@ -10,6 +10,8 @@ import {
   EnvelopeSimple
 } from '@phosphor-icons/react'
 import { PasswordService } from '../services/password.service'
+import { UserService } from '../services/user.service'
+import { api } from '../services/api'
 
 export default function Password() {
   const navigate = useNavigate()
@@ -27,7 +29,26 @@ export default function Password() {
   const [sendingOtp, setSendingOtp] = useState(false)
   const [countdown, setCountdown] = useState(0)
 
+  const [userEmail, setUserEmail] = useState('')
+
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+
+    useEffect(() => {
+  async function loadUser() {
+    try {
+      const user = await UserService.me()
+
+      setUserEmail(user.email || '')
+    } catch (err) {
+      console.error(
+        'Erro ao carregar email do utilizador:',
+        err
+      )
+    }
+  }
+
+  loadUser()
+}, [])
 
   useEffect(() => {
     let timer: any
@@ -45,18 +66,33 @@ export default function Password() {
     setMessage({ type: 'success', text })
   }
 
-  async function handleSendOtp() {
+  async function handleSendOtp(type: 'RESET_PASSWORD' | 'WITHDRAW') {
     setMessage(null)
+
+    if (!userEmail) {
+      return showError('A conta não possui um email configurado.')
+    }
+
     try {
       setSendingOtp(true)
-      
-      // Insira aqui a chamada real do seu serviço de OTP, caso exista:
-      // await PasswordService.sendOtp()
 
-      showSuccess('Código OTP enviado com sucesso para o seu contacto.')
+      await api.post('/otp/send', {
+        target: userEmail,
+        type
+      })
+
+      showSuccess(
+        `Código OTP enviado para ${userEmail}.`
+      )
+
       setCountdown(60)
     } catch (err: any) {
-      showError(err?.response?.data?.error || 'Erro ao enviar código OTP')
+      console.error('OTP_SEND_ERROR:', err?.response?.data || err)
+
+      showError(
+        err?.response?.data?.error ||
+        'Erro ao enviar código OTP.'
+      )
     } finally {
       setSendingOtp(false)
     }
@@ -189,7 +225,7 @@ export default function Password() {
                 <AuthInput type="text" value={loginOtp} onChange={setLoginOtp} placeholder="Digite o código OTP" />
                 <button
                   type="button"
-                  onClick={handleSendOtp}
+                  onClick={() => handleSendOtp('RESET_PASSWORD')}
                   disabled={sendingOtp || countdown > 0}
                   className="absolute right-2.5 px-3 py-1.5 bg-[#02C076]/10 hover:bg-[#02C076]/20 border border-[#02C076]/30 text-[#02C076] text-xs font-semibold rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
                 >
@@ -240,7 +276,7 @@ export default function Password() {
                 <AuthInput type="text" value={withdrawOtp} onChange={setWithdrawOtp} placeholder="Digite o código OTP" />
                 <button
                   type="button"
-                  onClick={handleSendOtp}
+                  onClick={() => handleSendOtp('WITHDRAW')}
                   disabled={sendingOtp || countdown > 0}
                   className="absolute right-2.5 px-3 py-1.5 bg-[#02C076]/10 hover:bg-[#02C076]/20 border border-[#02C076]/30 text-[#02C076] text-xs font-semibold rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
                 >
