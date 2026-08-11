@@ -6,10 +6,6 @@ import {
   Receipt,
   CheckCircle,
   ShieldCheck,
-  User,
-  Hash,
-  Calendar,
-  FileText,
   Copy,
   Check
 } from "@phosphor-icons/react";
