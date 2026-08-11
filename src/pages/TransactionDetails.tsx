@@ -19,167 +19,126 @@ import {
 // =====================================================
 
 const providerBranding: Record<string, { logo: string }> = {
-
   UNITEL: {
     logo: "UNITEL.PNG"
   },
-
   MOVICEL: {
     logo: "MOVICEL.PNG"
   },
-
   AFRICELL: {
     logo: "AFRICELL.PNG"
   },
-
   NETONE: {
     logo: "NETONE.PNG"
   },
-
   DSTV: {
     logo: "DSTV.PNG"
   },
-
   ZAP: {
     logo: "ZAP1.PNG"
   },
-
   ZAP_SAT: {
     logo: "ZAP1.PNG"
   },
-
   "ZAP FIBRA": {
     logo: "ZAP2.PNG"
   },
-
   ZAP_MEDIA: {
     logo: "ZAP2.PNG"
   },
-
   ZAP2: {
     logo: "ZAP2.PNG"
   },
-
   ENDE: {
     logo: "ENDE.PNG"
   },
-
   EPAL: {
     logo: "EPAL.PNG"
   },
-
   STAS: {
     logo: "STAS.PNG"
   },
-
   INT_VCH2: {
     logo: "AMAZON.PNG"
   },
-
   AMAZON: {
     logo: "AMAZON.PNG"
   },
-
   APPLE: {
     logo: "APPLE.PNG"
   },
-
   "GOOGLE PLAY": {
     logo: "GOOGLEPLAY.PNG"
   },
-
   GOOGLE: {
     logo: "GOOGLEPLAY.PNG"
   },
-
   NETFLIX: {
     logo: "NETFLIX.PNG"
   },
-
   SPOTIFY: {
     logo: "SPOTIFY.PNG"
   },
-
   PLAYSTATION: {
     logo: "TEAM.PNG"
   },
-
   TEAM: {
     logo: "TEAM.PNG"
   },
-
   XBOX: {
     logo: "XBOX.PNG"
   },
-
   BOLT: {
     logo: "BOLT.PNG"
   },
-
   FLIXBUS: {
     logo: "FLIXBUS.PNG"
   },
-
   PREMIERBET: {
     logo: "Premiebet.png"
   },
-
   PBET: {
     logo: "Premiebet.png"
   },
-
   BANTUBET: {
     logo: "BantuBet.png"
   },
-
   BBET: {
     logo: "BantuBet.png"
   },
-
   ELEPHANTBET: {
     logo: "Elephantbet.png"
   },
-
   EBET: {
     logo: "Elephantbet.png"
   },
-
   AFRIBET: {
     logo: "AfriBet.png"
   },
-
   ABET: {
     logo: "AfriBet.png"
   },
-
   MOBET: {
     logo: "Mobet.png"
   },
-
   MELBET: {
     logo: "MelBet.png"
   },
-
   MGMBET: {
     logo: "MelBet.png"
   },
-
   KWANZABET: {
     logo: "Kwanzabet.png"
   },
-
   "888BETS": {
     logo: "888Bets.png"
   },
-
   "888BET": {
     logo: "888Bets.png"
   },
-
   "888": {
     logo: "888Bets.png"
   }
-
 }
 
 // =====================================================
@@ -199,37 +158,21 @@ const rechargeImages = import.meta.glob<string>(
 // =====================================================
 
 interface TransactionReceipt {
-
   provider?: string | null
-
   service?: string | null
-
   partner?: string | null
-
   plan?: string | null
-
   customerReference?: string | null
-
   customerName?: string | null
-
   voucherPin?: string | null
-
   voucherValue?: number | string | null
-
   voucherUnits?: string | null
-
   voucherVat?: number | string | null
-
   transactionId?: string | null
-
   orderId?: string | null
-
   amount?: number | null
-
   currency?: string | null
-
   status?: string | null
-
 }
 
 // =====================================================
@@ -238,98 +181,54 @@ interface TransactionReceipt {
 
 export interface TransactionDetails
   extends BaseTransactionDetails {
-
   serviceRequest?: {
-
     id: number
-
     planId: number
-
     serviceId?: number | null
-
     serviceGroupId?: number | null
-
     providerId?: number | null
-
     providerName?: string | null
-
     amount: number
-
     cost?: number | null
-
     profit?: number | null
-
     customerReference?: string | null
-
     customerName?: string | null
-
     partnerName?: string | null
-
     partnerId?: number | null
-
     serviceName?: string | null
-
     serviceGroupName?: string | null
-
     planName?: string | null
-
     status: string
-
     transactionId?: number | null
-
     externalProviderRef?: string | null
-
     externalTransactionId?: string | null
-
     providerResponse?:
-      Record<string, any> |
-      string |
-      null
-
+      | Record<string, any>
+      | string
+      | null
     completedAt?: string | null
-
     providerFinalBalance?: number | null
-
     providerConfirmedAt?: string | null
-
     providerReconciledAt?: string | null
-
     providerOperationStatus?: string | null
-
     providerOperationCode?: number | null
-
     createdAt: string
-
     updatedAt: string
-
   }
 
   metadata?: {
-
     categoryName?: string
-
     providerName?: string
-
     partnerName?: string
-
     planName?: string
-
     customerReference?: string
-
     amount?: number
-
     cost?: number
-
     profit?: number
-
     aki?: any
-
     extraInfo?: any
-
     receipt?: TransactionReceipt
-
   }
-
 }
 
 // =====================================================
@@ -339,7 +238,6 @@ export interface TransactionDetails
 function parseJsonValue(
   value: unknown
 ): any {
-
   if (
     value === null ||
     value === undefined
@@ -356,17 +254,11 @@ function parseJsonValue(
   if (
     typeof value === "string"
   ) {
-
     try {
-
       return JSON.parse(value)
-
     } catch {
-
       return value
-
     }
-
   }
 
   return null
@@ -377,9 +269,7 @@ function parseJsonValue(
 // =====================================================
 
 export default function TransactionDetails() {
-
   const navigate = useNavigate()
-
   const { id } = useParams()
 
   const [loading, setLoading] =
@@ -396,28 +286,20 @@ export default function TransactionDetails() {
   // ===================================================
 
   useEffect(() => {
-
     if (!id) return
 
     TransactionService.details(Number(id))
-
       .then((data: any) => {
-
         console.log(
           "TRANSACTION DETAILS:",
           data
         )
-
         setTransaction(data)
-
       })
-
       .catch(console.error)
-
       .finally(() =>
         setLoading(false)
       )
-
   }, [id])
 
   // ===================================================
@@ -425,7 +307,6 @@ export default function TransactionDetails() {
   // ===================================================
 
   const handleCopyId = () => {
-
     if (!transaction) return
 
     navigator.clipboard.writeText(
@@ -438,7 +319,6 @@ export default function TransactionDetails() {
       () => setCopied(false),
       2000
     )
-
   }
 
   // ===================================================
@@ -446,7 +326,6 @@ export default function TransactionDetails() {
   // ===================================================
 
   const getOperatorName = () => {
-
     const receipt =
       transaction?.metadata?.receipt
 
@@ -454,23 +333,14 @@ export default function TransactionDetails() {
       transaction?.serviceRequest
 
     const rawName = (
-
       receipt?.provider ??
-
       receipt?.partner ??
-
       serviceRequest?.providerName ??
-
       serviceRequest?.partnerName ??
-
       transaction?.metadata?.partnerName ??
-
       transaction?.metadata?.providerName ??
-
       transaction?.description ??
-
       ""
-
     ).toUpperCase()
 
     if (
@@ -543,23 +413,14 @@ export default function TransactionDetails() {
     }
 
     return (
-
       receipt?.provider ??
-
       receipt?.partner ??
-
       serviceRequest?.providerName ??
-
       serviceRequest?.partnerName ??
-
       transaction?.metadata?.partnerName ??
-
       transaction?.metadata?.providerName ??
-
       "EMATEA"
-
     )
-
   }
 
   // ===================================================
@@ -569,7 +430,6 @@ export default function TransactionDetails() {
   const getOperatorLogo = (
     operatorKey: string
   ) => {
-
     const brand =
       providerBranding[
         operatorKey
@@ -587,21 +447,16 @@ export default function TransactionDetails() {
     for (
       const path in rechargeImages
     ) {
-
       if (
         path
           .toLowerCase()
           .endsWith(targetFileName)
       ) {
-
         return rechargeImages[path]
-
       }
-
     }
 
     return "/logo.png"
-
   }
 
   // ===================================================
@@ -696,73 +551,60 @@ export default function TransactionDetails() {
   // ===================================================
 
   return (
-
-    <div className="h-screen w-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] antialiased flex flex-col fixed inset-0">
+    <div className="h-screen w-screen overflow-hidden bg-[#082f49] text-gray-100 antialiased flex flex-col fixed inset-0">
 
       {/* ============================================
           HEADER FIXO NO TOPO
       ============================================ */}
 
-      <div className="px-5 py-4 flex items-center justify-between border-b border-white/[0.05] bg-[#0B0E11]/90 backdrop-blur-md shrink-0 z-50">
+      <div className="px-5 py-4 flex items-center justify-between border-b border-[#0ea5e9]/20 bg-[#0c4a6e]/95 backdrop-blur-md shrink-0 z-50">
 
         <button
           onClick={() =>
             navigate(-1)
           }
-          className="p-2 bg-white/[0.03] border border-white/[0.05] text-gray-300 rounded-xl hover:bg-white/[0.08] cursor-pointer transition"
+          className="p-2 bg-[#0ea5e9]/10 border border-[#0ea5e9]/30 text-[#7dd3fc] rounded-xl hover:bg-[#0ea5e9]/25 hover:text-white cursor-pointer transition"
           title="Voltar"
         >
-
           <ArrowLeft
             size={16}
             weight="bold"
           />
-
         </button>
 
         <h1 className="text-xs font-black uppercase tracking-wider text-white">
-
           Comprovativo de Venda
-
         </h1>
 
         <div className="flex items-center gap-2">
 
           <button
             onClick={handleCopyId}
-            className="p-2 text-gray-400 hover:text-white relative cursor-pointer"
+            className="p-2 text-[#7dd3fc] hover:text-white relative cursor-pointer"
             title="Copiar ID"
           >
-
             {copied ? (
-
               <Check
                 size={16}
-                className="text-emerald-400"
+                className="text-[#38bdf8]"
               />
-
             ) : (
-
               <ShareNetwork
                 size={16}
               />
-
             )}
-
           </button>
 
           {/* BOTÃO X PARA FECHAR IMEDIATAMENTE (COM UM CLIQUE) */}
           <button
             onClick={() => navigate(-1)}
-            className="p-2 bg-white/[0.03] border border-white/[0.05] text-gray-400 hover:text-white rounded-xl hover:bg-white/[0.08] cursor-pointer transition"
+            className="p-2 bg-[#0ea5e9]/10 border border-[#0ea5e9]/30 text-[#7dd3fc] hover:text-white rounded-xl hover:bg-[#0ea5e9]/25 cursor-pointer transition"
             title="Fechar"
           >
-
             <X
               size={16}
               weight="bold"
             />
-
           </button>
 
         </div>
@@ -775,36 +617,36 @@ export default function TransactionDetails() {
 
       <div
         onClick={() => navigate(-1)}
-        className="flex-1 overflow-y-auto overflow-x-hidden flex items-center justify-center p-4 sm:p-6 bg-[#0B0E11]/80 backdrop-blur-sm cursor-pointer"
+        className="flex-1 overflow-y-auto overflow-x-hidden flex items-center justify-center p-4 sm:p-6 bg-[#082f49]/80 backdrop-blur-sm cursor-pointer"
       >
 
         <div
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-sm bg-[#161A1E] border border-white/[0.06] rounded-3xl p-5 shadow-2xl flex flex-col items-center relative cursor-default my-auto"
+          className="w-full max-w-sm bg-[#082f49] border border-[#0ea5e9]/30 rounded-3xl p-5 shadow-2xl flex flex-col items-center relative cursor-default my-auto text-gray-100"
         >
 
           {loading ? (
 
             /* SKELETON LOADER MODERNO E COMPACTO */
             <div className="w-full space-y-4 animate-pulse py-2">
-              <div className="w-16 h-16 rounded-full bg-[#1E2329] mx-auto border border-[#2B313A]"></div>
-              <div className="w-36 h-4 bg-[#1E2329] rounded-md mx-auto"></div>
+              <div className="w-16 h-16 rounded-full bg-[#0c4a6e] mx-auto border border-[#0ea5e9]/30"></div>
+              <div className="w-36 h-4 bg-[#0c4a6e] rounded-md mx-auto"></div>
               
-              <div className="w-full space-y-3 border-t border-b border-white/[0.05] py-4">
+              <div className="w-full space-y-3 border-t border-b border-[#0ea5e9]/20 py-4">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div key={i} className="flex justify-between items-center">
-                    <div className="w-20 h-3 bg-[#1E2329] rounded-sm"></div>
-                    <div className="w-28 h-3 bg-[#1E2329] rounded-sm"></div>
+                    <div className="w-20 h-3 bg-[#0c4a6e] rounded-sm"></div>
+                    <div className="w-28 h-3 bg-[#0c4a6e] rounded-sm"></div>
                   </div>
                 ))}
               </div>
 
-              <div className="w-full h-10 bg-[#1E2329] rounded-xl"></div>
+              <div className="w-full h-10 bg-[#0c4a6e] rounded-xl"></div>
             </div>
 
           ) : !transaction ? (
 
-            <div className="text-center py-8 text-sm font-bold text-gray-400 font-mono">
+            <div className="text-center py-8 text-sm font-bold text-[#7dd3fc] font-mono">
               Transação não encontrada.
             </div>
 
@@ -815,14 +657,12 @@ export default function TransactionDetails() {
                   LOGO
               ======================================== */}
 
-              <div className="w-16 h-16 rounded-full bg-white shadow-lg mb-4 overflow-hidden flex items-center justify-center border border-white/[0.1] shrink-0">
-
+              <div className="w-16 h-16 rounded-full bg-white shadow-lg mb-4 overflow-hidden flex items-center justify-center border border-[#0ea5e9]/30 shrink-0">
                 <img
                   src={operatorLogoSrc}
                   alt={operatorName}
                   className="w-full h-full object-cover p-0"
                 />
-
               </div>
 
               {/* ========================================
@@ -830,19 +670,14 @@ export default function TransactionDetails() {
               ======================================== */}
 
               {isPaid && (
-
                 <div className="flex items-center gap-1.5 mb-1">
-
-                  <span className="text-emerald-400 text-xs font-black">
+                  <span className="text-[#38bdf8] text-xs font-black">
                     ✓
                   </span>
-
-                  <span className="text-emerald-400 text-[11px] font-black uppercase tracking-wide">
+                  <span className="text-[#38bdf8] text-[11px] font-black uppercase tracking-wide">
                     Transação Bem-Sucedida
                   </span>
-
                 </div>
-
               )}
 
               {/* ========================================
@@ -857,131 +692,97 @@ export default function TransactionDetails() {
                   DADOS PRINCIPAIS
               ======================================== */}
 
-              <div className="w-full space-y-3 border-t border-b border-white/[0.05] py-4 text-xs">
+              <div className="w-full space-y-3 border-t border-b border-[#0ea5e9]/20 py-4 text-xs">
 
                 {/* ID OPERAÇÃO */}
-
                 <div className="flex justify-between items-center gap-4">
-
-                  <span className="text-gray-400 font-medium">
+                  <span className="text-[#7dd3fc] font-medium">
                     ID Operação:
                   </span>
-
                   <button
                     onClick={() =>
                       navigator.clipboard.writeText(
                         String(operationId)
                       )
                     }
-                    className="flex items-center gap-1.5 font-mono font-bold text-white text-right hover:text-emerald-400 transition cursor-pointer"
+                    className="flex items-center gap-1.5 font-mono font-bold text-white text-right hover:text-[#38bdf8] transition cursor-pointer"
                   >
-
                     {operationId}
-
                     <Copy
                       size={12}
-                      className="text-gray-500"
+                      className="text-[#7dd3fc]/70"
                     />
-
                   </button>
-
                 </div>
 
                 {/* REFERÊNCIA */}
-
                 <div className="flex justify-between items-center gap-4">
-
-                  <span className="text-gray-400 font-medium">
+                  <span className="text-[#7dd3fc] font-medium">
                     Referência:
                   </span>
-
                   <span className="font-mono font-bold text-white text-right">
                     {customerReference}
                   </span>
-
                 </div>
 
                 {/* NOME DO CLIENTE */}
-
                 {customerName && (
-
                   <div className="flex justify-between items-center gap-4">
-
-                    <span className="text-gray-400 font-medium">
+                    <span className="text-[#7dd3fc] font-medium">
                       Nome Cliente:
                     </span>
-
                     <span className="font-bold text-white text-right max-w-[180px] truncate">
                       {customerName}
                     </span>
-
                   </div>
-
                 )}
 
                 {/* OPERADORA */}
-
                 <div className="flex justify-between items-center gap-4">
-
-                  <span className="text-gray-400 font-medium">
+                  <span className="text-[#7dd3fc] font-medium">
                     Operadora:
                   </span>
-
                   <span className="font-bold text-white uppercase">
                     {operatorName}
                   </span>
-
                 </div>
 
                 {/* SERVIÇO / PLANO */}
-
                 {(
                   storedReceipt?.plan ||
                   serviceRequest?.planName ||
                   serviceRequest?.serviceName ||
                   transaction.metadata?.planName
                 ) && (
-
                   <div className="flex justify-between items-center gap-4">
-
-                    <span className="text-gray-400 font-medium">
+                    <span className="text-[#7dd3fc] font-medium">
                       Serviço:
                     </span>
-
                     <span className="font-bold text-white text-right max-w-[180px] truncate">
                       {storedReceipt?.plan ??
                         serviceRequest?.planName ??
                         serviceRequest?.serviceName ??
                         transaction.metadata?.planName}
                     </span>
-
                   </div>
-
                 )}
 
                 {/* VALOR */}
-
                 <div className="flex justify-between items-center gap-4">
-
-                  <span className="text-gray-400 font-medium">
+                  <span className="text-[#7dd3fc] font-medium">
                     Montante:
                   </span>
-
-                  <span className="text-emerald-400 font-black text-sm">
+                  <span className="text-[#38bdf8] font-black text-sm">
                     {formattedAmount}
                   </span>
-
                 </div>
 
                 {/* DATA */}
-
                 <div className="flex justify-between items-center gap-4">
-
-                  <span className="text-gray-400 font-medium">
+                  <span className="text-[#7dd3fc] font-medium">
                     Data:
                   </span>
-
-                  <span className="font-mono text-gray-300 text-right text-[11px]">
+                  <span className="font-mono text-[#7dd3fc] text-right text-[11px]">
                     {new Date(
                       transaction.createdAt
                     ).toLocaleString(
@@ -995,29 +796,24 @@ export default function TransactionDetails() {
                       }
                     )}
                   </span>
-
                 </div>
 
                 {/* STATUS */}
-
                 <div className="flex justify-between items-center">
-
-                  <span className="text-gray-400 font-medium">
+                  <span className="text-[#7dd3fc] font-medium">
                     Estado:
                   </span>
-
                   <span
                     className={`font-black uppercase text-[11px] ${
                       isPaid
-                        ? "text-emerald-400"
-                        : "text-yellow-400"
+                        ? "text-[#38bdf8]"
+                        : "text-amber-400"
                     }`}
                   >
                     {isPaid
                       ? "CONCLUÍDO"
                       : "PROCESSANDO"}
                   </span>
-
                 </div>
 
               </div>
@@ -1027,26 +823,21 @@ export default function TransactionDetails() {
               ======================================== */}
 
               {voucherPin && (
-
-                <div className="w-full mt-4 bg-emerald-500/[0.10] border border-emerald-500/[0.35] rounded-2xl p-4">
-
+                <div className="w-full mt-4 bg-[#0c4a6e] border border-[#0ea5e9]/40 rounded-2xl p-4 shadow-inner">
                   <div className="flex items-center justify-between mb-2">
-
-                    <span className="text-emerald-400 text-[10px] font-black uppercase tracking-wider">
+                    <span className="text-[#38bdf8] text-[10px] font-black uppercase tracking-wider">
                       PIN DE CARREGAMENTO
                     </span>
-
                     <button
                       onClick={() =>
                         navigator.clipboard.writeText(
                           String(voucherPin)
                         )
                       }
-                      className="text-gray-400 hover:text-white cursor-pointer"
+                      className="text-[#7dd3fc] hover:text-white cursor-pointer"
                     >
                       <Copy size={14} />
                     </button>
-
                   </div>
 
                   <div className="text-white text-base font-black font-mono tracking-wider break-all text-center">
@@ -1054,8 +845,7 @@ export default function TransactionDetails() {
                   </div>
 
                   {voucherValue != null && (
-
-                    <div className="text-gray-300 text-[11px] text-center mt-2">
+                    <div className="text-[#7dd3fc] text-[11px] text-center mt-2">
                       Energia:{" "}
                       <span className="text-white font-bold">
                         {voucherValue}
@@ -1064,18 +854,15 @@ export default function TransactionDetails() {
                           : ""}
                       </span>
                     </div>
-
                   )}
-
                 </div>
-
               )}
 
               {/* ========================================
                   RODAPÉ
               ======================================== */}
 
-              <p className="text-[9px] text-gray-500 font-mono tracking-wider uppercase mt-4 text-center">
+              <p className="text-[9px] text-[#7dd3fc]/70 font-mono tracking-wider uppercase mt-4 text-center">
                 Obrigado pela preferência
               </p>
             </>
@@ -1087,7 +874,5 @@ export default function TransactionDetails() {
       </div>
 
     </div>
-
   )
-
 }

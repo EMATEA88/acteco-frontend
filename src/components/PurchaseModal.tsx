@@ -674,14 +674,14 @@ export default function PurchaseModal({
   // ===================================================
 
   return (
-    <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
+    <div className="fixed inset-0 bg-[#030712]/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
       {!resultData ? (
-        <div className="w-full max-w-md max-h-[85vh] rounded-2xl bg-[#161A1F] border border-white/15 flex flex-col shadow-2xl overflow-hidden">
+        <div className="w-full max-w-md max-h-[85vh] rounded-2xl bg-[#082f49] border border-[#0ea5e9]/30 flex flex-col shadow-2xl overflow-hidden text-gray-100">
           
           {/* CABEÇALHO (FIXO) */}
-          <div className="px-4 py-3.5 border-b border-white/10 flex justify-between items-center bg-[#161A1F]/95 shrink-0">
+          <div className="px-4 py-3.5 border-b border-[#0ea5e9]/20 flex justify-between items-center bg-[#0c4a6e]/95 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <div className="w-9 h-9 rounded-xl bg-[#0ea5e9]/20 border border-[#0ea5e9]/40 flex items-center justify-center text-[#38bdf8]">
                 <Receipt size={18} weight="bold" />
               </div>
               <div>
@@ -692,9 +692,9 @@ export default function PurchaseModal({
                   <img
                     src={operatorInfo.logoUrl}
                     alt={operatorInfo.name}
-                    className="w-4 h-4 rounded object-contain bg-white/5 p-0.5"
+                    className="w-4 h-4 rounded object-contain bg-white/10 p-0.5"
                   />
-                  <p className="text-[11px] text-gray-400 truncate max-w-[200px]">
+                  <p className="text-[11px] text-[#7dd3fc] truncate max-w-[200px]">
                     {operationType} · <span className="text-white font-medium">{operatorInfo.name}</span>
                   </p>
                 </div>
@@ -702,24 +702,24 @@ export default function PurchaseModal({
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg bg-white/[0.05] border border-white/10 text-gray-400 hover:text-white hover:bg-white/[0.1] transition-all cursor-pointer"
+              className="p-1.5 rounded-lg bg-[#0ea5e9]/10 border border-[#0ea5e9]/30 text-[#7dd3fc] hover:text-white hover:bg-[#0ea5e9]/25 transition-all cursor-pointer"
             >
               <X size={14} weight="bold" />
             </button>
           </div>
 
           {/* CORPO COM ROLAGEM INTERNA */}
-          <div className="p-4 space-y-3.5 overflow-y-auto custom-scrollbar flex-1">
+          <div className="p-4 space-y-3.5 overflow-y-auto custom-scrollbar flex-1 bg-[#082f49]">
             
             {/* PLANO SELECIONADO CARD */}
-            <div className="rounded-xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/10 p-3.5 flex items-center justify-between">
+            <div className="rounded-xl bg-gradient-to-br from-[#0c4a6e] to-[#075985] border border-[#0ea5e9]/30 p-3.5 flex items-center justify-between shadow-md">
               <div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">Plano Selecionado</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#38bdf8]">Plano Selecionado</span>
                 <h4 className="text-xs font-bold text-white mt-0.5">{plan.name}</h4>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Preço Base</span>
-                <p className="text-xs font-bold text-emerald-400 mt-0.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-[#7dd3fc]">Preço Base</span>
+                <p className="text-xs font-bold text-[#38bdf8] mt-0.5">
                   {plan.valueVariable ? "Valor Variável" : `${Number(plan.price).toLocaleString("pt-PT")} Kz`}
                 </p>
               </div>
@@ -729,7 +729,7 @@ export default function PurchaseModal({
             <div>
               {requiresDocumentQuery && (
                 <>
-                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#7dd3fc] mb-1">
                     Pesquisar EPAL por
                   </label>
 
@@ -743,7 +743,7 @@ export default function PurchaseModal({
                       setCustomerInfo(null);
                       setCustomerInfoError(null);
                     }}
-                    className="w-full rounded-xl bg-[#0d1117] border border-white/15 px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 transition-colors mb-2.5"
+                    className="w-full rounded-xl bg-[#0c4a6e] border border-[#0ea5e9]/30 px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#38bdf8] transition-colors mb-2.5 shadow-inner"
                   >
                     <option value="CUSTOMER">Número de Cliente</option>
                     <option value="INVOICE">Número de Fatura</option>
@@ -752,7 +752,7 @@ export default function PurchaseModal({
                 </>
               )}
 
-              <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#7dd3fc] mb-1">
                 {requiresDocumentQuery
                   ? epalQueryType === "CUSTOMER"
                     ? "Número de Cliente EPAL"
@@ -763,7 +763,7 @@ export default function PurchaseModal({
               </label>
 
               <input
-                className="w-full rounded-xl bg-[#0d1117] border border-white/15 px-3 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors font-mono"
+                className="w-full rounded-xl bg-[#0c4a6e] border border-[#0ea5e9]/30 px-3 py-2.5 text-xs text-white placeholder-[#7dd3fc]/50 focus:outline-none focus:border-[#38bdf8] transition-colors font-mono shadow-inner"
                 placeholder={
                   requiresDocumentQuery
                     ? epalQueryType === "CUSTOMER"
@@ -788,11 +788,11 @@ export default function PurchaseModal({
                 type="button"
                 onClick={requiresDocumentQuery ? handleDocumentQuery : handleCustomerInfo}
                 disabled={checkingCustomer}
-                className="w-full rounded-xl bg-white/[0.06] border border-white/15 py-2.5 text-xs font-semibold text-white hover:bg-white/[0.1] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                className="w-full rounded-xl bg-[#0c4a6e] border border-[#0ea5e9]/40 py-2.5 text-xs font-semibold text-white hover:bg-[#075985] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-md"
               >
                 {checkingCustomer ? (
                   <>
-                    <span className="w-3.5 h-3.5 border-2 border-white/20 border-t-emerald-400 rounded-full animate-spin" />
+                    <span className="w-3.5 h-3.5 border-2 border-white/20 border-t-[#38bdf8] rounded-full animate-spin" />
                     <span>A consultar dados oficiais...</span>
                   </>
                 ) : (
@@ -806,7 +806,7 @@ export default function PurchaseModal({
             {/* TELEFONE NOTIFICAÇÃO */}
             {requiresCustomerNotification && (
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#7dd3fc] mb-1">
                   Telefone para Notificações (SMS)
                 </label>
                 <input
@@ -820,67 +820,67 @@ export default function PurchaseModal({
                     )
                   }
                   placeholder="Ex.: 944272561"
-                  className="w-full rounded-xl bg-[#0d1117] border border-white/15 px-3 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors font-mono"
+                  className="w-full rounded-xl bg-[#0c4a6e] border border-[#0ea5e9]/30 px-3 py-2.5 text-xs text-white placeholder-[#7dd3fc]/50 focus:outline-none focus:border-[#38bdf8] transition-colors font-mono shadow-inner"
                 />
               </div>
             )}
 
             {/* DADOS DETALHADOS DO CLIENTE (ESTILO PROFISSIONAL) */}
             {customerInfo && (
-              <div className="rounded-xl bg-[#0d1117] border border-emerald-500/30 p-3.5 space-y-3 animate-fadeIn">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+              <div className="rounded-xl bg-[#0c4a6e] border border-[#0ea5e9]/40 p-3.5 space-y-3 animate-fadeIn shadow-lg">
+                <div className="flex items-center justify-between border-b border-[#0ea5e9]/20 pb-2">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck size={16} className="text-emerald-400" />
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                    <ShieldCheck size={16} className="text-[#38bdf8]" />
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#38bdf8]">
                       {requiresDocumentQuery ? "Detalhes da Fatura & Cliente" : "Dados Verificados"}
                     </span>
                   </div>
-                  <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-300 uppercase tracking-wider">
+                  <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-[#0ea5e9]/30 text-[#bae6fd] uppercase tracking-wider">
                     Válido
                   </span>
                 </div>
 
                 {requiresDocumentQuery && (
                   <div className="space-y-2 text-xs">
-                    <div className="flex justify-between items-center py-1 border-b border-white/5">
-                      <span className="text-gray-400 flex items-center gap-1.5"><User size={13} /> Nome do Titular</span>
+                    <div className="flex justify-between items-center py-1 border-b border-[#0ea5e9]/10">
+                      <span className="text-[#7dd3fc] flex items-center gap-1.5"><User size={13} /> Nome do Titular</span>
                       <span className="text-white font-semibold text-right max-w-[190px] truncate">{customerInfo.Name || "N/D"}</span>
                     </div>
 
-                    <div className="flex justify-between items-center py-1 border-b border-white/5">
-                      <span className="text-gray-400 flex items-center gap-1.5"><Hash size={13} /> Nº de Cliente</span>
-                      <span className="text-emerald-300 font-mono font-semibold">{customerInfo.Client_Number || "N/D"}</span>
+                    <div className="flex justify-between items-center py-1 border-b border-[#0ea5e9]/10">
+                      <span className="text-[#7dd3fc] flex items-center gap-1.5"><Hash size={13} /> Nº de Cliente</span>
+                      <span className="text-[#38bdf8] font-mono font-semibold">{customerInfo.Client_Number || "N/D"}</span>
                     </div>
 
-                    <div className="flex justify-between items-center py-1 border-b border-white/5">
-                      <span className="text-gray-400 flex items-center gap-1.5"><FileText size={13} /> Nº da Fatura</span>
+                    <div className="flex justify-between items-center py-1 border-b border-[#0ea5e9]/10">
+                      <span className="text-[#7dd3fc] flex items-center gap-1.5"><FileText size={13} /> Nº da Fatura</span>
                       <span className="text-white font-mono font-semibold">{customerInfo.Invoice_Number || "N/D"}</span>
                     </div>
 
                     {customerInfo.Address && (
-                      <div className="flex justify-between items-center py-1 border-b border-white/5">
-                        <span className="text-gray-400">Endereço</span>
+                      <div className="flex justify-between items-center py-1 border-b border-[#0ea5e9]/10">
+                        <span className="text-[#7dd3fc]">Endereço</span>
                         <span className="text-white text-right max-w-[180px] truncate">{customerInfo.Address}</span>
                       </div>
                     )}
 
                     {customerInfo.TaxNumber && (
-                      <div className="flex justify-between items-center py-1 border-b border-white/5">
-                        <span className="text-gray-400">NIF / BI</span>
+                      <div className="flex justify-between items-center py-1 border-b border-[#0ea5e9]/10">
+                        <span className="text-[#7dd3fc]">NIF / BI</span>
                         <span className="text-white font-mono">{customerInfo.TaxNumber}</span>
                       </div>
                     )}
 
                     {customerInfo.DateDue && (
-                      <div className="flex justify-between items-center py-1 border-b border-white/5">
-                        <span className="text-gray-400 flex items-center gap-1.5"><Calendar size={13} /> Vencimento</span>
+                      <div className="flex justify-between items-center py-1 border-b border-[#0ea5e9]/10">
+                        <span className="text-[#7dd3fc] flex items-center gap-1.5"><Calendar size={13} /> Vencimento</span>
                         <span className="text-white font-mono">{customerInfo.DateDue}</span>
                       </div>
                     )}
 
                     <div className="flex justify-between items-center pt-2">
-                      <span className="text-gray-300 font-bold">Montante em Dívida</span>
-                      <span className="text-emerald-400 font-extrabold text-sm font-mono">
+                      <span className="text-gray-200 font-bold">Montante em Dívida</span>
+                      <span className="text-[#38bdf8] font-extrabold text-sm font-mono">
                         {Number(customerInfo.AmountDue ?? 0).toLocaleString("pt-PT")} Kz
                       </span>
                     </div>
@@ -895,8 +895,8 @@ export default function PurchaseModal({
                   let displayValue = typeof value === "object" ? JSON.stringify(value) : value;
 
                   return (
-                    <div key={key} className="flex justify-between gap-4 text-xs py-1 border-b border-white/5 last:border-0">
-                      <span className="text-gray-400">{label}</span>
+                    <div key={key} className="flex justify-between gap-4 text-xs py-1 border-b border-[#0ea5e9]/10 last:border-0">
+                      <span className="text-[#7dd3fc]">{label}</span>
                       <span className="text-white font-medium text-right break-words max-w-[190px] font-mono">
                         {String(displayValue)}
                       </span>
@@ -908,15 +908,15 @@ export default function PurchaseModal({
 
             {/* ERRO DE CONSULTA */}
             {customerInfoError && (
-              <div className="rounded-xl bg-rose-500/10 border border-rose-500/30 px-3.5 py-3">
-                <p className="text-xs text-rose-400 font-medium">{customerInfoError}</p>
+              <div className="rounded-xl bg-rose-500/15 border border-rose-500/30 px-3.5 py-3">
+                <p className="text-xs text-rose-300 font-medium">{customerInfoError}</p>
               </div>
             )}
 
             {/* VALOR */}
             {plan.valueVariable && !requiresDocumentQuery && (
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-[#7dd3fc] mb-1">
                   Montante a Pagar (AOA)
                 </label>
                 <input
@@ -924,135 +924,90 @@ export default function PurchaseModal({
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full rounded-xl bg-[#0d1117] border border-white/15 px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                  className="w-full rounded-xl bg-[#0c4a6e] border border-[#0ea5e9]/30 px-3 py-2.5 text-xs text-white placeholder-[#7dd3fc]/50 focus:outline-none focus:border-[#38bdf8] transition-colors font-mono shadow-inner"
                 />
               </div>
             )}
+
           </div>
 
           {/* RODAPÉ (FIXO) */}
-          <div className="p-4 border-t border-white/10 bg-[#161A1F] shrink-0">
-            <div className="flex items-center justify-between mb-3 text-xs">
-              <span className="text-gray-400">Total a Debitar:</span>
-              <span className="text-emerald-400 font-bold text-sm font-mono">
-                {payableAmount > 0 ? `${payableAmount.toLocaleString("pt-PT")} Kz` : "0,00 Kz"}
-              </span>
-            </div>
+          <div className="p-4 border-t border-[#0ea5e9]/20 bg-[#0c4a6e]/95 shrink-0 flex gap-3">
             <button
-              type="button"
+              onClick={onClose}
+              className="flex-1 rounded-xl bg-[#0ea5e9]/10 border border-[#0ea5e9]/30 py-3 text-xs font-semibold text-[#7dd3fc] hover:text-white hover:bg-[#0ea5e9]/25 transition-all cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
               onClick={handlePurchase}
               disabled={loading}
-              className="w-full h-11 rounded-xl bg-emerald-500 font-bold text-xs text-black hover:bg-emerald-400 active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/20 uppercase tracking-wide"
+              className="flex-1 rounded-xl bg-[#0ea5e9] border border-[#38bdf8]/50 py-3 text-xs font-bold text-white hover:bg-[#0284c7] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#0ea5e9]/30"
             >
               {loading ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                  <span>A processar transação...</span>
+                  <span className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  <span>A processar...</span>
                 </>
               ) : (
-                <span>Confirmar e Efetuar Pagamento</span>
+                <span>Confirmar Pagamento</span>
               )}
             </button>
           </div>
 
         </div>
       ) : (
-        /* TELA DE SUCESSO PROFISSIONAL (RECIBO DETALHADO) */
-        <div className="w-full max-w-md max-h-[90vh] rounded-2xl bg-[#161A1F] border border-emerald-500/40 p-5 space-y-4 shadow-2xl overflow-y-auto custom-scrollbar animate-fadeIn">
-          
-          <div className="text-center space-y-2 pt-2">
-            <div className="w-14 h-14 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 mx-auto flex items-center justify-center shadow-lg shadow-emerald-500/10">
-              <CheckCircle size={32} weight="fill" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Pagamento Bem-Sucedido</h3>
-              <p className="text-[11px] text-gray-400 mt-0.5">A transação foi processada e registada com sucesso.</p>
-            </div>
-          </div>
-
-          {/* RECIBO DETALHADO COM DADOS REAIS */}
-          <div className="rounded-xl bg-[#0d1117] border border-white/10 p-4 space-y-3 font-mono text-xs">
-            <div className="flex justify-between items-center border-b border-white/10 pb-2.5">
-              <span className="text-gray-400 text-[10px] uppercase">ID da Transação</span>
-              <div className="flex items-center gap-1.5 text-white font-bold">
-                <span>{resultData.transaction?.id}</span>
-                <button 
-                  onClick={() => copyToClipboard(String(resultData.transaction?.id), 'txId')}
-                  className="p-1 hover:text-emerald-400 transition-colors"
-                  title="Copiar ID"
-                >
-                  {copiedField === 'txId' ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-                </button>
+        /* RESULTADO DA COMPRA (SUCESSO / ERRO) */
+        <div className="w-full max-w-md rounded-2xl bg-[#082f49] border border-[#0ea5e9]/40 p-6 shadow-2xl text-center space-y-4 text-gray-100">
+          {resultData.success ? (
+            <>
+              <div className="w-14 h-14 bg-[#0ea5e9]/20 border border-[#0ea5e9]/40 rounded-2xl flex items-center justify-center mx-auto text-[#38bdf8]">
+                <CheckCircle size={32} weight="duotone" />
               </div>
-            </div>
-
-            <div className="space-y-2 text-[11px]">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Operadora / Serviço:</span>
-                <span className="text-white font-sans font-semibold">{resultData.transaction?.operator}</span>
-              </div>
-
-              {resultData.transaction?.customerName && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Titular / Cliente:</span>
-                  <span className="text-white font-sans font-semibold text-right max-w-[180px] truncate">{resultData.transaction?.customerName}</span>
-                </div>
-              )}
-
-              {resultData.transaction?.clientNumber && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Número de Cliente:</span>
-                  <span className="text-emerald-300">{resultData.transaction?.clientNumber}</span>
-                </div>
-              )}
-
-              {resultData.transaction?.invoiceNumber && (
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Número da Fatura:</span>
-                  <span className="text-white">{resultData.transaction?.invoiceNumber}</span>
-                </div>
-              )}
-
-              <div className="flex justify-between">
-                <span className="text-gray-500">Referência / Destino:</span>
-                <span className="text-white">{resultData.transaction?.client}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500">Data e Hora:</span>
-                <span className="text-white">{new Date(resultData.transaction?.createdAt).toLocaleString("pt-PT")}</span>
+              <div>
+                <h3 className="text-base font-bold text-white uppercase tracking-wide">Pagamento Concluído</h3>
+                <p className="text-xs text-[#7dd3fc] mt-1">A transação foi efetuada com sucesso.</p>
               </div>
 
               {resultData.transaction?.voucherPIN && (
-                <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-2.5 my-2 space-y-1">
-                  <span className="text-[10px] text-emerald-400 uppercase tracking-wider block font-sans font-bold">PIN do Voucher Gerado</span>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-emerald-300 font-mono tracking-widest">{resultData.transaction.voucherPIN}</span>
-                    <button 
-                      onClick={() => copyToClipboard(resultData.transaction.voucherPIN, 'pin')}
-                      className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-300 text-[10px] hover:bg-emerald-500/30 transition-colors"
+                <div className="rounded-xl bg-[#0c4a6e] border border-[#0ea5e9]/40 p-3 text-left space-y-1.5 font-mono shadow-inner">
+                  <div className="flex justify-between items-center text-[10px] text-[#38bdf8] font-bold">
+                    <span>PIN DE CARREGAMENTO</span>
+                    <button
+                      onClick={() => copyToClipboard(resultData.transaction.voucherPIN, "voucherPIN")}
+                      className="text-[#7dd3fc] hover:text-white cursor-pointer"
                     >
-                      {copiedField === 'pin' ? 'Copiado!' : 'Copiar PIN'}
+                      {copiedField === "voucherPIN" ? <Check size={14} className="text-[#38bdf8]" /> : <Copy size={14} />}
                     </button>
                   </div>
+                  <p className="text-sm font-bold text-white tracking-wider">{resultData.transaction.voucherPIN}</p>
                 </div>
               )}
-            </div>
 
-            <div className="flex justify-between items-center pt-3 border-t border-white/10 font-sans">
-              <span className="text-gray-400 text-xs font-semibold">Montante Pago</span>
-              <span className="text-emerald-400 font-extrabold text-sm font-mono">
-                {Number(resultData.transaction?.amount ?? 0).toLocaleString("pt-PT")} Kz
-              </span>
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="w-full h-11 rounded-xl bg-white/10 text-xs font-bold text-white hover:bg-white/15 transition-colors cursor-pointer uppercase tracking-wide font-sans shadow-md"
-          >
-            Fechar Janela
-          </button>
+              <button
+                onClick={onClose}
+                className="w-full rounded-xl bg-[#0ea5e9] py-3 text-xs font-bold text-white hover:bg-[#0284c7] transition-all cursor-pointer shadow-lg shadow-[#0ea5e9]/30"
+              >
+                Concluir
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="w-14 h-14 bg-rose-500/20 border border-rose-500/40 rounded-2xl flex items-center justify-center mx-auto text-rose-300">
+                <X size={32} weight="bold" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white uppercase tracking-wide">Erro no Pagamento</h3>
+                <p className="text-xs text-rose-300 mt-2 bg-rose-500/15 border border-rose-500/30 p-3 rounded-xl">{resultData.errorMessage}</p>
+              </div>
+              <button
+                onClick={() => setResultData(null)}
+                className="w-full rounded-xl bg-[#0c4a6e] hover:bg-[#075985] py-3 text-xs font-semibold text-white transition-all cursor-pointer border border-[#0ea5e9]/30 shadow-md"
+              >
+                Tentar Novamente
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
