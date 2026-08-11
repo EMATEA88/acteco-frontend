@@ -160,27 +160,78 @@ export default function Transactions() {
   }
 
   const getOperatorName = (tx: ExtendedTransaction) => {
-    const rawName = (
-      tx?.metadata?.partnerName ?? 
-      tx?.metadata?.providerName ?? 
-      tx?.description ?? 
-      ""
-    ).toUpperCase()
+  const sources = [
+    tx?.metadata?.providerName,
+    tx?.metadata?.partnerName,
+    tx?.metadata?.serviceName,
+    tx?.metadata?.serviceGroupName,
+    tx?.metadata?.planName,
+    tx?.metadata?.plan,
+    tx?.description
+  ]
 
-    if (rawName.includes("UNITEL") || rawName.includes("BAZZA")) return "UNITEL"
-    if (rawName.includes("MOVICEL")) return "MOVICEL"
-    if (rawName.includes("AFRICELL")) return "AFRICELL"
-    if (rawName.includes("BAZZA")) return "BAZZA"
-    if (rawName.includes("DSTV")) return "DSTV"
-    if (rawName.includes("ZAP")) return "ZAP"
-    if (rawName.includes("ENDE")) return "ENDE"
-    if (rawName.includes("EPAL")) return "EPAL"
-    if (rawName.includes("PREMIERBET") || rawName.includes("PBET")) return "PREMIERBET"
-    if (rawName.includes("BANTUBET") || rawName.includes("BBET")) return "BANTUBET"
-    if (rawName.includes("ELEPHANTBET") || rawName.includes("EBET")) return "ELEPHANTBET"
+  const rawName = sources
+  .filter(Boolean)
+  .join(" ")
+  .toUpperCase()
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .trim()
 
-    return tx?.metadata?.partnerName ?? tx?.metadata?.providerName ?? null
+  if (rawName.includes("UNITEL") || rawName.includes("BAZZA")) return "UNITEL"
+  if (rawName.includes("MOVICEL")) return "MOVICEL"
+  if (rawName.includes("AFRICELL")) return "AFRICELL"
+ if (
+  rawName.includes("DSTV") ||
+  rawName.includes("FAMÍLIA/7D") ||
+  rawName.includes("FAMILIA/7D") ||
+  rawName.includes("FAMÍLIA 7D") ||
+  rawName.includes("FAMILIA 7D")
+) {
+  return "DSTV"
+}
+
+  if (rawName.includes("ZAP")) return "ZAP"
+  if (rawName.includes("ENDE")) return "ENDE"
+  if (rawName.includes("EPAL")) return "EPAL"
+  if (rawName.includes("STAS")) return "STAS"
+
+  if (
+    rawName.includes("PREMIERBET") ||
+    rawName.includes("PBET")
+  ) {
+    return "PREMIERBET"
   }
+
+  if (
+    rawName.includes("BANTUBET") ||
+    rawName.includes("BBET")
+  ) {
+    return "BANTUBET"
+  }
+
+  if (
+    rawName.includes("ELEPHANTBET") ||
+    rawName.includes("EBET")
+  ) {
+    return "ELEPHANTBET"
+  }
+
+  if (
+    rawName.includes("AFRIBET") ||
+    rawName.includes("ABET")
+  ) {
+    return "AFRIBET"
+  }
+
+  if (rawName.includes("NETONE")) return "NETONE"
+
+  return (
+    tx?.metadata?.providerName ??
+    tx?.metadata?.partnerName ??
+    null
+  )
+}
 
   const getOperatorLogo = (operatorKey: string | null) => {
     if (!operatorKey) return null

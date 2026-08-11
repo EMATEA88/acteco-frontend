@@ -17,6 +17,68 @@ import {
 } from "../../services/transaction.service";
 import toast from "react-hot-toast";
 
+// =====================================================
+// BRANDING DAS OPERADORAS / SERVIÇOS
+// =====================================================
+
+const providerBranding: Record<string, { logo: string }> = {
+  UNITEL: { logo: "UNITEL.PNG" },
+  MOVICEL: { logo: "MOVICEL.PNG" },
+  AFRICELL: { logo: "AFRICELL.PNG" },
+  NETONE: { logo: "NETONE.PNG" },
+
+  DSTV: { logo: "DSTV.PNG" },
+  ZAP: { logo: "ZAP1.PNG" },
+  ZAP_SAT: { logo: "ZAP1.PNG" },
+  "ZAP FIBRA": { logo: "ZAP2.PNG" },
+  ZAP_MEDIA: { logo: "ZAP2.PNG" },
+  ZAP2: { logo: "ZAP2.PNG" },
+
+  ENDE: { logo: "ENDE.PNG" },
+  EPAL: { logo: "EPAL.PNG" },
+  STAS: { logo: "STAS.PNG" },
+  "5LINHAS": { logo: "CINCO.PNG" },
+  "5 LINHAS": { logo: "CINCO.PNG" },
+  CINCO: { logo: "CINCO.PNG" },
+
+  INT_VCH2: { logo: "AMAZON.PNG" },
+  AMAZON: { logo: "AMAZON.PNG" },
+  APPLE: { logo: "APPLE.PNG" },
+  "GOOGLE PLAY": { logo: "GOOGLEPLAY.PNG" },
+  GOOGLE: { logo: "GOOGLEPLAY.PNG" },
+  NETFLIX: { logo: "NETFLIX.PNG" },
+  SPOTIFY: { logo: "SPOTIFY.PNG" },
+  PLAYSTATION: { logo: "TEAM.PNG" },
+  TEAM: { logo: "TEAM.PNG" },
+  XBOX: { logo: "XBOX.PNG" },
+  BOLT: { logo: "BOLT.PNG" },
+  FLIXBUS: { logo: "FLIXBUS.PNG" },
+
+  PREMIERBET: { logo: "Premiebet.png" },
+  PBET: { logo: "Premiebet.png" },
+  BANTUBET: { logo: "BantuBet.png" },
+  BBET: { logo: "BantuBet.png" },
+  ELEPHANTBET: { logo: "Elephantbet.png" },
+  EBET: { logo: "Elephantbet.png" },
+  AFRIBET: { logo: "AfriBet.png" },
+  ABET: { logo: "AfriBet.png" },
+  MOBET: { logo: "Mobet.png" },
+  MELBET: { logo: "MelBet.png" },
+  MGMBET: { logo: "MelBet.png" },
+  KWANZABET: { logo: "Kwanzabet.png" },
+  "888BETS": { logo: "888Bets.png" },
+  "888BET": { logo: "888Bets.png" },
+  "888": { logo: "888Bets.png" }
+};
+
+const rechargeImages = import.meta.glob<string>(
+  "../../assets/recharges/*.{png,PNG,jpg,JPG,jpeg,JPEG,webp,WEBP}",
+  {
+    eager: true,
+    import: "default"
+  }
+);
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -81,6 +143,123 @@ export default function Dashboard() {
     } else {
       setDynamicOperator("Unitel");
     }
+  };
+
+  const getOperatorName = (tx: Transaction) => {
+    const metadata = (tx as Transaction & {
+      metadata?: {
+        providerName?: string;
+        partnerName?: string;
+        serviceName?: string;
+        serviceGroupName?: string;
+        planName?: string;
+        plan?: string;
+      };
+    }).metadata;
+
+    const sources = [
+      metadata?.providerName,
+      metadata?.partnerName,
+      metadata?.serviceName,
+      metadata?.serviceGroupName,
+      metadata?.planName,
+      metadata?.plan,
+      tx.description
+    ];
+
+    const rawName = sources
+      .filter(Boolean)
+      .join(" ")
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+
+    if (
+      rawName.includes("UNITEL") ||
+      rawName.includes("BAZZA")
+    ) return "UNITEL";
+
+    if (rawName.includes("MOVICEL")) return "MOVICEL";
+
+    if (
+      rawName.includes("AFRICELL") ||
+      rawName.includes("AFRIBET")
+    ) {
+      return rawName.includes("AFRIBET") ? "AFRIBET" : "AFRICELL";
+    }
+
+    if (rawName.includes("DSTV")) return "DSTV";
+
+    if (
+      rawName.includes("FAMILIA/7D") ||
+      rawName.includes("FAMILIA 7D")
+    ) {
+      return "DSTV";
+    }
+
+    if (rawName.includes("ZAP")) {
+      if (
+        rawName.includes("FIBRA") ||
+        rawName.includes("MEDIA")
+      ) {
+        return "ZAP2";
+      }
+
+      return "ZAP";
+    }
+
+    if (rawName.includes("ENDE")) return "ENDE";
+    if (rawName.includes("EPAL")) return "EPAL";
+    if (rawName.includes("STAS")) return "STAS";
+    if (rawName.includes("NETONE")) return "NETONE";
+
+    if (
+      rawName.includes("PREMIERBET") ||
+      rawName.includes("PBET")
+    ) {
+      return "PREMIERBET";
+    }
+
+    if (
+      rawName.includes("BANTUBET") ||
+      rawName.includes("BBET")
+    ) {
+      return "BANTUBET";
+    }
+
+    if (
+      rawName.includes("ELEPHANTBET") ||
+      rawName.includes("EBET")
+    ) {
+      return "ELEPHANTBET";
+    }
+
+    return (
+      metadata?.providerName ??
+      metadata?.partnerName ??
+      null
+    );
+  };
+
+  const getOperatorLogo = (operatorKey: string | null) => {
+    if (!operatorKey) return null;
+
+    const brand = providerBranding[
+      operatorKey.toUpperCase().trim()
+    ];
+
+    if (!brand) return null;
+
+    const targetFileName = brand.logo.toLowerCase();
+
+    for (const path in rechargeImages) {
+      if (path.toLowerCase().endsWith(targetFileName)) {
+        return rechargeImages[path];
+      }
+    }
+
+    return null;
   };
 
   const openTransaction = (id: number) => {
@@ -222,6 +401,9 @@ export default function Dashboard() {
                     typeUpper.includes("PAYMENT") ||
                     typeUpper.includes("DEBIT");
                   
+                  const operatorKey = getOperatorName(tx);
+                  const logoSrc = getOperatorLogo(operatorKey);
+                  
                   return (
                     <div
                       key={tx.id}
@@ -233,8 +415,30 @@ export default function Dashboard() {
                       "
                     >
                       <div className="flex items-center gap-3.5">
-                        <div className={`p-2.5 rounded-xl border shadow-inner ${isOut ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'}`}>
-                          {isOut ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
+                        <div
+                          className={`w-10 h-10 rounded-xl border shadow-inner flex items-center justify-center overflow-hidden ${
+                            logoSrc
+                              ? "bg-white border-cyan-500/30"
+                              : isOut
+                                ? "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                                : "bg-cyan-500/10 border-cyan-500/30 text-cyan-300"
+                          }`}
+                        >
+                          {logoSrc ? (
+                            <img
+                              src={logoSrc}
+                              alt={operatorKey ?? "Operadora"}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <>
+                              {isOut ? (
+                                <ArrowUpRight size={16} />
+                              ) : (
+                                <ArrowDownLeft size={16} />
+                              )}
+                            </>
+                          )}
                         </div>
                         <div>
                           <p className="text-xs font-bold text-white tracking-tight">
