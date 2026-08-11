@@ -40,10 +40,10 @@ type KYCState = {
 }
 
 const ROLE_BADGES: Record<string, { label: string; className: string }> = {
-  USER: { label: "Cliente", className: "bg-blue-500/10 text-blue-400 border-blue-500/25" },
-  AGENT: { label: "Agente", className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-  SUB_AGENT: { label: "Sub-Agente", className: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-  ADMIN: { label: "Admin", className: "bg-rose-500/15 text-rose-400 border-rose-500/30" },
+  USER: { label: "Cliente", className: "bg-cyan-500/10 text-cyan-300 border-cyan-500/30" },
+  AGENT: { label: "Agente", className: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30" },
+  SUB_AGENT: { label: "Sub-Agente", className: "bg-amber-500/10 text-amber-300 border-amber-500/30" },
+  ADMIN: { label: "Admin", className: "bg-rose-500/15 text-rose-300 border-rose-500/30" },
 }
 
 export default function Profile() {
@@ -92,28 +92,28 @@ export default function Profile() {
   const currentRoleBadge = ROLE_BADGES[rawRole] || ROLE_BADGES["USER"];
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] flex flex-col fixed inset-0 font-sans antialiased">
+    <div className="h-screen w-screen overflow-hidden bg-[#0a2533] text-[#e0f2fe] flex flex-col fixed inset-0 font-sans antialiased">
       
       {/* ÁREA COM SCROLL REAL E ESTÁVEL */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 pt-8 pb-32 flex flex-col gap-6">
 
         {/* 1. CARD CENTRAL (HEADER) */}
         {isLoading ? (
-          <div className="bg-[#161A1E] py-5 px-6 rounded-[2rem] border border-white/[0.04] animate-pulse">
+          <div className="bg-[#0e364a] py-5 px-6 rounded-[2rem] border border-cyan-500/20 animate-pulse shadow-xl">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-gray-800" />
+              <div className="w-14 h-14 rounded-full bg-[#144863]" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-800 rounded w-1/2" />
-                <div className="h-3 bg-gray-800/60 rounded w-1/3" />
+                <div className="h-4 bg-[#144863] rounded w-1/2" />
+                <div className="h-3 bg-[#144863]/60 rounded w-1/3" />
               </div>
             </div>
-            <div className="mt-6 pt-5 border-t border-white/[0.04] flex justify-between">
-               <div className="space-y-2"><div className="h-3 bg-gray-800 rounded w-12"/><div className="h-6 bg-gray-700 rounded w-24"/></div>
-               <div className="flex gap-3"><div className="w-10 h-10 rounded-full bg-gray-800"/><div className="w-10 h-10 rounded-full bg-gray-800"/></div>
+            <div className="mt-6 pt-5 border-t border-cyan-500/10 flex justify-between">
+               <div className="space-y-2"><div className="h-3 bg-[#144863] rounded w-12"/><div className="h-6 bg-[#144863] rounded w-24"/></div>
+               <div className="flex gap-3"><div className="w-10 h-10 rounded-full bg-[#144863]"/><div className="w-10 h-10 rounded-full bg-[#144863]"/></div>
             </div>
           </div>
         ) : (
-          <div className="bg-[#161A1E] py-5 px-6 rounded-[2rem] relative border border-white/[0.04] shadow-2xl">
+          <div className="bg-[#0e364a] py-5 px-6 rounded-[2rem] relative border border-cyan-500/25 shadow-2xl shadow-cyan-950/40">
             
             {/* BOTÕES E BADGE DO CANTO SUPERIOR DIREITO */}
             <div className="absolute top-5 right-5 flex flex-col items-end gap-2.5 z-10">
@@ -122,7 +122,7 @@ export default function Profile() {
                 {(rawRole === "USER" || rawRole === "SUB_AGENT" || !["AGENT", "ADMIN"].includes(rawRole)) && (
                   <button 
                     onClick={() => navigate('/settings')} 
-                    className="p-2 rounded-full bg-white/[0.03] border border-white/[0.05] text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all cursor-pointer"
+                    className="p-2 rounded-full bg-[#144863] border border-cyan-500/30 text-cyan-300 hover:text-white hover:bg-cyan-600 transition-all cursor-pointer shadow-md"
                     title="Configurações"
                   >
                     <Gear size={20} weight="bold" />
@@ -146,14 +146,14 @@ export default function Profile() {
             <div className="flex items-center gap-4 pr-16">
               {/* LOGÓTIPO + BOTÃO DE VERIFICAÇÃO ABAIXO */}
               <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                <div className="w-14 h-14 rounded-full border border-white/[0.08] overflow-hidden bg-white/[0.02] p-1">
+                <div className="w-14 h-14 rounded-full border border-cyan-500/30 overflow-hidden bg-[#144863] p-1 shadow-md">
                   <img src="/logo.png" className="w-full h-full object-contain rounded-full" alt="Logo" />
                 </div>
 
                 {(!kyc || !kyc.isVerified) && (
                   <button
                     onClick={() => navigate('/kyc')}
-                    className="text-[9px] font-black uppercase tracking-tight text-red-500 hover:text-red-400 underline decoration-red-500/50 hover:decoration-red-400 transition-colors whitespace-nowrap text-center"
+                    className="text-[9px] font-black uppercase tracking-tight text-rose-400 hover:text-rose-300 underline decoration-rose-500/50 hover:decoration-rose-300 transition-colors whitespace-nowrap text-center"
                   >
                     {kyc?.status === "PENDING" ? "Em Análise" : "Verificar Conta"}
                   </button>
@@ -165,36 +165,36 @@ export default function Profile() {
                   <h1 className="text-base font-bold tracking-tight text-white uppercase truncate">
                     {user?.fullName?.toUpperCase() ?? user?.phone}
                   </h1>
-                  {kyc?.isVerified && <SealCheck size={16} weight="fill" className="text-blue-400 flex-shrink-0" />}
+                  {kyc?.isVerified && <SealCheck size={16} weight="fill" className="text-cyan-400 flex-shrink-0" />}
                 </div>
-                <p className="text-gray-400 text-[11px] font-medium mt-0.5 truncate">{user?.email}</p>
+                <p className="text-cyan-200/70 text-[11px] font-medium mt-0.5 truncate">{user?.email}</p>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-[10px] text-gray-500 font-mono font-bold tracking-wider uppercase">ID: {user?.publicId}</span>
-                  <button onClick={() => navigator.clipboard.writeText(user?.publicId ?? '')} className="text-gray-500 hover:text-emerald-400 transition-colors">
+                  <span className="text-[10px] text-cyan-300/60 font-mono font-bold tracking-wider uppercase">ID: {user?.publicId}</span>
+                  <button onClick={() => navigator.clipboard.writeText(user?.publicId ?? '')} className="text-cyan-300/60 hover:text-cyan-200 transition-colors">
                     <Copy size={13} weight="bold" />
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="mt-5 pt-4 border-t border-white/[0.04] flex items-center justify-between">
+            <div className="mt-5 pt-4 border-t border-cyan-500/15 flex items-center justify-between">
               <div>
-                <p className="text-[9px] text-gray-500 uppercase tracking-widest font-black mb-0.5">Saldo Disponível</p>
-                <span className="text-2xl font-black tracking-tight text-emerald-400">{formatCurrencyAOA(user?.balance ?? 0)}</span>
+                <p className="text-[9px] text-cyan-300/60 uppercase tracking-widest font-black mb-0.5">Saldo Disponível</p>
+                <span className="text-2xl font-black tracking-tight text-cyan-300">{formatCurrencyAOA(user?.balance ?? 0)}</span>
               </div>
 
               <div className="flex items-center gap-3">
                 <button onClick={() => navigate("/deposit")} className="flex flex-col items-center gap-1 group">
-                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/[0.03] border border-white/[0.05] text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#144863] border border-cyan-500/30 text-cyan-300 group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-md">
                     <Wallet size={18} weight="bold" />
                   </div>
-                  <span className="text-[8px] font-black uppercase text-gray-500 tracking-wide">Depósito</span>
+                  <span className="text-[8px] font-black uppercase text-cyan-200/70 tracking-wide">Depósito</span>
                 </button>
                 <button onClick={() => navigate("/withdraw")} className="flex flex-col items-center gap-1 group">
-                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/[0.03] border border-white/[0.05] text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all">
+                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#144863] border border-cyan-500/30 text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all shadow-md">
                     <ArrowDown size={18} weight="bold" />
                   </div>
-                  <span className="text-[8px] font-black uppercase text-gray-500 tracking-wide">Saque</span>
+                  <span className="text-[8px] font-black uppercase text-cyan-200/70 tracking-wide">Saque</span>
                 </button>
               </div>
             </div>
@@ -202,16 +202,16 @@ export default function Profile() {
         )}
 
         <div>
-          <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 ml-2 font-mono">
+          <h3 className="text-[10px] font-black text-cyan-300/60 uppercase tracking-[0.2em] mb-4 ml-2 font-mono">
             Terminal de Operações
           </h3>
 
           <div className="grid grid-cols-2 gap-4">
             {isLoading ? (
               Array.from({ length: 6 }).map((_, idx) => (
-                <div key={idx} className="bg-[#161A1E] h-20 rounded-2xl border border-white/[0.05] animate-pulse p-4 flex gap-3 items-center">
-                  <div className="w-10 h-10 rounded-full bg-gray-800" />
-                  <div className="flex-1 space-y-2"><div className="h-3 bg-gray-800 rounded w-3/4"/><div className="h-2 bg-gray-800 rounded w-1/2"/></div>
+                <div key={idx} className="bg-[#0e364a] h-20 rounded-2xl border border-cyan-500/20 animate-pulse p-4 flex gap-3 items-center shadow-md">
+                  <div className="w-10 h-10 rounded-full bg-[#144863]" />
+                  <div className="flex-1 space-y-2"><div className="h-3 bg-[#144863] rounded w-3/4"/><div className="h-2 bg-[#144863] rounded w-1/2"/></div>
                 </div>
               ))
             ) : (
@@ -242,8 +242,8 @@ export default function Profile() {
                 hover:bg-rose-500 hover:border-rose-500 
                 text-rose-400 hover:text-white 
                 text-[11px] font-black uppercase tracking-wider 
-                shadow-[0_0_20px_rgba(244,63,94,0.15)] 
-                hover:shadow-[0_0_25px_rgba(244,63,94,0.4)] 
+                shadow-[0_4px_15px_rgba(244,63,94,0.2)] 
+                hover:shadow-[0_6px_20px_rgba(244,63,94,0.4)] 
                 transition-all duration-300 active:scale-95 cursor-pointer
               "
             >
@@ -270,14 +270,14 @@ function SessionCard({ label, sub, icon, to }: any) {
   return (
     <button
       onClick={() => navigate(to)}
-      className="bg-[#161A1E] flex items-center gap-3 p-4 rounded-2xl border border-white/[0.02] hover:border-blue-500/30 hover:bg-[#1c2127] transition-all duration-200 group text-left shadow-lg cursor-pointer"
+      className="bg-[#0e364a] flex items-center gap-3 p-4 rounded-2xl border border-cyan-500/20 hover:border-cyan-400/50 hover:bg-[#124158] transition-all duration-200 group text-left shadow-lg shadow-cyan-950/20 cursor-pointer"
     >
-      <div className="w-10 h-10 rounded-xl bg-white/[0.03] flex items-center justify-center border border-white/[0.04] text-blue-400 group-hover:text-blue-300 group-hover:bg-white/[0.06] transition-colors">
+      <div className="w-10 h-10 rounded-xl bg-[#144863] flex items-center justify-center border border-cyan-500/30 text-cyan-300 group-hover:text-white group-hover:bg-cyan-600 transition-colors shadow-md">
         {icon}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-bold tracking-tight text-white">{label}</p>
-        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">{sub}</p>
+        <p className="text-[9px] text-cyan-200/70 font-bold uppercase tracking-wider mt-0.5">{sub}</p>
       </div>
     </button>
   )

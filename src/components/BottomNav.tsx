@@ -1,10 +1,10 @@
 import { NavLink } from "react-router-dom"
 import {
-  House,              // Home limpa e moderna
-  UserCircle,         // Perfil com silhueta corporativa/bancária
-  DeviceMobile,       // Recargas (muito mais intuitivo para telemóvel/serviços)
+  House,                 // Home limpa e moderna
+  UserCircle,           // Perfil com silhueta corporativa/bancária
+  DeviceMobile,         // Recargas (muito mais intuitivo para telemóvel/serviços)
   ClockCounterClockwise, // Transações (focado em histórico/movimentos)
-  SquaresFour,        // Dashboard / Visão Geral em grelha
+  SquaresFour,          // Dashboard / Visão Geral em grelha
 } from "@phosphor-icons/react"
 
 const links = [
@@ -21,8 +21,8 @@ export default function BottomNav() {
       className="
         fixed bottom-0 left-0 right-0 z-[100]
         w-screen
-        bg-[#0B0E11]/95
-        border-t border-white/[0.06]
+        bg-[#0a2533]/95
+        border-t border-cyan-500/20
         h-[68px] flex items-center shadow-2xl backdrop-blur-xl
       "
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -38,7 +38,7 @@ export default function BottomNav() {
               `
               flex flex-col items-center gap-1 text-[9px] font-black uppercase tracking-wider
               transition-all duration-200 group
-              ${isActive ? "text-emerald-400" : "text-gray-500 hover:text-gray-400"}
+              ${isActive ? "text-cyan-300" : "text-cyan-200/50 hover:text-cyan-200/80"}
               `
             }
           >
@@ -50,8 +50,8 @@ export default function BottomNav() {
                     flex items-center justify-center
                     w-11 h-7 rounded-full transition-all duration-300
                     ${isActive 
-                      ? "bg-emerald-500/15 text-emerald-400 scale-105 shadow-lg shadow-emerald-500/10" 
-                      : "bg-transparent text-gray-500 group-hover:text-gray-300"}
+                      ? "bg-[#144863] text-cyan-300 scale-105 shadow-lg shadow-cyan-950/40 border border-cyan-500/30" 
+                      : "bg-transparent text-cyan-200/50 group-hover:text-cyan-200"}
                   `}
                 >
                   <Icon 
@@ -64,7 +64,7 @@ export default function BottomNav() {
                 <span
                   className={`
                     transition-all duration-200 tracking-wider text-[8px]
-                    ${isActive ? "font-extrabold text-emerald-400" : "font-medium text-gray-500"}
+                    ${isActive ? "font-extrabold text-cyan-300" : "font-medium text-cyan-200/50"}
                   `}
                 >
                   {label}
