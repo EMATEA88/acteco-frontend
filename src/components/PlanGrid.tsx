@@ -157,20 +157,20 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
   }, [group.plans, providerCode, group.name, isBettingProvider]);
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] px-4 sm:px-6 pt-4 pb-28 antialiased selection:bg-cyan-500/20">
+    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe] px-4 sm:px-6 pt-4 pb-28 antialiased selection:bg-cyan-500/20">
       
-      <div className="pt-3 pb-4 flex items-center justify-between border-b border-white/[0.06] sticky top-0 bg-[#0B0E11]/90 backdrop-blur-xl z-40">
+      <div className="pt-3 pb-4 flex items-center justify-between border-b border-cyan-500/10 sticky top-0 bg-[#0a2533]/90 backdrop-blur-xl z-40">
         <button
           onClick={onBack}
-          className="h-10 px-4 rounded-xl bg-white/[0.03] border border-white/10 text-gray-300 text-xs font-semibold flex items-center gap-2 hover:bg-white/[0.08] hover:text-white transition-all duration-200 active:scale-95 cursor-pointer"
+          className="h-10 px-4 rounded-xl bg-[#0e364a] border border-cyan-500/20 text-cyan-300 text-xs font-semibold flex items-center gap-2 hover:bg-[#124158] hover:text-white transition-all duration-200 active:scale-95 cursor-pointer shadow-sm"
         >
-          <ArrowLeft size={16} className="text-gray-400" />
+          <ArrowLeft size={16} className="text-cyan-400" />
           <span>Voltar</span>
         </button>
 
         <div className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-none flex items-center gap-2.5">
           {providerLogo && (
-            <img src={providerLogo} alt={group.name} className="w-8 h-8 rounded-full object-contain bg-[#161A1F] p-0.5 border border-white/10 shadow-md" />
+            <img src={providerLogo} alt={group.name} className="w-8 h-8 rounded-full object-contain bg-[#144863] p-0.5 border border-cyan-500/30 shadow-md" />
           )}
           <h1 className="text-sm sm:text-base font-black tracking-wider text-white uppercase font-mono">
             {group.name}
@@ -180,17 +180,17 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
         <div className="w-16"></div>
       </div>
 
-      <div className="space-y-8 mt-6">
+      <div className="space-y-8 mt-6 max-w-2xl mx-auto w-full">
         {Object.keys(groupedPlans).length > 0 ? (
           Object.entries(groupedPlans).map(([categoryTitle, plansList]) => (
             <div key={categoryTitle} className="space-y-3">
               
               <div className="flex items-center gap-2.5 px-1">
-                <div className="w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-300 font-mono">
+                <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-200/90 font-mono">
                   {categoryTitle}
                 </h3>
-                <span className="text-[10px] bg-white/[0.05] text-gray-400 px-2 py-0.5 rounded-md font-mono border border-white/[0.05]">
+                <span className="text-[10px] bg-[#0e364a] text-cyan-300 px-2 py-0.5 rounded-md font-mono border border-cyan-500/20 shadow-sm">
                   {plansList.length} {plansList.length === 1 ? 'opção' : 'opções'}
                 </span>
               </div>
@@ -207,22 +207,22 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
                       className="
                         group relative overflow-hidden
                         w-full rounded-2xl
-                        border border-white/[0.08] bg-[#161A1F]
+                        border border-cyan-500/20 bg-[#0e364a]
                         py-4 px-6 text-left
-                        hover:border-cyan-500/60 hover:bg-[#1C2128]
+                        hover:border-cyan-400/50 hover:bg-[#124158]
                         transition-all duration-200
-                        shadow-lg flex items-center justify-between
+                        shadow-lg shadow-cyan-950/20 flex items-center justify-between
                         cursor-pointer
                       "
                     >
                       <div className="flex items-center gap-5 pr-4 flex-1">
                         <div className="space-y-1 flex-1">
-                          <h4 className="text-sm sm:text-base font-bold text-white group-hover:text-cyan-400 transition-colors tracking-wide leading-snug">
+                          <h4 className="text-sm sm:text-base font-bold text-white group-hover:text-cyan-200 transition-colors tracking-wide leading-snug">
                             {plan.name}
                           </h4>
                           {isVariable && (
-                            <p className="text-xs text-gray-400 font-medium flex items-center gap-1.5">
-                              <span className="text-gray-300 font-mono">
+                            <p className="text-xs text-cyan-200/70 font-medium flex items-center gap-1.5">
+                              <span className="text-cyan-300 font-mono">
                                 {plan.valueVariableMin && plan.valueVariableMax
                                   ? `De ${plan.valueVariableMin.toLocaleString("pt-PT")} Kz até ${plan.valueVariableMax.toLocaleString("pt-PT")} Kz`
                                   : "Montante flexível configurável"
@@ -246,8 +246,8 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
                           </span>
                         ) : (
                           <div className="flex flex-col items-end">
-                            <span className="text-[10px] text-gray-500 uppercase font-mono">Preço</span>
-                            <span className="text-base sm:text-lg font-black font-mono text-cyan-400 group-hover:text-cyan-300 transition-colors">
+                            <span className="text-[10px] text-cyan-200/60 uppercase font-mono">Preço</span>
+                            <span className="text-base sm:text-lg font-black font-mono text-cyan-300 group-hover:text-white transition-colors">
                               {typeof plan.price === 'number' ? `${plan.price.toLocaleString("pt-PT")} Kz` : "Ativo"}
                             </span>
                           </div>
@@ -261,8 +261,8 @@ export default function PlanGrid({ group, onBack, onSelect }: PlanGridProps) {
             </div>
           ))
         ) : (
-          <div className="text-center py-20 bg-[#161A1F] rounded-2xl border border-white/[0.06]">
-            <p className="text-xs text-gray-400 font-mono">Nenhum plano disponível para este operador no momento.</p>
+          <div className="text-center py-20 bg-[#0e364a] rounded-2xl border border-cyan-500/20 shadow-md">
+            <p className="text-xs text-cyan-200/70 font-mono">Nenhum plano disponível para este operador no momento.</p>
           </div>
         )}
       </div>

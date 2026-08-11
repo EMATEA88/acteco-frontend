@@ -62,20 +62,20 @@ export default function BankPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white">
+    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe]">
 
       {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-[#0B0E11]/80 backdrop-blur border-b border-white/5">
+      <header className="sticky top-0 z-50 bg-[#0a2533]/90 backdrop-blur border-b border-cyan-500/10">
         <div className="max-w-xl mx-auto flex items-center gap-4 px-5 py-4">
 
           <button
             onClick={() => navigate(-1)}
-            className="p-2 bg-white/5 rounded-full"
+            className="p-2 bg-[#0e364a] border border-cyan-500/20 rounded-full text-cyan-300 hover:bg-[#124158] hover:text-white transition-all shadow-sm cursor-pointer"
           >
             <ArrowLeft size={18} />
           </button>
 
-          <h1 className="text-base font-bold">Conta Bancária</h1>
+          <h1 className="text-base font-bold text-white font-mono uppercase tracking-wider">Conta Bancária</h1>
         </div>
       </header>
 
@@ -84,13 +84,13 @@ export default function BankPage() {
         {loading ? (
           <div className="space-y-4 animate-pulse">
 
-            <div className="bg-[#111318] rounded-2xl p-4 h-16" />
+            <div className="bg-[#0e364a] border border-cyan-500/15 rounded-2xl p-4 h-16" />
 
-            <div className="bg-[#111318] rounded-2xl p-4 space-y-3">
-              <div className="h-11 bg-white/5 rounded-xl" />
-              <div className="h-11 bg-white/5 rounded-xl" />
-              <div className="h-11 bg-white/5 rounded-xl" />
-              <div className="h-12 bg-white/5 rounded-xl" />
+            <div className="bg-[#0e364a] border border-cyan-500/15 rounded-2xl p-4 space-y-3">
+              <div className="h-11 bg-[#0a2533] border border-cyan-500/10 rounded-xl" />
+              <div className="h-11 bg-[#0a2533] border border-cyan-500/10 rounded-xl" />
+              <div className="h-11 bg-[#0a2533] border border-cyan-500/10 rounded-xl" />
+              <div className="h-12 bg-[#0a2533] border border-cyan-500/10 rounded-xl" />
             </div>
 
           </div>
@@ -98,16 +98,16 @@ export default function BankPage() {
           <div className="space-y-6">
 
             {/* INFO */}
-            <div className="bg-[#111318] border border-white/5 rounded-2xl p-4 flex gap-3">
-              <ShieldCheck size={18} className="text-emerald-500 mt-0.5" />
+            <div className="bg-[#0e364a] border border-cyan-500/20 rounded-2xl p-4 flex gap-3 shadow-lg shadow-cyan-950/20">
+              <ShieldCheck size={18} className="text-cyan-400 mt-0.5 shrink-0" />
 
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[11px] text-cyan-200/80 font-mono">
                 O IBAN deve coincidir com o titular para evitar rejeições.
               </p>
             </div>
 
             {/* FORM */}
-            <div className="bg-[#111318] border border-white/5 rounded-2xl p-4 space-y-4">
+            <div className="bg-[#0e364a] border border-cyan-500/20 rounded-2xl p-4 space-y-4 shadow-xl shadow-cyan-950/20">
 
               <BankInput
                 label="Titular"
@@ -133,10 +133,10 @@ export default function BankPage() {
             <button
               onClick={save}
               disabled={saving}
-              className={`w-full h-12 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2
+              className={`w-full h-12 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg
                 ${saving
-                  ? 'bg-white/10 text-gray-500'
-                  : 'bg-white text-black hover:bg-emerald-500 hover:text-white'
+                  ? 'bg-[#0e364a] border border-cyan-500/20 text-cyan-200/50'
+                  : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-950/20'
                 }
               `}
             >
@@ -170,7 +170,7 @@ function BankInput({
   return (
     <div className="space-y-1">
 
-      <label className="text-[10px] text-gray-500 uppercase">
+      <label className="text-[10px] text-cyan-200/70 font-mono uppercase font-bold block">
         {label}
       </label>
 
@@ -179,11 +179,13 @@ function BankInput({
         onChange={e => onChange(e.target.value)}
         className="
           w-full h-11 rounded-xl
-          bg-[#0B0E11]
-          border border-white/5
-          px-4 text-sm
+          bg-[#0a2533]
+          border border-cyan-500/20
+          px-4 text-sm font-mono text-white
           outline-none
-          focus:border-emerald-500/30
+          focus:border-cyan-400
+          placeholder:text-cyan-200/30
+          transition-all
         "
       />
     </div>

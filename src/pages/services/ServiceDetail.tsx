@@ -55,28 +55,49 @@ export default function ServiceDetail() {
 
   return (
 
-    <div className="min-h-screen bg-[#0B0E11] text-white">
+    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe]">
 
-      <div className="px-6 py-5 flex items-center gap-4 border-b border-white/5">
+      <div className="px-6 py-5 flex items-center gap-4 border-b border-cyan-500/10 bg-[#0a2533]">
 
         <button
           onClick={() => navigate(-1)}
+          className="p-2 rounded-xl bg-[#0e364a] border border-cyan-500/20 text-cyan-300 hover:bg-[#124158] hover:text-white transition cursor-pointer"
         >
-          <ArrowLeft />
+          <ArrowLeft size={18} />
         </button>
 
-        <h1 className="text-xl font-bold">
+        <h1 className="text-xl font-bold text-white">
           Planos
         </h1>
 
       </div>
 
-      <div className="p-6 space-y-4">
+      <div className="p-6 space-y-4 max-w-2xl mx-auto w-full">
 
         {loading ? (
 
-          <div className="text-center">
-            Carregando...
+          <div className="space-y-3 animate-pulse w-full">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="w-full bg-[#0e364a] border border-cyan-500/20 rounded-2xl p-5 flex items-center justify-between shadow-md"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-[#144863] border border-cyan-500/30"></div>
+                  <div className="space-y-2">
+                    <div className="w-32 h-3.5 bg-[#144863] rounded-md"></div>
+                    <div className="w-20 h-3 bg-[#144863] rounded-md"></div>
+                  </div>
+                </div>
+                <div className="w-5 h-5 rounded-md bg-[#144863]"></div>
+              </div>
+            ))}
+          </div>
+
+        ) : plans.length === 0 ? (
+
+          <div className="text-center py-12 text-cyan-200/70 text-xs font-mono">
+            Nenhum plano disponível no momento.
           </div>
 
         ) : (
@@ -90,15 +111,15 @@ export default function ServiceDetail() {
                   `/recharges/plans/${plan.id}`
                 )
               }
-              className="w-full bg-[#161A1E] rounded-2xl p-5 flex justify-between items-center hover:bg-[#1D232A] transition"
+              className="w-full bg-[#0e364a] rounded-2xl p-5 flex justify-between items-center hover:bg-[#124158] border border-cyan-500/20 hover:border-cyan-400/50 transition shadow-lg shadow-cyan-950/20 cursor-pointer group text-left"
             >
 
               <div className="flex items-center gap-4">
 
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-[#144863] border border-cyan-500/30 flex items-center justify-center shrink-0 shadow-sm">
 
                   <Zap
-                    className="text-emerald-400"
+                    className="text-cyan-300"
                     size={20}
                   />
 
@@ -106,11 +127,11 @@ export default function ServiceDetail() {
 
                 <div className="text-left">
 
-                  <div className="font-semibold">
+                  <div className="font-semibold text-white group-hover:text-cyan-200 transition-colors">
                     {plan.name}
                   </div>
 
-                  <div className="text-emerald-400 font-bold">
+                  <div className="text-cyan-400 font-bold mt-0.5">
 
                     {Number(plan.price).toLocaleString()}
                     {" "}
@@ -123,7 +144,8 @@ export default function ServiceDetail() {
               </div>
 
               <ChevronRight
-                className="text-gray-500"
+                className="text-cyan-300/60 group-hover:text-white transition-colors shrink-0"
+                size={18}
               />
 
             </button>

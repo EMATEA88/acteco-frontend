@@ -59,14 +59,14 @@ export default function Services() {
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] flex flex-col fixed inset-0 font-sans antialiased selection:bg-[#02C076]/25">
+    <div className="h-screen w-screen overflow-hidden bg-[#0a2533] text-[#e0f2fe] flex flex-col fixed inset-0 font-sans antialiased selection:bg-cyan-500/25">
 
       {/* HEADER FIXO NO TOPO */}
-      <div className="px-6 py-5 border-b border-white/[0.05] bg-[#0B0E11] shrink-0 z-50">
+      <div className="px-6 py-5 border-b border-cyan-500/10 bg-[#0a2533] shrink-0 z-50">
         <h1 className="text-xl font-bold tracking-tight text-white">
           Serviços
         </h1>
-        <p className="text-xs text-gray-400 mt-0.5 tracking-wide">
+        <p className="text-xs text-cyan-200/70 mt-0.5 tracking-wide">
           Escolha uma categoria
         </p>
       </div>
@@ -79,18 +79,18 @@ export default function Services() {
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className="w-full bg-[#161A1E] border border-white/[0.02] rounded-2xl p-4 flex items-center justify-between"
+                className="w-full bg-[#0e364a] border border-cyan-500/20 rounded-2xl p-4 flex items-center justify-between shadow-md"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-[#1E2329] border border-[#2B313A]"></div>
-                  <div className="w-32 h-3.5 bg-[#1E2329] rounded-md"></div>
+                  <div className="w-12 h-12 rounded-xl bg-[#144863] border border-cyan-500/30"></div>
+                  <div className="w-32 h-3.5 bg-[#144863] rounded-md"></div>
                 </div>
-                <div className="w-5 h-5 rounded-md bg-[#1E2329]"></div>
+                <div className="w-5 h-5 rounded-md bg-[#144863]"></div>
               </div>
             ))}
           </div>
         ) : categories.length === 0 ? (
-          <div className="text-center py-12 text-gray-500 text-xs font-mono">
+          <div className="text-center py-12 text-cyan-200/70 text-xs font-mono">
             Nenhuma categoria disponível no momento.
           </div>
         ) : (
@@ -105,24 +105,24 @@ export default function Services() {
                     `/recharges/categories/${category.id}/operators`
                   )
                 }
-                className="w-full bg-[#161A1E] rounded-2xl p-4 flex items-center justify-between hover:bg-[#1D232A] border border-white/[0.02] hover:border-emerald-500/30 transition-all shadow-lg cursor-pointer group text-left"
+                className="w-full bg-[#0e364a] rounded-2xl p-4 flex items-center justify-between hover:bg-[#124158] border border-cyan-500/20 hover:border-cyan-400/50 transition-all shadow-lg shadow-cyan-950/20 cursor-pointer group text-left"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-[#144863] border border-cyan-500/30 flex items-center justify-center shrink-0 shadow-sm">
                     <Icon
                       size={22}
-                      className="text-emerald-400"
+                      className="text-cyan-300"
                     />
                   </div>
 
-                  <span className="font-semibold text-white group-hover:text-emerald-300 transition-colors">
+                  <span className="font-semibold text-white group-hover:text-cyan-200 transition-colors">
                     {category.name}
                   </span>
                 </div>
 
                 <ChevronRight
                   size={18}
-                  className="text-gray-500 group-hover:text-white transition-colors shrink-0"
+                  className="text-cyan-300/60 group-hover:text-white transition-colors shrink-0"
                 />
               </button>
             );

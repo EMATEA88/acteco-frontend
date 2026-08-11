@@ -57,17 +57,17 @@ export default function DepositBanks() {
 
   if (isDone) {
     return (
-      <div className="min-h-screen bg-[#0B0E11] text-white flex flex-col items-center justify-center px-10 text-center">
-        <div className="w-20 h-20 bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mb-6">
+      <div className="min-h-screen bg-[#0a2533] text-white flex flex-col items-center justify-center px-10 text-center">
+        <div className="w-20 h-20 bg-cyan-500/20 text-cyan-400 rounded-full flex items-center justify-center mb-6 border border-cyan-500/30">
           <Check size={40} weight="bold" />
         </div>
-        <h2 className="text-xl font-bold mb-2">Envio Concluído!</h2>
-        <p className="text-sm text-gray-400 mb-8">
+        <h2 className="text-xl font-bold mb-2 font-mono uppercase tracking-wider">Envio Concluído!</h2>
+        <p className="text-sm text-cyan-200/70 mb-8 font-mono">
           O seu comprovativo foi recebido e está em validação.
         </p>
         <button 
           onClick={() => navigate('/')} 
-          className="w-full h-14 bg-white text-black font-bold rounded-2xl text-sm cursor-pointer"
+          className="w-full h-14 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-2xl text-sm cursor-pointer shadow-lg shadow-cyan-950/20 font-mono uppercase tracking-wider transition-all"
         >
           VOLTAR AO INÍCIO
         </button>
@@ -76,27 +76,27 @@ export default function DepositBanks() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white px-5 py-6 flex flex-col pb-28">
+    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe] px-5 py-6 flex flex-col pb-28 max-w-xl mx-auto w-full">
       <Toaster position="top-center" />
       
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(-1)} className="p-2 bg-white/5 rounded-full cursor-pointer hover:bg-white/10 transition-all">
+        <button onClick={() => navigate(-1)} className="p-2 bg-[#0e364a] border border-cyan-500/20 rounded-full cursor-pointer hover:bg-[#124158] hover:text-white text-cyan-300 transition-all shadow-sm">
           <ArrowLeft size={16} />
         </button>
-        <h1 className="text-sm font-semibold">Finalizar Depósito</h1>
+        <h1 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">Finalizar Depósito</h1>
       </div>
 
       <div className="space-y-4 mb-8">
-        <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold ml-1">Dados para Transferência</p>
+        <p className="text-[10px] text-cyan-200/60 uppercase tracking-widest font-bold ml-1 font-mono">Dados para Transferência</p>
         
         {banks.map(b => (
-          <div key={b.id} className="bg-[#111318] border border-white/5 rounded-2xl overflow-hidden shadow-lg">
+          <div key={b.id} className="bg-[#0e364a] border border-cyan-500/20 rounded-2xl overflow-hidden shadow-lg shadow-cyan-950/20">
             {/* Header do Banco */}
-            <div className="bg-white/5 px-4 py-3 border-b border-white/5 flex justify-between items-center">
-              <span className="text-xs font-black text-emerald-500 uppercase tracking-tighter">
+            <div className="bg-[#0a2533]/50 px-4 py-3 border-b border-cyan-500/10 flex justify-between items-center">
+              <span className="text-xs font-black text-cyan-400 uppercase tracking-tighter font-mono">
                 {b.bank || b.name || "Banco"}
               </span>
-              <span className="text-[9px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-md font-bold">ATIVA</span>
+              <span className="text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded-md font-bold font-mono">ATIVA</span>
             </div>
 
             {/* Conteúdo Detalhado */}
@@ -104,21 +104,21 @@ export default function DepositBanks() {
               <div className="grid grid-cols-1 gap-3">
                 {/* Campo Banco */}
                 <div>
-                  <label className="text-[9px] text-gray-500 uppercase font-bold block mb-1">Banco:</label>
-                  <p className="text-sm font-medium text-emerald-400 uppercase">{b.bank || "Não especificado"}</p>
+                  <label className="text-[9px] text-cyan-200/60 uppercase font-bold block mb-1 font-mono">Banco:</label>
+                  <p className="text-sm font-medium text-cyan-300 uppercase font-mono">{b.bank || "Não especificado"}</p>
                 </div>
 
                 {/* Campo Empresa */}
                 <div>
-                  <label className="text-[9px] text-gray-500 uppercase font-bold block mb-1">Empresa:</label>
-                  <p className="text-sm font-medium text-gray-200">{b.name || "EMATEA GESTÃO"}</p>
+                  <label className="text-[9px] text-cyan-200/60 uppercase font-bold block mb-1 font-mono">Empresa:</label>
+                  <p className="text-sm font-medium text-white">{b.name || "EMATEA GESTÃO"}</p>
                 </div>
 
                 {/* Campo IBAN com Cópia */}
                 <div>
-                  <label className="text-[9px] text-gray-500 uppercase font-bold block mb-1">IBAN:</label>
-                  <div className="flex items-center justify-between bg-black/40 border border-white/5 rounded-xl px-4 py-3 group active:bg-black/60 transition-colors">
-                    <span className="text-xs font-mono text-cyan-400 break-all leading-relaxed">
+                  <label className="text-[9px] text-cyan-200/60 uppercase font-bold block mb-1 font-mono">IBAN:</label>
+                  <div className="flex items-center justify-between bg-[#0a2533] border border-cyan-500/20 rounded-xl px-4 py-3 group active:bg-[#0a2533]/80 transition-colors">
+                    <span className="text-xs font-mono text-cyan-300 break-all leading-relaxed">
                       {b.iban}
                     </span>
                     <button 
@@ -127,11 +127,11 @@ export default function DepositBanks() {
                         setCopied(b.id)
                         setTimeout(() => setCopied(null), 2000)
                       }}
-                      className="ml-3 p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-all shrink-0 cursor-pointer"
+                      className="ml-3 p-2 bg-[#0e364a] border border-cyan-500/20 rounded-lg hover:bg-[#124158] transition-all shrink-0 cursor-pointer text-cyan-300"
                     >
                       {copied === b.id 
-                        ? <CheckCircle size={18} className="text-emerald-500" /> 
-                        : <Copy size={18} className="text-gray-400" />
+                        ? <CheckCircle size={18} className="text-cyan-400" /> 
+                        : <Copy size={18} className="text-cyan-200/70" />
                       }
                     </button>
                   </div>
@@ -142,7 +142,7 @@ export default function DepositBanks() {
         ))}
       </div>
 
-      <div className="bg-[#111318] border-2 border-dashed border-white/10 rounded-2xl p-5 mb-4 text-center">
+      <div className="bg-[#0e364a] border-2 border-dashed border-cyan-500/30 rounded-2xl p-5 mb-4 text-center shadow-lg shadow-cyan-950/20">
         <input 
           type="file" 
           id="bank-proof" 
@@ -152,10 +152,10 @@ export default function DepositBanks() {
         />
         
         <label htmlFor="bank-proof" className="flex flex-col items-center gap-2 cursor-pointer py-4">
-          <div className={`p-4 rounded-full transition-all ${file ? 'bg-emerald-500/20' : 'bg-white/5'}`}>
-            <CloudArrowUp size={32} className={file ? "text-emerald-500" : "text-gray-500"} />
+          <div className={`p-4 rounded-full transition-all border ${file ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-400' : 'bg-[#0a2533] border-cyan-500/20 text-cyan-200/60'}`}>
+            <CloudArrowUp size={32} />
           </div>
-          <p className="text-[10px] text-gray-400 mt-2 font-medium">
+          <p className="text-[10px] text-cyan-200/80 mt-2 font-medium font-mono">
             {file ? `Selecionado: ${file.name}` : "Toque para anexar o comprovativo"}
           </p>
         </label>
@@ -163,15 +163,15 @@ export default function DepositBanks() {
         {file && !uploading && (
           <button 
             onClick={handleDirectUpload} 
-            className="w-full mt-4 h-14 bg-emerald-500 hover:bg-emerald-600 text-[#0B0E11] font-black rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg cursor-pointer"
+            className="w-full mt-4 h-14 bg-cyan-600 hover:bg-cyan-500 text-white font-black rounded-2xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-cyan-950/20 cursor-pointer font-mono"
           >
             CONFIRMAR DEPÓSITO
           </button>
         )}
 
         {uploading && (
-          <div className="w-full mt-4 h-14 bg-white/5 text-gray-400 font-bold rounded-2xl text-xs flex items-center justify-center gap-2">
-            <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent animate-spin rounded-full" />
+          <div className="w-full mt-4 h-14 bg-[#0a2533] border border-cyan-500/20 text-cyan-300 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 font-mono">
+            <div className="w-4 h-4 border-2 border-cyan-400 border-t-transparent animate-spin rounded-full" />
             PROCESSANDO...
           </div>
         )}
@@ -179,7 +179,7 @@ export default function DepositBanks() {
 
       <button 
         onClick={handleWhatsAppSupport} 
-        className="w-full bg-[#25D366]/10 border border-[#25D366]/20 text-[#25D366] font-bold h-14 rounded-2xl flex items-center justify-center gap-2 text-xs hover:bg-[#25D366]/20 transition-all cursor-pointer"
+        className="w-full bg-[#25D366]/10 border border-[#25D366]/30 text-[#25D366] font-bold h-14 rounded-2xl flex items-center justify-center gap-2 text-xs hover:bg-[#25D366]/20 transition-all cursor-pointer font-mono shadow-md"
       >
         <WhatsappLogo weight="fill" size={20} /> SUPORTE VIA WHATSAPP
       </button>

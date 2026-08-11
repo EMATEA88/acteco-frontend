@@ -1,4 +1,3 @@
-// Carousel.tsx
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -33,7 +32,7 @@ export default function Carousel() {
   };
 
   return (
-    <div className="relative h-[220px] rounded-3xl overflow-hidden border border-[#2B3139] shadow-[0_15px_30px_rgba(0,0,0,0.8)] mb-12">
+    <div className="relative h-[220px] rounded-3xl overflow-hidden border border-cyan-500/20 shadow-[0_15px_30px_rgba(10,37,51,0.5)] mb-12 bg-[#0e364a]">
       {/* Contêiner das Imagens com Animação de Slide */}
       <div
         className="absolute inset-0 flex transition-transform duration-500 ease-in-out"
@@ -47,10 +46,10 @@ export default function Carousel() {
               className="absolute inset-0 w-full h-full object-cover"
             />
             {/* Sobreposição de Gradiente para o Texto */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a2533]/90 via-[#0a2533]/40 to-transparent" />
             {/* Texto do Cartão */}
             <div className="absolute bottom-4 left-5 right-5 z-10">
-              <h3 className="text-base font-black text-[#EAECEF] tracking-tight truncate">
+              <h3 className="text-base font-black text-white tracking-tight truncate font-mono uppercase">
                 {image.label}
               </h3>
             </div>
@@ -65,8 +64,8 @@ export default function Carousel() {
             key={index}
             onClick={() => setCurrentIndex(index)}
             className={`
-              h-1.5 w-1.5 rounded-full transition-all duration-300
-              ${currentIndex === index ? "bg-emerald-500 w-3" : "bg-white/40"}
+              h-1.5 rounded-full transition-all duration-300 cursor-pointer
+              ${currentIndex === index ? "bg-cyan-400 w-3 shadow-sm shadow-cyan-400/50" : "bg-cyan-200/40 w-1.5"}
             `}
           />
         ))}
@@ -75,13 +74,13 @@ export default function Carousel() {
       {/* Setas de Navegação */}
       <button
         onClick={goToPrev}
-        className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-black/50 text-white/70 hover:bg-black/70 hover:text-white z-20 transition"
+        className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-[#0a2533]/70 border border-cyan-500/20 text-cyan-200 hover:bg-[#0e364a] hover:text-white z-20 transition cursor-pointer shadow-sm"
       >
         <ChevronLeft size={18} />
       </button>
       <button
         onClick={goToNext}
-        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-black/50 text-white/70 hover:bg-black/70 hover:text-white z-20 transition"
+        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-[#0a2533]/70 border border-cyan-500/20 text-cyan-200 hover:bg-[#0e364a] hover:text-white z-20 transition cursor-pointer shadow-sm"
       >
         <ChevronRight size={18} />
       </button>

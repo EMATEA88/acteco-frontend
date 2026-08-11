@@ -33,22 +33,22 @@ export default function Password() {
 
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
-    useEffect(() => {
-  async function loadUser() {
-    try {
-      const user = await UserService.me()
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const user = await UserService.me()
 
-      setUserEmail(user.email || '')
-    } catch (err) {
-      console.error(
-        'Erro ao carregar email do utilizador:',
-        err
-      )
+        setUserEmail(user.email || '')
+      } catch (err) {
+        console.error(
+          'Erro ao carregar email do utilizador:',
+          err
+        )
+      }
     }
-  }
 
-  loadUser()
-}, [])
+    loadUser()
+  }, [])
 
   useEffect(() => {
     let timer: any
@@ -154,82 +154,85 @@ export default function Password() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white selection:bg-[#02C076]/20">
+    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe] font-sans selection:bg-cyan-500/30">
 
       {/* HEADER PROFISSIONAL */}
-      <header className="sticky top-0 z-50 bg-[#0B0E11]/90 backdrop-blur-md border-b border-white/[0.06]">
-        <div className="max-w-xl mx-auto flex items-center justify-between px-5 py-4">
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-50 bg-[#0a2533]/90 backdrop-blur-xl border-b border-cyan-500/10">
+        <div className="max-w-xl mx-auto flex items-center justify-between px-6 py-5">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="w-9 h-9 flex items-center justify-center bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.08] rounded-xl text-gray-300 transition-all cursor-pointer"
+              className="p-2 bg-[#0e364a] border border-cyan-500/20 rounded-full text-cyan-300 hover:bg-[#124158] hover:text-white transition-all cursor-pointer shadow-sm"
             >
-              <ArrowLeft size={16} />
+              <ArrowLeft size={20} weight="bold" />
             </button>
-            <h1 className="text-sm sm:text-base font-black tracking-wider uppercase font-mono">
+            <h1 className="text-xl font-black tracking-tighter uppercase font-mono text-white">
               Credenciais & Segurança
             </h1>
           </div>
-          <div className="text-[#02C076] bg-[#02C076]/10 border border-[#02C076]/20 p-2 rounded-xl">
-            <ShieldCheck size={20} />
+          <div className="text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 p-2.5 rounded-2xl shadow-sm">
+            <ShieldCheck size={22} weight="fill" />
           </div>
         </div>
       </header>
 
-      <main className="max-w-xl mx-auto px-5 py-6 pb-28 space-y-6">
+      <main className="max-w-xl mx-auto px-6 py-8 pb-32 space-y-6 relative">
+
+        {/* LUZ DE FUNDO */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-500/[0.06] rounded-full filter blur-[100px] pointer-events-none"></div>
 
         {/* FEEDBACK GLOBAL DE ALERTAS */}
         {message && (
-          <div className={`flex items-center gap-3 text-xs rounded-xl p-4 border
+          <div className={`flex items-center gap-3 text-xs rounded-2xl p-4 border font-mono shadow-lg animate-in slide-in-from-top-4
             ${message.type === 'success'
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-              : 'bg-red-500/10 text-red-400 border-red-500/20'
+              ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30 shadow-cyan-950/20'
+              : 'bg-red-500/10 text-red-400 border-red-500/20 shadow-red-950/20'
             }`}
           >
             {message.type === 'success'
-              ? <CheckCircle size={18} className="shrink-0" />
-              : <WarningCircle size={18} className="shrink-0" />
+              ? <CheckCircle size={18} weight="fill" className="shrink-0 text-cyan-400" />
+              : <WarningCircle size={18} weight="fill" className="shrink-0 text-red-400" />
             }
             <span className="font-medium">{message.text}</span>
           </div>
         )}
 
         {/* CARTÃO: SENHA DE LOGIN */}
-        <div className="bg-[#12161C] border border-white/[0.06] rounded-2xl p-5 space-y-4 shadow-xl">
-          <div className="flex items-center justify-between pb-3 border-b border-white/[0.05]">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-white/[0.03] border border-white/[0.08] rounded-lg text-[#02C076]">
-                <LockKey size={16} />
+        <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2.5rem] p-8 space-y-6 shadow-2xl shadow-cyan-950/20 relative z-10">
+          <div className="flex items-center justify-between pb-4 border-b border-cyan-500/10">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl text-cyan-400">
+                <LockKey size={20} weight="duotone" />
               </div>
-              <h2 className="text-sm font-bold tracking-wide">Senha de Login</h2>
+              <h2 className="text-sm font-black uppercase tracking-wider font-mono text-white">Senha de Login</h2>
             </div>
-            <span className="text-[10px] uppercase font-mono text-gray-500 bg-white/[0.02] px-2 py-1 rounded border border-white/[0.04]">
+            <span className="text-[10px] uppercase font-mono text-cyan-200/70 bg-[#0a2533] px-3 py-1 rounded-full border border-cyan-500/20">
               Acesso à conta
             </span>
           </div>
 
-          <div className="space-y-3 pt-1">
+          <div className="space-y-4">
             <div>
-              <label className="block text-[11px] font-medium text-gray-400 mb-1">Senha Atual</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest font-mono text-cyan-200/70 mb-1.5 ml-1">Senha Atual</label>
               <AuthInput type="password" value={loginCurrent} onChange={setLoginCurrent} placeholder="Insira a sua senha atual" />
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-gray-400 mb-1">Nova Senha</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest font-mono text-cyan-200/70 mb-1.5 ml-1">Nova Senha</label>
               <AuthInput type="password" value={loginNew} onChange={setLoginNew} placeholder="Mínimo de 6 caracteres" />
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-gray-400 mb-1">Código de Verificação (OTP)</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest font-mono text-cyan-200/70 mb-1.5 ml-1">Código de Verificação (OTP)</label>
               <div className="relative flex items-center">
                 <AuthInput type="text" value={loginOtp} onChange={setLoginOtp} placeholder="Digite o código OTP" />
                 <button
                   type="button"
                   onClick={() => handleSendOtp('RESET_PASSWORD')}
                   disabled={sendingOtp || countdown > 0}
-                  className="absolute right-2.5 px-3 py-1.5 bg-[#02C076]/10 hover:bg-[#02C076]/20 border border-[#02C076]/30 text-[#02C076] text-xs font-semibold rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
+                  className="absolute right-2 px-3.5 py-2 bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-[10px] font-bold font-mono uppercase tracking-wider rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
-                  <EnvelopeSimple size={14} />
+                  <EnvelopeSimple size={14} weight="bold" />
                   <span>{sendingOtp ? 'A enviar...' : countdown > 0 ? `Reenviar (${countdown}s)` : 'Pedir OTP'}</span>
                 </button>
               </div>
@@ -244,43 +247,43 @@ export default function Password() {
         </div>
 
         {/* CARTÃO: SENHA DE SAQUE */}
-        <div className="bg-[#12161C] border border-white/[0.06] rounded-2xl p-5 space-y-4 shadow-xl">
-          <div className="flex items-center justify-between pb-3 border-b border-white/[0.05]">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-white/[0.03] border border-white/[0.08] rounded-lg text-emerald-400">
-                <Key size={16} />
+        <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2.5rem] p-8 space-y-6 shadow-2xl shadow-cyan-950/20 relative z-10">
+          <div className="flex items-center justify-between pb-4 border-b border-cyan-500/10">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl text-cyan-400">
+                <Key size={20} weight="duotone" />
               </div>
-              <h2 className="text-sm font-bold tracking-wide">Senha de Saque</h2>
+              <h2 className="text-sm font-black uppercase tracking-wider font-mono text-white">Senha de Saque</h2>
             </div>
-            <span className="text-[10px] uppercase font-mono text-gray-500 bg-white/[0.02] px-2 py-1 rounded border border-white/[0.04]">
+            <span className="text-[10px] uppercase font-mono text-cyan-200/70 bg-[#0a2533] px-3 py-1 rounded-full border border-cyan-500/20">
               Financeiro
             </span>
           </div>
 
-          <div className="space-y-3 pt-1">
+          <div className="space-y-4">
             <div>
-              <label className="block text-[11px] font-medium text-gray-400 mb-1">
-                Senha de Saque Atual <span className="text-gray-600">(Opcional)</span>
+              <label className="block text-[10px] font-bold uppercase tracking-widest font-mono text-cyan-200/70 mb-1.5 ml-1">
+                Senha de Saque Atual <span className="text-cyan-200/40 font-normal lowercase">(Opcional)</span>
               </label>
               <AuthInput type="password" value={withdrawCurrent} onChange={setWithdrawCurrent} placeholder="Senha atual de transações" />
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-gray-400 mb-1">Nova Senha de Saque</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest font-mono text-cyan-200/70 mb-1.5 ml-1">Nova Senha de Saque</label>
               <AuthInput type="password" value={withdrawNew} onChange={setWithdrawNew} placeholder="Defina a nova senha financeira" />
             </div>
 
             <div>
-              <label className="block text-[11px] font-medium text-gray-400 mb-1">Código de Verificação (OTP)</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest font-mono text-cyan-200/70 mb-1.5 ml-1">Código de Verificação (OTP)</label>
               <div className="relative flex items-center">
                 <AuthInput type="text" value={withdrawOtp} onChange={setWithdrawOtp} placeholder="Digite o código OTP" />
                 <button
                   type="button"
                   onClick={() => handleSendOtp('WITHDRAW')}
                   disabled={sendingOtp || countdown > 0}
-                  className="absolute right-2.5 px-3 py-1.5 bg-[#02C076]/10 hover:bg-[#02C076]/20 border border-[#02C076]/30 text-[#02C076] text-xs font-semibold rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
+                  className="absolute right-2 px-3.5 py-2 bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-[10px] font-bold font-mono uppercase tracking-wider rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
-                  <EnvelopeSimple size={14} />
+                  <EnvelopeSimple size={14} weight="bold" />
                   <span>{sendingOtp ? 'A enviar...' : countdown > 0 ? `Reenviar (${countdown}s)` : 'Pedir OTP'}</span>
                 </button>
               </div>
@@ -309,15 +312,15 @@ function AuthInput({ value, onChange, placeholder, type = "text" }: any) {
       placeholder={placeholder}
       onChange={e => onChange(e.target.value)}
       className="
-        w-full h-11 rounded-xl
-        bg-[#0B0E11]
-        border border-white/[0.06]
-        px-4 text-xs sm:text-sm text-gray-200
+        w-full h-14 rounded-2xl
+        bg-[#0a2533]
+        border border-cyan-500/20
+        px-5 text-sm font-mono text-white
         outline-none
         transition-all
-        placeholder:text-gray-600
-        focus:border-[#02C076]
-        focus:bg-[#161b22]
+        placeholder:text-cyan-200/30
+        focus:border-cyan-400
+        focus:ring-4 focus:ring-cyan-500/10
       "
     />
   )
@@ -328,15 +331,19 @@ function PrimaryButton({ children, onClick, loading }: any) {
     <button
       onClick={onClick}
       disabled={loading}
-      className={`w-full h-11 rounded-xl font-semibold text-xs sm:text-sm transition-all
-        flex items-center justify-center gap-2 shadow-lg cursor-pointer
+      className={`w-full h-16 rounded-2xl font-black font-mono text-xs uppercase tracking-widest transition-all
+        flex items-center justify-center gap-2 shadow-xl cursor-pointer
         ${loading
-          ? 'bg-white/10 text-gray-500 cursor-not-allowed'
-          : 'bg-[#02C076] text-black hover:bg-[#02b06a] hover:shadow-[#02C076]/25'
+          ? 'bg-cyan-500/10 text-cyan-200/40 border border-cyan-500/10 cursor-not-allowed shadow-none'
+          : 'bg-cyan-600 text-white hover:bg-cyan-500 shadow-cyan-950/30 hover:shadow-cyan-950/50 active:scale-[0.98]'
         }
       `}
     >
-      {loading ? 'A processar transação...' : children}
+      {loading ? (
+        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+      ) : (
+        children
+      )}
     </button>
   )
 }

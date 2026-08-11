@@ -51,7 +51,7 @@ export default function Register() {
     return () => clearTimeout(timer)
   }, [toast.visible])
 
-  // NOVO EFFECT: Temporizador para o reenvio do OTP
+  // EFFECT: Temporizador para o reenvio do OTP
   useEffect(() => {
     if (secondsLeft <= 0) return
 
@@ -151,7 +151,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070d1a] flex items-center justify-center px-6 text-white">
+    <div className="min-h-screen bg-[#0a2533] flex items-center justify-center px-6 text-[#e0f2fe] font-sans selection:bg-cyan-500/30">
 
       <Toast
         visible={toast.visible}
@@ -159,31 +159,34 @@ export default function Register() {
         type={toast.type}
       />
 
-      <div className="w-full max-w-md py-10 space-y-8">
+      <div className="w-full max-w-md py-10 space-y-8 relative">
 
-        <div className="text-center">
+        {/* LUZ DE FUNDO */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-500/[0.06] rounded-full filter blur-[100px] pointer-events-none"></div>
+
+        <div className="text-center relative z-10">
 
           <img
             src="/logo.png"
             alt="EMATEA"
-            className="mx-auto mb-4 h-16 w-16 rounded-full"
+            className="mx-auto mb-4 h-16 w-16 rounded-full border border-cyan-500/30 shadow-md object-cover"
           />
 
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-2xl font-black tracking-tight text-white font-mono">
             Criar Conta
           </h1>
 
-          <p className="mt-2 text-sm text-gray-400">
+          <p className="mt-2 text-xs text-cyan-200/70 font-mono uppercase tracking-widest">
             Plataforma Oficial EMATEA
           </p>
 
         </div>
 
-        <div className="rounded-3xl border border-white/5 bg-[#0b1220] p-6">
+        <div className="rounded-[2.5rem] border border-cyan-500/20 bg-[#0e364a] p-8 shadow-2xl shadow-cyan-950/20 relative z-10">
 
           <form
             onSubmit={handleSubmit}
-            className="space-y-5"
+            className="space-y-6"
           >
 
             <AccountTypeSelector
@@ -229,26 +232,25 @@ export default function Register() {
 
           </form>
 
-          <div className="mt-6 border-t border-white/5 pt-5 text-center">
+          <div className="mt-6 border-t border-cyan-500/10 pt-5 text-center font-mono">
 
-            <p className="text-xs text-gray-400">
-              Já possui conta?
+            <p className="text-xs text-cyan-200/70">
+              Já possui conta?{" "}
+              <Link
+                to="/login"
+                className="font-semibold text-cyan-400 hover:text-cyan-300 underline underline-offset-4"
+              >
+                Entrar
+              </Link>
             </p>
-
-            <Link
-              to="/login"
-              className="font-semibold text-blue-400 hover:text-blue-300"
-            >
-              Entrar
-            </Link>
 
           </div>
 
         </div>
 
-        <div className="flex items-center justify-center gap-2 text-[11px] text-gray-500">
+        <div className="flex items-center justify-center gap-2 text-[11px] font-mono text-cyan-200/60">
 
-          <ShieldCheck size={14} />
+          <ShieldCheck size={16} className="text-cyan-400" />
 
           <span>
             Plataforma protegida por criptografia.

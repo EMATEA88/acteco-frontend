@@ -2,7 +2,7 @@ import CatalogLayout from "../../components/CatalogLayout";
 
 export default function RecargasPage() {
   return (
-    <main className="min-h-screen bg-[#0B0E11]">
+    <main className="min-h-screen bg-[#0a2533]">
       <CatalogLayout />
     </main>
   );

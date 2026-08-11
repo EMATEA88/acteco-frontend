@@ -22,100 +22,105 @@ export default function Security() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-white font-sans">
+    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe] font-sans selection:bg-cyan-500/30">
 
       {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-[#0B0E11]/80 backdrop-blur border-b border-white/5">
-        <div className="max-w-xl mx-auto flex items-center justify-between px-5 py-4">
+      <header className="sticky top-0 z-50 bg-[#0a2533]/90 backdrop-blur-xl border-b border-cyan-500/10">
+        <div className="max-w-xl mx-auto flex items-center justify-between px-6 py-5">
           
           <button
             onClick={() => navigate(-1)}
-            className="p-2 bg-white/5 rounded-full"
+            className="p-2 bg-[#0e364a] border border-cyan-500/25 rounded-full text-cyan-300 hover:bg-[#124158] hover:text-white transition-all cursor-pointer shadow-sm"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={20} weight="bold" />
           </button>
 
-          <h1 className="text-base font-bold">Segurança</h1>
+          <h1 className="text-xl font-black tracking-tighter uppercase font-mono text-white">Segurança</h1>
 
-          <ShieldPlus size={18} className="text-emerald-500" />
+          <div className="text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 p-2 rounded-xl shadow-sm">
+            <ShieldPlus size={20} weight="fill" />
+          </div>
         </div>
       </header>
 
-      <main className="max-w-xl mx-auto px-5 py-6 pb-28">
+      <main className="max-w-xl mx-auto px-6 py-8 pb-32 relative">
+
+        {/* LUZ DE FUNDO */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-500/[0.06] rounded-full filter blur-[100px] pointer-events-none"></div>
 
         {loading ? (
-          <div className="space-y-4 animate-pulse">
+          <div className="space-y-4 animate-pulse relative z-10">
 
             {/* STATUS */}
-            <div className="bg-[#111318] rounded-2xl p-4 flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/5 rounded-xl" />
+            <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2rem] p-6 flex items-center gap-4">
+              <div className="w-12 h-12 bg-cyan-500/10 rounded-2xl" />
               <div className="flex-1 space-y-2">
-                <div className="h-3 w-24 bg-white/5 rounded" />
-                <div className="h-2 w-32 bg-white/5 rounded" />
+                <div className="h-3 w-24 bg-cyan-500/10 rounded" />
+                <div className="h-2 w-32 bg-cyan-500/10 rounded" />
               </div>
             </div>
 
             {/* LISTA */}
-            <div className="bg-[#111318] rounded-2xl p-4 space-y-4">
+            <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2.5rem] p-8 space-y-6">
               {[1,2,3,4,5].map(i => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/5 rounded-xl" />
+                <div key={i} className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-cyan-500/10 rounded-2xl" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-3 w-24 bg-white/5 rounded" />
-                    <div className="h-2 w-40 bg-white/5 rounded" />
+                    <div className="h-3 w-24 bg-cyan-500/10 rounded" />
+                    <div className="h-2 w-40 bg-cyan-500/10 rounded" />
                   </div>
                 </div>
               ))}
             </div>
 
             {/* ALERT */}
-            <div className="bg-white/5 rounded-2xl p-4 h-14" />
+            <div className="bg-red-500/10 border border-red-500/20 rounded-[2rem] p-6 h-20" />
 
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-6 relative z-10">
 
             {/* STATUS */}
-            <div className="bg-[#111318] border border-white/5 rounded-2xl p-4 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                <ShieldCheck size={20} className="text-emerald-500" />
+            <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2rem] p-6 flex items-center gap-4 shadow-xl shadow-cyan-950/20">
+              <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
+                <ShieldCheck size={22} weight="fill" className="text-cyan-400" />
               </div>
 
               <div>
-                <p className="text-sm font-semibold">Proteção ativa</p>
-                <p className="text-[11px] text-gray-500">
+                <p className="text-sm font-black uppercase font-mono tracking-wider text-white">Proteção ativa</p>
+                <p className="text-xs text-cyan-200/70 font-mono mt-0.5">
                   Sistema seguro em funcionamento
                 </p>
               </div>
             </div>
 
             {/* BOAS PRÁTICAS */}
-            <div className="bg-[#111318] border border-white/5 rounded-2xl p-4 space-y-4">
+            <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2.5rem] p-8 space-y-6 shadow-2xl shadow-cyan-950/20">
 
-              <div className="flex items-center gap-2 border-b border-white/5 pb-2">
-                <CheckCircle size={14} className="text-emerald-500" />
-                <span className="text-[10px] text-gray-500 uppercase">
+              <div className="flex items-center gap-2 border-b border-cyan-500/10 pb-4">
+                <CheckCircle size={16} weight="fill" className="text-cyan-400" />
+                <span className="text-[10px] font-bold font-mono uppercase tracking-[0.2em] text-cyan-200/70">
                   Boas práticas
                 </span>
               </div>
 
-              <SecurityItem icon={<Lock size={16} />} title="Sigilo" text="Nunca partilhe senha ou códigos." />
-              <SecurityItem icon={<ShieldPlus size={16} />} title="Senha forte" text="Use senha diferente para operações." />
-              <SecurityItem icon={<DeviceMobile size={16} />} title="Dispositivo" text="Use bloqueio e biometria." />
-              <SecurityItem icon={<WifiHigh size={16} />} title="Rede segura" text="Evite Wi-Fi público." />
-              <SecurityItem icon={<WarningOctagon size={16} />} title="Phishing" text="Nunca forneça dados fora da app." />
+              <SecurityItem icon={<Lock size={18} weight="duotone" />} title="Sigilo" text="Nunca partilhe senha ou códigos." />
+              <SecurityItem icon={<ShieldPlus size={18} weight="duotone" />} title="Senha forte" text="Use senha diferente para operações." />
+              <SecurityItem icon={<DeviceMobile size={18} weight="duotone" />} title="Dispositivo" text="Use bloqueio e biometria." />
+              <SecurityItem icon={<WifiHigh size={18} weight="duotone" />} title="Rede segura" text="Evite Wi-Fi público." />
+              <SecurityItem icon={<WarningOctagon size={18} weight="duotone" />} title="Phishing" text="Nunca forneça dados fora da app." />
 
             </div>
 
             {/* ALERTA */}
-            <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-4 flex gap-3">
-              <WarningOctagon size={18} className="text-red-500 mt-0.5" />
+            <div className="bg-red-500/10 border border-red-500/20 rounded-[2rem] p-6 flex gap-4 shadow-xl shadow-red-950/20">
+              <WarningOctagon size={22} weight="fill" className="text-red-400 shrink-0 mt-0.5" />
 
               <div>
-                <p className="text-xs font-semibold text-red-500">
+                <p className="text-xs font-black uppercase font-mono tracking-wider text-red-400">
                   Atividade suspeita
                 </p>
-                <p className="text-[11px] text-gray-400">
+                <p className="text-xs text-red-200/70 font-mono mt-1 leading-relaxed">
                   Altere a senha imediatamente e contacte o suporte.
                 </p>
               </div>
@@ -141,15 +146,15 @@ function SecurityItem({
   text: string
 }) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex items-center gap-4">
 
-      <div className="w-10 h-10 rounded-xl bg-[#0B0E11] border border-white/5 flex items-center justify-center text-emerald-500">
+      <div className="w-12 h-12 rounded-2xl bg-[#0a2533] border border-cyan-500/25 flex items-center justify-center text-cyan-400 shrink-0 shadow-inner">
         {icon}
       </div>
 
       <div>
-        <p className="text-xs font-semibold">{title}</p>
-        <p className="text-[11px] text-gray-500">{text}</p>
+        <p className="text-xs font-bold uppercase font-mono tracking-wider text-white">{title}</p>
+        <p className="text-xs text-cyan-200/70 font-mono mt-0.5">{text}</p>
       </div>
 
     </div>

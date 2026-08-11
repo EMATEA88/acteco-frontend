@@ -37,24 +37,26 @@ const getProviderLogoPath = (provider: CatalogProvider) => {
 
 export default function ProviderGrid({ category, onBack, onSelect }: ProviderGridProps) {
   return (
-    <div className="min-h-screen bg-[#0B0E11] text-[#EAECEF] px-5 pt-4 pb-28 antialiased selection:bg-[#02C076]/20">
+    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe] px-5 pt-4 pb-28 antialiased selection:bg-cyan-500/20">
       
       {/* HEADER PROFISSIONAL E EQUILIBRADO */}
-      <div className="pt-2 pb-4 flex items-center justify-between border-b border-white/[0.05] sticky top-0 bg-[#0B0E11]/90 backdrop-blur-md z-40">
+      <div className="pt-2 pb-4 flex items-center justify-between border-b border-cyan-500/10 sticky top-0 bg-[#0a2533]/90 backdrop-blur-md z-40">
         
-        {/* Botão Voltar Neutro / Estilo Binance */}
+        {/* Botão Voltar */}
         <button
           onClick={onBack}
           className="
             h-9 px-3.5 rounded-xl
-            bg-white/[0.03] border border-white/[0.08]
-            text-gray-300 text-xs font-semibold
+            bg-[#0e364a] border border-cyan-500/20
+            text-cyan-300 text-xs font-semibold
             flex items-center gap-2
-            hover:bg-white/[0.08] hover:text-white
+            hover:bg-[#124158] hover:text-white
             transition-all duration-200
+            cursor-pointer
+            shadow-sm
           "
         >
-          <ArrowLeft size={16} className="text-gray-400" />
+          <ArrowLeft size={16} className="text-cyan-400" />
           Voltar
         </button>
 
@@ -70,7 +72,7 @@ export default function ProviderGrid({ category, onBack, onSelect }: ProviderGri
       </div>
 
       {/* GRELHA DE PROVEDORES */}
-      <div className="mt-8">
+      <div className="mt-8 max-w-4xl mx-auto w-full">
         <div className="grid grid-cols-4 gap-3 sm:gap-4">
           {category.providers && category.providers.map((provider) => {
             const logoFilename = getProviderLogoPath(provider);
@@ -82,9 +84,9 @@ export default function ProviderGrid({ category, onBack, onSelect }: ProviderGri
                 onClick={() => onSelect(provider)}
                 className="flex flex-col items-center group cursor-pointer"
               >
-                {/* Círculo do Logótipo (Estilo Binance) */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#12161C] border border-[#2D333B] p-1 flex items-center justify-center shadow-lg group-hover:border-[#02C076] group-hover:scale-105 transition-all duration-200">
-                  <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#0B0E11] p-1.5">
+                {/* Círculo do Logótipo */}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#0e364a] border border-cyan-500/20 p-1 flex items-center justify-center shadow-lg group-hover:border-cyan-400/50 group-hover:bg-[#124158] group-hover:scale-105 transition-all duration-200">
+                  <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#144863] p-1.5 shadow-sm">
                     {logo ? (
                       <img 
                         src={logo} 
@@ -100,7 +102,7 @@ export default function ProviderGrid({ category, onBack, onSelect }: ProviderGri
                 </div>
 
                 {/* Nome do Provedor */}
-                <span className="text-[11px] sm:text-xs font-medium text-gray-300 mt-2 text-center tracking-wide group-hover:text-white transition-colors truncate w-full">
+                <span className="text-[11px] sm:text-xs font-medium text-cyan-200/80 mt-2 text-center tracking-wide group-hover:text-white transition-colors truncate w-full">
                   {provider.name}
                 </span>
               </div>

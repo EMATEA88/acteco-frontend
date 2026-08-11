@@ -27,7 +27,7 @@ export default function AppLayout() {
         <div className="fixed top-0 left-0 right-0 h-14 bg-[#0B0E11] flex items-center px-4 z-50 border-b border-gray-800">
           <button
             onClick={() => navigate(-1)}
-            className="text-white hover:text-emerald-400 transition-colors"
+            className="text-white hover:text-[#0ea5e9] transition-colors cursor-pointer"
           >
             <ArrowLeft size={22} />
           </button>
@@ -63,18 +63,19 @@ export default function AppLayout() {
             w-11
             h-11
             rounded-full
-            bg-emerald-500/15
-            border border-emerald-500/40
-            text-emerald-400
+            bg-[#0ea5e9]/15
+            border border-[#0ea5e9]/40
+            text-[#0ea5e9]
             flex
             items-center
             justify-center
             transition-all
             duration-300
-            hover:bg-emerald-500/25
+            hover:bg-[#0ea5e9]/25
             hover:scale-105
-            shadow-[0_0_20px_rgba(16,185,129,0.25)]
+            shadow-[0_0_20px_rgba(14,165,233,0.25)]
             backdrop-blur-lg
+            cursor-pointer
           "
         >
           <Bell size={18} strokeWidth={2} />

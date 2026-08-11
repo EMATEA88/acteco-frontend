@@ -65,24 +65,24 @@ export default function Settings() {
   }, [])
 
   async function handleRequestOTP() {
-  try {
-    setSendingOtp(true)
+    try {
+      setSendingOtp(true)
 
-    if (!form.email) {
-      return toast.error("Email inválido")
+      if (!form.email) {
+        return toast.error("Email inválido")
+      }
+
+      await UserService.sendOtp('WITHDRAW', form.email)
+
+      toast.success('Código enviado')
+      setShowOtpField(true)
+
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Erro ao enviar código')
+    } finally {
+      setSendingOtp(false)
     }
-
-    await UserService.sendOtp('WITHDRAW', form.email)
-
-    toast.success('Código enviado')
-    setShowOtpField(true)
-
-  } catch (err: any) {
-    toast.error(err.response?.data?.error || 'Erro ao enviar código')
-  } finally {
-    setSendingOtp(false)
   }
-}
 
   async function handleSave() {
     try {
@@ -112,162 +112,166 @@ export default function Settings() {
     }
   }
 
-  {loading ? (
-  <div className="space-y-4 animate-pulse">
-
-    {/* CARD 1 */}
-    <div className="bg-[#111318] rounded-xl p-4 space-y-3">
-      <div className="h-4 w-24 bg-white/5 rounded"></div>
-      <div className="h-11 bg-white/5 rounded-xl"></div>
-      <div className="h-11 bg-white/5 rounded-xl"></div>
-      <div className="h-11 bg-white/5 rounded-xl"></div>
-    </div>
-
-    {/* CARD 2 */}
-    <div className="bg-[#111318] rounded-xl p-4 space-y-3">
-      <div className="h-4 w-24 bg-white/5 rounded"></div>
-      <div className="h-11 bg-white/5 rounded-xl"></div>
-      <div className="h-11 bg-white/5 rounded-xl"></div>
-      <div className="h-20 bg-white/5 rounded-xl"></div>
-    </div>
-
-  </div>
-) : (
-  <>
-    {/* TODO O TEU FORM NORMAL AQUI */}
-  </>
-)}
-
   return (
-    <div className="min-h-screen bg-[#0f1115] text-white px-4 pt-10 pb-28 font-sans">
+    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe] px-6 pt-10 pb-32 font-sans selection:bg-cyan-500/30">
 
       {/* HEADER */}
-      <div className="flex items-center gap-3 mb-6 max-w-xl mx-auto">
+      <div className="flex items-center gap-4 mb-8 max-w-xl mx-auto relative z-10">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 bg-white/5 rounded-full"
+          className="p-2 bg-[#0e364a] border border-cyan-500/25 rounded-full text-cyan-300 hover:bg-[#124158] hover:text-white transition-all cursor-pointer shadow-sm"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={20} weight="bold" />
         </button>
 
         <div>
-          <h1 className="text-lg font-bold">Definições</h1>
-          <p className="text-[10px] text-gray-500 uppercase">Perfil</p>
+          <h1 className="text-xl font-black tracking-tighter uppercase font-mono text-white">Definições</h1>
+          <p className="text-[10px] font-bold font-mono uppercase tracking-[0.2em] text-cyan-200/70">Perfil</p>
         </div>
       </div>
 
-      <div className="space-y-5 max-w-xl mx-auto">
+      <div className="space-y-6 max-w-xl mx-auto relative z-10">
 
-        {/* ALERTA */}
-        <div className="bg-orange-500/5 border border-orange-500/20 p-4 rounded-xl flex gap-3">
-          <ShieldCheck size={20} className="text-orange-500" />
-          <p className="text-xs text-gray-400">
-            Alterar e-mail bloqueia levantamentos por 24h
-          </p>
-        </div>
+        {loading ? (
+          <div className="space-y-4 animate-pulse">
 
-        {/* CARD IDENTIDADE */}
-        <div className="bg-[#111318] border border-white/5 rounded-xl p-4 space-y-4">
+            {/* CARD 1 */}
+            <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2.5rem] p-8 space-y-4">
+              <div className="h-4 w-24 bg-cyan-500/10 rounded"></div>
+              <div className="h-12 bg-cyan-500/10 rounded-2xl"></div>
+              <div className="h-12 bg-cyan-500/10 rounded-2xl"></div>
+              <div className="h-12 bg-cyan-500/10 rounded-2xl"></div>
+            </div>
 
-          <SettingsInput
-            label="Nome"
-            icon={<IdentificationCard size={16} />}
-            value={form.fullName}
-            onChange={(v) => setForm({ ...form, fullName: v })}
-          />
+            {/* CARD 2 */}
+            <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2.5rem] p-8 space-y-4">
+              <div className="h-4 w-24 bg-cyan-500/10 rounded"></div>
+              <div className="h-12 bg-cyan-500/10 rounded-2xl"></div>
+              <div className="h-12 bg-cyan-500/10 rounded-2xl"></div>
+              <div className="h-24 bg-cyan-500/10 rounded-2xl"></div>
+            </div>
 
-          {/* EMAIL */}
-          <div className="space-y-2">
-            <SettingsInput
-              label="Email"
-              icon={<Envelope size={16} />}
-              value={form.email}
-              onChange={(v) => setForm({ ...form, email: v })}
-            />
+          </div>
+        ) : (
+          <>
+            {/* ALERTA */}
+            <div className="bg-orange-500/10 border border-orange-500/20 p-6 rounded-[2rem] flex gap-4 shadow-xl shadow-orange-950/20">
+              <ShieldCheck size={22} weight="fill" className="text-orange-400 shrink-0 mt-0.5" />
+              <p className="text-xs text-orange-200/80 font-mono leading-relaxed">
+                Alterar e-mail bloqueia levantamentos por 24h
+              </p>
+            </div>
 
-            {form.email !== originalEmail && (
-              <button
-                onClick={handleRequestOTP}
-                disabled={sendingOtp}
-                className="text-[10px] text-green-500 flex items-center gap-1"
-              >
-                {sendingOtp ? 'Enviando...' : 'Pedir OTP'}
-                <PaperPlaneTilt size={12} />
-              </button>
-            )}
+            {/* CARD IDENTIDADE */}
+            <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2.5rem] p-8 space-y-6 shadow-2xl shadow-cyan-950/20">
 
-            {showOtpField && (
-              <input
-                placeholder="OTP"
-                maxLength={6}
-                value={form.otp}
-                onChange={(e) => setForm({ ...form, otp: e.target.value })}
-                className="w-full h-11 bg-black border border-green-500/20 rounded-xl px-4 text-xs text-green-500 text-center tracking-widest"
+              <SettingsInput
+                label="Nome"
+                icon={<IdentificationCard size={18} weight="duotone" />}
+                value={form.fullName}
+                onChange={(v) => setForm({ ...form, fullName: v })}
               />
-            )}
-          </div>
 
-          <SettingsInput
-            label="Telefone"
-            icon={<DeviceMobile size={16} />}
-            value={form.phone}
-            onChange={(v) => setForm({ ...form, phone: v })}
-          />
-        </div>
+              {/* EMAIL */}
+              <div className="space-y-2">
+                <SettingsInput
+                  label="Email"
+                  icon={<Envelope size={18} weight="duotone" />}
+                  value={form.email}
+                  onChange={(v) => setForm({ ...form, email: v })}
+                />
 
-        {/* CARD LOCALIZAÇÃO */}
-        <div className="bg-[#111318] border border-white/5 rounded-xl p-4 space-y-4">
+                {form.email !== originalEmail && (
+                  <button
+                    type="button"
+                    onClick={handleRequestOTP}
+                    disabled={sendingOtp}
+                    className="text-[10px] font-bold font-mono uppercase tracking-wider text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 ml-1 transition-colors cursor-pointer"
+                  >
+                    {sendingOtp ? 'Enviando...' : 'Pedir OTP'}
+                    <PaperPlaneTilt size={14} weight="bold" />
+                  </button>
+                )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <SettingsInput
-              label="País"
-              value={form.country}
-              onChange={(v) => setForm({ ...form, country: v })}
-            />
+                {showOtpField && (
+                  <input
+                    placeholder="OTP"
+                    maxLength={6}
+                    value={form.otp}
+                    onChange={(e) => setForm({ ...form, otp: e.target.value })}
+                    className="w-full h-12 bg-[#0a2533] border border-cyan-500/30 focus:border-cyan-400 rounded-2xl px-4 text-sm font-mono text-cyan-300 text-center tracking-[0.5em] font-bold outline-none shadow-inner placeholder:text-cyan-200/30 placeholder:tracking-normal placeholder:font-normal"
+                  />
+                )}
+              </div>
 
-            <SettingsInput
-              label="Província"
-              value={form.province}
-              onChange={(v) => setForm({ ...form, province: v })}
-            />
-          </div>
+              <SettingsInput
+                label="Telefone"
+                icon={<DeviceMobile size={18} weight="duotone" />}
+                value={form.phone}
+                onChange={(v) => setForm({ ...form, phone: v })}
+              />
+            </div>
 
-          <SettingsInput
-            label="Bairro"
-            value={form.neighborhood}
-            onChange={(v) => setForm({ ...form, neighborhood: v })}
-          />
+            {/* CARD LOCALIZAÇÃO */}
+            <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2.5rem] p-8 space-y-6 shadow-2xl shadow-cyan-950/20">
 
-          <SettingsInput
-            label="Morada"
-            icon={<MapPin size={16} />}
-            value={form.address}
-            onChange={(v) => setForm({ ...form, address: v })}
-          />
+              <div className="grid grid-cols-2 gap-4">
+                <SettingsInput
+                  label="País"
+                  value={form.country}
+                  onChange={(v) => setForm({ ...form, country: v })}
+                />
 
-          <textarea
-            placeholder="Biografia"
-            value={form.bio}
-            onChange={(e) => setForm({ ...form, bio: e.target.value })}
-            className="w-full bg-black border border-white/5 rounded-xl p-3 text-xs text-white min-h-[80px]"
-          />
-        </div>
+                <SettingsInput
+                  label="Província"
+                  value={form.province}
+                  onChange={(v) => setForm({ ...form, province: v })}
+                />
+              </div>
 
-        {/* BOTÃO */}
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full h-12 rounded-xl bg-white text-black text-sm font-semibold flex items-center justify-center gap-2"
-        >
-          {saving ? (
-            <CircleNotch size={18} className="animate-spin" />
-          ) : (
-            <>
-              Guardar
-              <CheckCircle size={18} />
-            </>
-          )}
-        </button>
+              <SettingsInput
+                label="Bairro"
+                value={form.neighborhood}
+                onChange={(v) => setForm({ ...form, neighborhood: v })}
+              />
+
+              <SettingsInput
+                label="Morada"
+                icon={<MapPin size={18} weight="duotone" />}
+                value={form.address}
+                onChange={(v) => setForm({ ...form, address: v })}
+              />
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase tracking-[0.2em] font-mono text-cyan-200/70 ml-1">
+                  Biografia
+                </label>
+                <textarea
+                  placeholder="Conte um pouco sobre si..."
+                  value={form.bio}
+                  onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                  className="w-full bg-[#0a2533] border border-cyan-500/20 focus:border-cyan-400 rounded-2xl p-4 text-sm font-mono text-white outline-none min-h-[100px] transition-all placeholder:text-cyan-200/30 resize-none shadow-inner"
+                />
+              </div>
+            </div>
+
+            {/* BOTÃO */}
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full h-14 rounded-2xl bg-cyan-600 text-white hover:bg-cyan-500 font-black font-mono text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-xl shadow-cyan-950/30 hover:shadow-cyan-950/50 active:scale-[0.98] cursor-pointer"
+            >
+              {saving ? (
+                <CircleNotch size={20} className="animate-spin text-white" />
+              ) : (
+                <>
+                  Guardar
+                  <CheckCircle size={20} weight="fill" className="text-cyan-200" />
+                </>
+              )}
+            </button>
+          </>
+        )}
 
       </div>
     </div>
@@ -289,14 +293,14 @@ function SettingsInput({
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-[10px] text-gray-500 flex items-center gap-1">
+      <label className="text-[10px] font-bold uppercase tracking-[0.2em] font-mono text-cyan-200/70 ml-1 flex items-center gap-1.5">
         {icon} {label}
       </label>
 
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full h-11 bg-black border border-white/5 rounded-xl px-4 text-xs text-white outline-none"
+        className="w-full h-12 bg-[#0a2533] border border-cyan-500/20 focus:border-cyan-400 rounded-2xl px-4 text-sm font-mono text-white outline-none transition-all shadow-inner placeholder:text-cyan-200/30"
       />
     </div>
   )

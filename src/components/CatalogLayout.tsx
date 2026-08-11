@@ -142,21 +142,21 @@ export default function CatalogLayout() {
 
   if (loading) {
     return (
-      <div className="p-5 space-y-6 animate-pulse">
-        {/* Skeleton para Categorias / Grid estilo Binance */}
+      <div className="p-5 space-y-6 animate-pulse min-h-screen bg-[#0a2533]">
+        {/* Skeleton para Categorias / Grid */}
         {[1, 2, 3].map((sectionIndex) => (
           <div key={sectionIndex} className="space-y-3">
             {/* Título Skeleton */}
-            <div className="w-32 h-3.5 bg-[#1E2329] rounded-md"></div>
+            <div className="w-32 h-3.5 bg-[#0e364a] rounded-md border border-cyan-500/10"></div>
 
             {/* Grelha de Provedores Skeleton */}
             <div className="grid grid-cols-4 gap-3 sm:gap-4">
               {[1, 2, 3, 4].map((itemIndex) => (
                 <div key={itemIndex} className="flex flex-col items-center space-y-2">
                   {/* Círculo do Logo Skeleton */}
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#1E2329] border border-[#2B313A]"></div>
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#0e364a] border border-cyan-500/20 shadow-md"></div>
                   {/* Texto do Nome Skeleton */}
-                  <div className="w-12 h-2.5 bg-[#1E2329] rounded-sm"></div>
+                  <div className="w-12 h-2.5 bg-[#0e364a] rounded-sm"></div>
                 </div>
               ))}
             </div>
@@ -168,8 +168,10 @@ export default function CatalogLayout() {
 
   if (error) {
     return (
-      <div className="text-center py-20 text-red-500">
-        {error}
+      <div className="min-h-screen bg-[#0a2533] flex items-center justify-center p-5">
+        <div className="text-center py-10 px-6 bg-[#0e364a] border border-red-500/30 rounded-2xl text-xs text-red-400 font-medium shadow-xl">
+          {error}
+        </div>
       </div>
     );
   }

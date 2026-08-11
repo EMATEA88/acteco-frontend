@@ -69,38 +69,38 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center px-6 selection:bg-green-500/30">
+    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe] flex items-center justify-center px-6 selection:bg-cyan-500/30 font-sans">
       
       <Toast visible={toastVisible} message={toastMessage} type={toastType} />
 
       {/* BACKGROUND GLOW */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-green-600/5 rounded-full filter blur-[120px] pointer-events-none"></div>
+      <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/[0.06] rounded-full filter blur-[120px] pointer-events-none"></div>
 
-      <div className="w-full max-w-md z-10">
+      <div className="w-full max-w-md z-10 relative">
         
         {/* HEADER */}
         <div className="text-center mb-10">
           <div className="relative inline-block mb-6">
-            <div className="w-20 h-20 rounded-full border-2 border-white/5 overflow-hidden bg-[#111] flex items-center justify-center shadow-2xl">
+            <div className="w-20 h-20 rounded-full border border-cyan-500/30 overflow-hidden bg-[#0e364a] flex items-center justify-center shadow-2xl shadow-cyan-950/40">
               <img src="/logo.png" className="w-full h-full object-cover rounded-full" alt="EMATEA" />
             </div>
           </div>
           
-          <h1 className="text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500">
+          <h1 className="text-3xl font-black tracking-tighter text-white font-mono">
             Redefinir Acesso
           </h1>
-          <p className="text-gray-500 mt-2 text-sm font-medium">
+          <p className="text-cyan-200/70 mt-2 text-xs font-mono uppercase tracking-widest">
             Proteja a sua conta com uma nova password forte.
           </p>
         </div>
 
         {/* CARD PRINCIPAL */}
-        <div className="bg-[#111111] p-8 rounded-[2.5rem] border border-white/5 shadow-2xl">
+        <div className="bg-[#0e364a] p-8 rounded-[2.5rem] border border-cyan-500/20 shadow-2xl shadow-cyan-950/20">
           <form onSubmit={handleReset} className="space-y-6">
             
             {/* CAMPO DE EMAIL */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 ml-1">
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] font-mono text-cyan-200/70 ml-1">
                 E-mail de Recuperação
               </label>
               <div className="flex gap-2">
@@ -110,16 +110,16 @@ export default function ResetPassword() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="exemplo@email.com"
-                  className="flex-1 bg-[#1a1a1a] border border-white/5 focus:border-green-500/40 rounded-2xl p-4 text-sm transition-all outline-none disabled:opacity-50"
+                  className="flex-1 bg-[#0a2533] border border-cyan-500/20 focus:border-cyan-400 rounded-2xl p-4 text-sm font-mono text-white transition-all outline-none disabled:opacity-50 placeholder:text-cyan-200/30"
                 />
                 {!otpSent && (
                   <button
                     type="button"
                     onClick={handleRequestOtp}
                     disabled={otpLoading}
-                    className="bg-white text-black px-4 rounded-2xl font-bold text-xs hover:bg-green-500 hover:text-white transition-all flex items-center gap-2 disabled:opacity-50"
+                    className="bg-cyan-600 text-white px-4 rounded-2xl font-bold text-xs hover:bg-cyan-500 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer shadow-md shadow-cyan-950/30"
                   >
-                    {otpLoading ? '...' : <PaperPlaneTilt size={18} />}
+                    {otpLoading ? '...' : <PaperPlaneTilt size={18} weight="bold" />}
                   </button>
                 )}
               </div>
@@ -129,7 +129,7 @@ export default function ResetPassword() {
             {otpSent && (
               <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 ml-1">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] font-mono text-cyan-200/70 ml-1">
                     Código de Verificação
                   </label>
                   <input
@@ -137,12 +137,12 @@ export default function ResetPassword() {
                     value={code}
                     onChange={e => setCode(e.target.value)}
                     placeholder="Introduza o código de 6 dígitos"
-                    className="w-full bg-[#1a1a1a] border border-white/5 focus:border-green-500/40 rounded-2xl p-4 text-sm transition-all outline-none text-center tracking-[0.5em] font-bold"
+                    className="w-full bg-[#0a2533] border border-cyan-500/20 focus:border-cyan-400 rounded-2xl p-4 text-sm font-mono text-white transition-all outline-none text-center tracking-[0.5em] font-bold placeholder:text-cyan-200/30 placeholder:tracking-normal placeholder:font-normal"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 ml-1">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.2em] font-mono text-cyan-200/70 ml-1">
                     Nova Password
                   </label>
                   <div className="relative">
@@ -151,12 +151,12 @@ export default function ResetPassword() {
                       value={newPassword}
                       onChange={e => setNewPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="w-full bg-[#1a1a1a] border border-white/5 focus:border-green-500/40 rounded-2xl p-4 text-sm transition-all outline-none"
+                      className="w-full bg-[#0a2533] border border-cyan-500/20 focus:border-cyan-400 rounded-2xl p-4 text-sm font-mono text-white transition-all outline-none placeholder:text-cyan-200/30"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-200/60 hover:text-white cursor-pointer"
                     >
                       {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
                     </button>
@@ -166,34 +166,34 @@ export default function ResetPassword() {
                 <button
                   type="submit"
                   disabled={resetLoading}
-                  className="w-full bg-green-600 text-white hover:bg-green-500 py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-900/20 active:scale-[0.98]"
+                  className="w-full bg-cyan-600 text-white hover:bg-cyan-500 py-4 rounded-2xl font-black font-mono text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-xl shadow-cyan-950/30 hover:shadow-cyan-950/50 active:scale-[0.98] cursor-pointer"
                 >
                   {resetLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                   ) : (
                     <>
                       Confirmar Nova Password
-                      <CheckCircle size={20} weight="fill" />
+                      <CheckCircle size={20} weight="fill" className="text-cyan-200" />
                     </>
                   )}
                 </button>
               </div>
             )}
 
-            <div className="text-center pt-4">
+            <div className="text-center pt-4 font-mono">
               <Link
                 to="/login"
-                className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 text-xs font-bold text-cyan-200/70 hover:text-white transition-colors"
               >
-                <ArrowLeft size={14} />
+                <ArrowLeft size={14} weight="bold" />
                 Voltar ao login
               </Link>
             </div>
           </form>
         </div>
 
-        <footer className="mt-12 text-center">
-          <p className="text-[10px] text-gray-700 font-bold uppercase tracking-[0.3em]">
+        <footer className="mt-12 text-center font-mono">
+          <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-cyan-300 opacity-60">
             Sistema de Recuperação Seguro • EMATEA 2026
           </p>
         </footer>

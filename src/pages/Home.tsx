@@ -74,19 +74,19 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] flex flex-col fixed inset-0 font-sans antialiased selection:bg-[#02C076]/20">
+    <div className="h-screen w-screen overflow-hidden bg-[#0a2533] text-[#e0f2fe] flex flex-col fixed inset-0 font-sans antialiased selection:bg-cyan-500/20">
 
-      {/* HEADER LIMPO E PROFISSIONAL - DARK MODE (FIXO NO TOPO) */}
-      <div className="px-5 pt-4 pb-5 flex items-center justify-between border-b border-white/[0.05] bg-[#0B0E11]/90 backdrop-blur-md shrink-0 z-50">
+      {/* HEADER LIMPO E PROFISSIONAL (FIXO NO TOPO) */}
+      <div className="px-5 pt-4 pb-5 flex items-center justify-between border-b border-cyan-500/10 bg-[#0a2533]/90 backdrop-blur-md shrink-0 z-50">
         <div>
-          <p className="text-[11px] text-gray-400 font-medium tracking-wide">
+          <p className="text-[11px] text-cyan-200/70 font-medium tracking-wide">
             Bem-vindo à
           </p>
           <h1 className="text-xl font-black tracking-wider text-white flex items-center gap-1.5 mt-0.5">
             EMATEA
             <span className="inline-flex relative items-center justify-center h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#02C076] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#02C076]"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400"></span>
             </span>
           </h1>
         </div>
@@ -96,44 +96,40 @@ export default function Home() {
           onClick={() => setSupportOpen(true)}
           className="
             h-9 px-4 rounded-xl
-            bg-white/[0.03] border border-white/[0.05]
+            bg-[#0e364a] border border-cyan-500/20
             text-white text-xs font-bold
             flex items-center gap-2
-            hover:bg-white/[0.08] hover:border-white/[0.1]
+            hover:bg-[#124158] hover:border-cyan-400/50
             transition-all duration-200 shadow-sm cursor-pointer
           "
         >
-          <Headset size={15} className="text-[#02C076]" strokeWidth={2.5} />
+          <Headset size={15} className="text-cyan-400" strokeWidth={2.5} />
           Suporte
         </button>
       </div>
 
       {/* ÁREA DE CONTEÚDO COM SCROLL REAL E ESTÁVEL */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 pt-5 pb-32">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 pt-5 pb-32 max-w-4xl mx-auto w-full">
         
         {/* CARROSSEL PRINCIPAL */}
         <div className="mb-8">
           <Carousel />
         </div>
 
-        {/* SECÇÕES DE SERVIÇOS DINÂMICOS (DADOS REAIS + BRANDING CONFIG) */}
+        {/* SECÇÕES DE SERVIÇOS DINÂMICOS */}
         <div className="space-y-8">
           {loadingCatalog ? (
-            /* SKELETON LOADER ESTILO BINANCE (DARK THEME) */
+            /* SKELETON LOADER */
             <div className="space-y-6 animate-pulse">
               {[1, 2].map((sectionIndex) => (
                 <div key={sectionIndex} className="space-y-3">
-                  {/* Título Skeleton */}
-                  <div className="w-28 h-3.5 bg-[#1E2329] rounded-md"></div>
+                  <div className="w-28 h-3.5 bg-[#0e364a] rounded-md border border-cyan-500/20"></div>
 
-                  {/* Grelha de Provedores Skeleton */}
                   <div className="grid grid-cols-4 gap-3 sm:gap-4">
                     {[1, 2, 3, 4].map((itemIndex) => (
                       <div key={itemIndex} className="flex flex-col items-center space-y-2">
-                        {/* Círculo do Logo Skeleton */}
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#1E2329] border border-[#2B313A]"></div>
-                        {/* Texto do Nome Skeleton */}
-                        <div className="w-12 h-2.5 bg-[#1E2329] rounded-sm"></div>
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#0e364a] border border-cyan-500/20 shadow-md"></div>
+                        <div className="w-12 h-2.5 bg-[#0e364a] rounded-sm"></div>
                       </div>
                     ))}
                   </div>
@@ -141,7 +137,7 @@ export default function Home() {
               ))}
             </div>
           ) : catalog.length === 0 ? (
-            <div className="text-center py-10 text-gray-500 text-xs font-mono">
+            <div className="text-center py-10 text-cyan-200/70 text-xs font-mono">
               Nenhum serviço disponível no momento.
             </div>
           ) : (
@@ -163,9 +159,9 @@ export default function Home() {
                         }}
                         className="flex flex-col items-center group cursor-pointer"
                       >
-                        {/* Círculo do Logótipo (Perfeitamente Arredondado) */}
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#12161C] border border-[#2D333B] p-1 flex items-center justify-center shadow-lg group-hover:border-emerald-500 group-hover:scale-105 transition-all duration-200">
-                          <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#0B0E11] p-1.5">
+                        {/* Círculo do Logótipo */}
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#0e364a] border border-cyan-500/20 p-1 flex items-center justify-center shadow-lg group-hover:border-cyan-400/50 group-hover:bg-[#124158] group-hover:scale-105 transition-all duration-200">
+                          <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#144863] p-1.5 shadow-sm">
                             {logo ? (
                               <img 
                                 src={logo} 
@@ -180,7 +176,7 @@ export default function Home() {
                           </div>
                         </div>
                         {/* Nome do Provedor */}
-                        <span className="text-[11px] sm:text-xs font-medium text-gray-300 mt-2 text-center tracking-wide group-hover:text-white transition-colors truncate w-full">
+                        <span className="text-[11px] sm:text-xs font-medium text-cyan-200/80 mt-2 text-center tracking-wide group-hover:text-white transition-colors truncate w-full">
                           {displayName}
                         </span>
                       </div>
@@ -202,11 +198,11 @@ export default function Home() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl relative"
+            className="w-full max-w-sm p-6 rounded-3xl bg-[#0e364a] border border-cyan-500/20 shadow-2xl relative shadow-cyan-950/40"
           >
             <button
               onClick={() => setSupportOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition cursor-pointer"
+              className="absolute top-4 right-4 text-cyan-200/70 hover:text-white transition cursor-pointer"
             >
               <X size={20}/>
             </button>
@@ -220,7 +216,7 @@ export default function Home() {
                 href={WHATSAPP_MANAGER}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full h-12 rounded-xl bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-md"
+                className="w-full h-12 rounded-xl bg-cyan-600 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-cyan-500 transition-all shadow-md shadow-cyan-950/20 cursor-pointer"
               >
                 <MessageCircle size={18} strokeWidth={2.5} />
                 Falar com Operadora
@@ -230,7 +226,7 @@ export default function Home() {
                 href={WHATSAPP_GROUP}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full h-12 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#1b2129] transition-all shadow-md"
+                className="w-full h-12 rounded-xl bg-[#0a2533] border border-cyan-500/20 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#124158] hover:border-cyan-400/50 transition-all shadow-md shadow-cyan-950/20 cursor-pointer"
               >
                 <Users size={18} strokeWidth={2.5} />
                 Entrar no Grupo
@@ -246,7 +242,7 @@ export default function Home() {
 
 function SectionTitle({ title }: { title: string }) {
   return (
-    <h2 className="text-xs tracking-widest text-gray-400 mb-4 uppercase font-mono font-black border-l-2 border-emerald-500 pl-3">
+    <h2 className="text-xs tracking-widest text-cyan-200/80 mb-4 uppercase font-mono font-black border-l-2 border-cyan-400 pl-3">
       {title}
     </h2>
   )

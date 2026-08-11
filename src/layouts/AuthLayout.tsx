@@ -50,6 +50,7 @@ export default function AuthLayout({
           px-6
           py-8
           mb-10
+          shadow-xl
         ">
           {children}
         </div>

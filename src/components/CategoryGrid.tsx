@@ -48,14 +48,14 @@ export default function CategoryGrid({
   };
 
   return (
-    <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-[#0B0E11] text-[#EAECEF] flex flex-col justify-center items-center px-5 font-sans antialiased selection:bg-[#02C076]/25 z-50">
+    <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-[#0a2533] text-[#e0f2fe] flex flex-col justify-center items-center px-5 font-sans antialiased selection:bg-cyan-500/25 z-50">
       
       {/* CONTAINER CENTRALIZADO SEM SCROLL */}
       <div className="max-w-4xl w-full flex flex-col justify-center h-full py-6">
         
         {/* TÍTULO CENTRALIZADO */}
         <div className="text-center mb-6 shrink-0">
-          <p className="text-xs font-semibold text-gray-400 tracking-wider uppercase">
+          <p className="text-xs font-semibold text-cyan-200/70 tracking-wider uppercase">
             Escolha uma categoria
           </p>
         </div>
@@ -71,25 +71,27 @@ export default function CategoryGrid({
                 onClick={() => onSelect(category)}
                 className="
                   group
-                  bg-[#12161C]
+                  bg-[#0e364a]
                   border
-                  border-white/[0.06]
+                  border-cyan-500/20
                   rounded-2xl
                   p-4
                   transition-all
                   duration-200
-                  hover:border-[#02C076]
-                  hover:bg-[#161b22]
+                  hover:border-cyan-400/50
+                  hover:bg-[#124158]
                   flex
                   flex-col
                   items-center
                   justify-center
                   cursor-pointer
                   shrink-0
+                  shadow-lg
+                  shadow-cyan-950/20
                 "
               >
                 {/* Imagem do Setor */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center overflow-hidden rounded-xl mb-3 bg-[#0B0E11]/50 border border-white/[0.04] shrink-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center overflow-hidden rounded-xl mb-3 bg-[#144863] border border-cyan-500/30 shrink-0 shadow-sm">
                   {categoryImage ? (
                     <img
                       src={categoryImage}
@@ -97,7 +99,7 @@ export default function CategoryGrid({
                       className="w-12 h-12 sm:w-16 sm:h-16 object-contain transition-transform duration-200 group-hover:scale-110"
                     />
                   ) : (
-                    <div className="w-full h-full bg-[#0B0E11] flex items-center justify-center">
+                    <div className="w-full h-full bg-[#144863] flex items-center justify-center">
                       <span className="text-white text-[11px] text-center px-1 font-semibold">
                         {category.name}
                       </span>
@@ -107,7 +109,7 @@ export default function CategoryGrid({
 
                 {/* Nome do Serviço / Categoria */}
                 <div className="text-center w-full">
-                  <h2 className="text-white font-medium text-xs sm:text-sm group-hover:text-[#02C076] transition-colors truncate">
+                  <h2 className="text-white font-medium text-xs sm:text-sm group-hover:text-cyan-200 transition-colors truncate">
                     {category.name}
                   </h2>
                 </div>
