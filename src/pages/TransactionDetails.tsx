@@ -6,13 +6,17 @@ import {
   Copy,
   Check,
   ShareNetwork,
-  X
+  X,
+  Printer
 } from "@phosphor-icons/react"
 
 import {
   TransactionService,
   type TransactionDetails as BaseTransactionDetails
 } from "../services/transaction.service"
+
+// Importe a função de impressão que criámos (ajuste o caminho se necessário)
+import { printReceipt } from "../services/printReceipt";
 
 // =====================================================
 // BRANDING DAS OPERADORAS / SERVIÇOS
@@ -281,6 +285,9 @@ export default function TransactionDetails() {
   const [copied, setCopied] =
     useState(false)
 
+  const [isPrinting, setIsPrinting] =
+    useState(false)
+
   // ===================================================
   // CARREGAR TRANSAÇÃO
   // ===================================================
@@ -319,6 +326,24 @@ export default function TransactionDetails() {
       () => setCopied(false),
       2000
     )
+  }
+
+  // ===================================================
+  // IMPRESSÃO BLUETOOTH
+  // ===================================================
+
+  const handlePrint = async () => {
+    if (!transaction) return
+
+    setIsPrinting(true)
+    try {
+      await printReceipt(transaction)
+    } catch (error) {
+      console.error("Erro ao imprimir:", error)
+      alert("Falha ao imprimir. Verifique se o Bluetooth está ligado e a impressora pareada.")
+    } finally {
+      setIsPrinting(false)
+    }
   }
 
   // ===================================================
@@ -865,6 +890,18 @@ export default function TransactionDetails() {
               <p className="text-[9px] text-[#7dd3fc]/70 font-mono tracking-wider uppercase mt-4 text-center">
                 Obrigado pela preferência
               </p>
+
+              {/* ========================================
+                  BOTÃO IMPRIMIR RECIBO
+              ======================================== */}
+              <button
+                onClick={handlePrint}
+                disabled={isPrinting}
+                className="w-full mt-4 py-3 px-4 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg border border-[#38bdf8]/30 flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50"
+              >
+                <Printer size={16} weight="bold" />
+                {isPrinting ? "A aceder à impressora..." : "Imprimir Recibo"}
+              </button>
             </>
 
           )}
