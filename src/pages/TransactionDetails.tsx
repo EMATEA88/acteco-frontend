@@ -15,8 +15,12 @@ import {
   type TransactionDetails as BaseTransactionDetails
 } from "../services/transaction.service"
 
-// Importe a função de impressão que criámos (ajuste o caminho se necessário)
-import { printReceipt } from "../services/printReceipt";
+// Importe a função de impressão e utilitários que criámos (ajuste o caminho se necessário)
+import {
+  printReceipt,
+  scanPrinters,
+  type ThermalPrinterDevice
+} from "../services/printReceipt";
 
 // =====================================================
 // BRANDING DAS OPERADORAS / SERVIÇOS
@@ -288,6 +292,21 @@ export default function TransactionDetails() {
   const [isPrinting, setIsPrinting] =
     useState(false)
 
+  const [showPrinterModal, setShowPrinterModal] =
+    useState(false)
+
+  const [printers, setPrinters] =
+    useState<ThermalPrinterDevice[]>([])
+
+  const [isScanningPrinters, setIsScanningPrinters] =
+    useState(false)
+
+  const [selectedPrinter, setSelectedPrinter] =
+    useState<ThermalPrinterDevice | null>(null)
+
+  const [printerError, setPrinterError] =
+    useState<string | null>(null)
+
   // ===================================================
   // CARREGAR TRANSAÇÃO
   // ===================================================
@@ -335,12 +354,63 @@ export default function TransactionDetails() {
   const handlePrint = async () => {
     if (!transaction) return
 
-    setIsPrinting(true)
+    setPrinterError(null)
+    setPrinters([])
+    setSelectedPrinter(null)
+    setShowPrinterModal(true)
+    setIsScanningPrinters(true)
+
     try {
-      await printReceipt(transaction)
-    } catch (error) {
-      console.error("Erro ao imprimir:", error)
-      alert("Falha ao imprimir. Verifique se o Bluetooth está ligado e a impressora pareada.")
+      const devices = await scanPrinters()
+
+      setPrinters(devices)
+
+      if (devices.length === 0) {
+        setPrinterError(
+          "Nenhuma impressora Bluetooth foi encontrada. Verifique se a impressora está ligada e emparelhada com o telefone."
+        )
+      }
+    } catch (error: any) {
+      console.error(
+        "Erro ao procurar impressoras:",
+        error
+      )
+
+      setPrinterError(
+        error?.message ||
+          "Não foi possível procurar as impressoras Bluetooth."
+      )
+    } finally {
+      setIsScanningPrinters(false)
+    }
+  }
+
+  const handleSelectPrinter = async (
+    printer: ThermalPrinterDevice
+  ) => {
+    if (!transaction) return
+
+    setSelectedPrinter(printer)
+    setIsPrinting(true)
+    setPrinterError(null)
+
+    try {
+      await printReceipt(
+        transaction,
+        printer
+      )
+
+      setShowPrinterModal(false)
+    } catch (error: any) {
+      console.error(
+        "Erro ao imprimir:",
+        error
+      )
+
+      setPrinterError(
+        error?.message ||
+          "Não foi possível imprimir o recibo."
+      )
     } finally {
       setIsPrinting(false)
     }
@@ -859,56 +929,230 @@ export default function TransactionDetails() {
                           String(voucherPin)
                         )
                       }
-                      className="text-[#7dd3fc] hover:text-white cursor-pointer"
+                      className="text-[#7dd3fc] hover:text-white cursor-pointer text-xs flex items-center gap-1 font-mono"
                     >
-                      <Copy size={14} />
+                      Copiar PIN
+                      <Copy size={12} />
                     </button>
                   </div>
-
-                  <div className="text-white text-base font-black font-mono tracking-wider break-all text-center">
-                    {voucherPin}
+                  <div className="bg-[#082f49] border border-[#0ea5e9]/20 rounded-xl p-3 text-center">
+                    <span className="font-mono font-black text-white text-base tracking-widest">
+                      {String(voucherPin)}
+                    </span>
                   </div>
-
-                  {voucherValue != null && (
-                    <div className="text-[#7dd3fc] text-[11px] text-center mt-2">
-                      Energia:{" "}
-                      <span className="text-white font-bold">
-                        {voucherValue}
-                        {voucherUnits
-                          ? ` ${voucherUnits}`
-                          : ""}
-                      </span>
+                  {voucherUnits && (
+                    <div className="mt-2 text-center text-[11px] text-[#7dd3fc]">
+                      Unidades: <span className="font-bold text-white">{voucherUnits}</span>
                     </div>
                   )}
                 </div>
               )}
 
-              {/* ========================================
-                  RODAPÉ
-              ======================================== */}
-
-              <p className="text-[9px] text-[#7dd3fc]/70 font-mono tracking-wider uppercase mt-4 text-center">
-                Obrigado pela preferência
-              </p>
-
-              {/* ========================================
-                  BOTÃO IMPRIMIR RECIBO
-              ======================================== */}
-              <button
-                onClick={handlePrint}
-                disabled={isPrinting}
-                className="w-full mt-4 py-3 px-4 bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg border border-[#38bdf8]/30 flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50"
-              >
-                <Printer size={16} weight="bold" />
-                {isPrinting ? "A aceder à impressora..." : "Imprimir Recibo"}
-              </button>
+              {/* BOTÃO DE IMPRESSÃO */}
+              <div className="w-full mt-5">
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  disabled={isPrinting}
+                  className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white text-xs font-black uppercase tracking-wider shadow-lg hover:from-[#0369a1] hover:to-[#075985] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                >
+                  <Printer size={18} weight="bold" />
+                  {isPrinting ? "A imprimir..." : "Imprimir Recibo"}
+                </button>
+              </div>
             </>
-
           )}
 
         </div>
 
       </div>
+
+      {/* ============================================
+          MODAL DE SELEÇÃO DE IMPRESSORA BLUETOOTH
+      ============================================ */}
+
+      {showPrinterModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div
+            className="w-full max-w-sm rounded-3xl bg-[#082f49] border border-[#0ea5e9]/40 shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* HEADER */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#0ea5e9]/20">
+              <div>
+                <h3 className="text-sm font-black text-white uppercase tracking-wide">
+                  Selecionar impressora
+                </h3>
+
+                <p className="text-[10px] text-[#7dd3fc] mt-1">
+                  Escolha uma impressora Bluetooth emparelhada
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowPrinterModal(false)
+                  setPrinterError(null)
+                }}
+                disabled={isPrinting}
+                className="p-2 rounded-xl text-[#7dd3fc] hover:text-white hover:bg-[#0ea5e9]/20 transition disabled:opacity-50 cursor-pointer"
+              >
+                <X size={18} weight="bold" />
+              </button>
+            </div>
+
+            {/* CONTEÚDO */}
+            <div className="p-5">
+
+              {isScanningPrinters && (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <div className="w-9 h-9 border-2 border-[#38bdf8]/30 border-t-[#38bdf8] rounded-full animate-spin" />
+
+                  <p className="text-xs font-bold text-white mt-4">
+                    Procurando impressoras...
+                  </p>
+
+                  <p className="text-[10px] text-[#7dd3fc] mt-1">
+                    Aguarde alguns segundos
+                  </p>
+                </div>
+              )}
+
+              {!isScanningPrinters &&
+                printers.length > 0 && (
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    {printers.map((printer) => {
+                      const isSelected =
+                        selectedPrinter?.address ===
+                        printer.address
+
+                      return (
+                        <button
+                          key={printer.address}
+                          type="button"
+                          onClick={() =>
+                            handleSelectPrinter(
+                              printer
+                            )
+                          }
+                          disabled={isPrinting}
+                          className={`w-full p-4 rounded-2xl border text-left transition cursor-pointer ${
+                            isSelected
+                              ? "bg-[#0284c7]/30 border-[#38bdf8]"
+                              : "bg-[#0c4a6e] border-[#0ea5e9]/20 hover:border-[#38bdf8]/60 hover:bg-[#0c4a6e]/80"
+                          } disabled:opacity-50`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-[#082f49] border border-[#0ea5e9]/30 flex items-center justify-center shrink-0">
+                              <Printer
+                                size={19}
+                                weight="bold"
+                                className="text-[#38bdf8]"
+                              />
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-black text-white truncate">
+                                {printer.name ||
+                                  "Impressora Bluetooth"}
+                              </p>
+
+                              <p className="text-[10px] text-[#7dd3fc] font-mono mt-1">
+                                {printer.address}
+                              </p>
+                            </div>
+
+                            {isSelected && (
+                              <div className="text-[#38bdf8]">
+                                ✓
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+
+              {!isScanningPrinters &&
+                printers.length === 0 &&
+                !printerError && (
+                  <div className="text-center py-8">
+                    <Printer
+                      size={32}
+                      className="mx-auto text-[#7dd3fc]/50"
+                    />
+
+                    <p className="text-xs font-bold text-white mt-3">
+                      Nenhuma impressora encontrada
+                    </p>
+
+                    <p className="text-[10px] text-[#7dd3fc] mt-1">
+                      Verifique o Bluetooth e o emparelhamento.
+                    </p>
+                  </div>
+                )}
+
+              {printerError && (
+                <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-400/20">
+                  <p className="text-[11px] leading-relaxed text-red-300 text-center">
+                    {printerError}
+                  </p>
+                </div>
+              )}
+
+              {isPrinting && (
+                <div className="mt-4 flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-[#38bdf8]/30 border-t-[#38bdf8] rounded-full animate-spin" />
+
+                  <span className="text-[11px] font-bold text-[#7dd3fc]">
+                    A imprimir recibo...
+                  </span>
+
+                </div>
+              )}
+
+              {!isScanningPrinters &&
+                !isPrinting && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setPrinterError(null)
+                      setPrinters([])
+                      setIsScanningPrinters(true)
+
+                      try {
+                        const devices =
+                          await scanPrinters()
+
+                        setPrinters(devices)
+
+                        if (
+                          devices.length === 0
+                        ) {
+                          setPrinterError(
+                            "Nenhuma impressora Bluetooth foi encontrada."
+                          )
+                        }
+                      } catch (error: any) {
+                        setPrinterError(
+                          error?.message ||
+                            "Falha ao procurar impressoras."
+                        )
+                      } finally {
+                        setIsScanningPrinters(false)
+                      }
+                    }}
+                    className="w-full mt-4 py-3 rounded-xl bg-[#0c4a6e] border border-[#0ea5e9]/30 text-[#7dd3fc] text-[11px] font-black uppercase tracking-wide hover:bg-[#0ea5e9]/20 hover:text-white transition cursor-pointer"
+                  >
+                    Procurar novamente
+                  </button>
+                )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )
