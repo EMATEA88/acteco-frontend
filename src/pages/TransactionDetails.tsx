@@ -593,12 +593,6 @@ export default function TransactionDetails() {
     extraInfo?.voucherPIN ??
     null
 
-  const voucherValue =
-    storedReceipt?.voucherValue ??
-    extraInfo?.VoucherValue ??
-    extraInfo?.voucherValue ??
-    null
-
   const voucherUnits =
     storedReceipt?.voucherUnits ??
     extraInfo?.VoucherUnits ??
