@@ -2,19 +2,23 @@
 
 export async function printReceipt(transaction: any): Promise<void> {
   // 1. Solicitar o dispositivo Bluetooth (impressora térmica ESC/POS)
+ // 1. Solicitar o dispositivo Bluetooth (impressora térmica ESC/POS)
   const device = await (navigator as any).bluetooth.requestDevice({
-    filters: [
-      { services: ['000018f0-0000-1000-8000-00805f9b34fb'] },
-      { namePrefix: 'MPT' }, 
-      { namePrefix: 'Printer' },
-      { namePrefix: 'POS' }
-    ],
-    optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
+    acceptAllDevices: true,
+    optionalServices: [
+      '000018f0-0000-1000-8000-00805f9b34fb',
+      '00001101-0000-1000-8000-00805f9b34fb', // Perfil Serial padrão (SPP)
+      'e7810a71-73ae-499d-8c15-faa9aef0c3f2'
+    ]
   });
 
   const server = await device.gatt.connect();
-  const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
-  const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
+  
+  // Tenta obter o serviço principal de forma segura para evitar falhas de UUID
+  const services = await server.getPrimaryServices();
+  const service = services[0];
+  const characteristics = await service.getCharacteristics();
+  const characteristic = characteristics[0];
 
   // 2. Montar os comandos ESC/POS com os dados atualizados
   const encoder = new TextEncoder();
