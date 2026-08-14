@@ -57,11 +57,9 @@ interface TransactionDetails {
 // TIPAGEM DA IMPRESSORA
 // =====================================================
 
-export interface ThermalPrinterDevice {
-  name?: string | null
+export interface PairedPrinter {
+  name: string
   address: string
-  id?: string | null
-  type?: string | null
 }
 
 // =====================================================
@@ -81,7 +79,7 @@ function normalizeText(text: string): string {
 // BUSCAR DISPOSITIVOS EMPARELHADOS
 // =====================================================
 
-export async function scanPrinters(): Promise<ThermalPrinterDevice[]> {
+export async function getPairedPrinters(): Promise<PairedPrinter[]> {
   return new Promise(async (resolve, reject) => {
     let finished = false
     let timeoutId: ReturnType<typeof setTimeout> | null = null
@@ -109,7 +107,7 @@ export async function scanPrinters(): Promise<ThermalPrinterDevice[]> {
     }
 
     const finish = async (
-      devices: ThermalPrinterDevice[] = []
+      devices: PairedPrinter[] = []
     ) => {
       if (finished) return
 
@@ -121,31 +119,34 @@ export async function scanPrinters(): Promise<ThermalPrinterDevice[]> {
     }
 
     try {
-      discoverListener = await CapacitorThermalPrinter.addListener(
-        'discoverDevices',
-        ({ devices }: { devices?: ThermalPrinterDevice[] }) => {
-          const discovered = Array.isArray(devices)
-            ? devices
-            : []
+      discoverListener =
+        await CapacitorThermalPrinter.addListener(
+          'discoverDevices',
+          ({ devices }: { devices?: PairedPrinter[] }) => {
+            const discovered = Array.isArray(devices)
+              ? devices
+              : []
 
-          finish(discovered)
-        }
-      )
-
-      finishListener = await CapacitorThermalPrinter.addListener(
-        'discoveryFinish',
-        () => {
-          if (!finished) {
-            finish([])
+            finish(discovered)
           }
-        }
-      )
+        )
+
+      finishListener =
+        await CapacitorThermalPrinter.addListener(
+          'discoveryFinish',
+          () => {
+            if (!finished) {
+              finish([])
+            }
+          }
+        )
 
       timeoutId = setTimeout(() => {
         finish([])
       }, 10000)
 
       await CapacitorThermalPrinter.startScan()
+
     } catch (error: any) {
       await cleanup()
 
@@ -164,10 +165,12 @@ export async function scanPrinters(): Promise<ThermalPrinterDevice[]> {
 // =====================================================
 
 export async function connectPrinter(
-  device: ThermalPrinterDevice
+  device: PairedPrinter
 ): Promise<void> {
   if (!device?.address) {
-    throw new Error('A impressora selecionada não possui endereço Bluetooth.')
+    throw new Error(
+      'A impressora selecionada não possui endereço Bluetooth.'
+    )
   }
 
   try {
@@ -177,7 +180,9 @@ export async function connectPrinter(
   } catch (error: any) {
     throw new Error(
       error?.message ||
-        `Não foi possível conectar à impressora ${device.name || device.address}.`
+        `Não foi possível conectar à impressora ${
+          device.name || device.address
+        }.`
     )
   }
 }
@@ -188,25 +193,30 @@ export async function connectPrinter(
 
 export async function printReceipt(
   transaction: TransactionDetails,
-  device: ThermalPrinterDevice
+  device: PairedPrinter
 ): Promise<void> {
   try {
     if (!device?.address) {
-      throw new Error('Nenhuma impressora foi selecionada.')
+      throw new Error(
+        'Nenhuma impressora foi selecionada.'
+      )
     }
 
     // -------------------------------------------------
-    // 1. Conectar à impressora selecionada
+    // 1. CONECTAR À IMPRESSORA SELECIONADA
     // -------------------------------------------------
 
     await connectPrinter(device)
 
     // -------------------------------------------------
-    // 2. Dados do recibo
+    // 2. DADOS DO RECIBO
     // -------------------------------------------------
 
-    const receipt = transaction.metadata?.receipt
-    const serviceReq = transaction.serviceRequest
+    const receipt =
+      transaction.metadata?.receipt
+
+    const serviceReq =
+      transaction.serviceRequest
 
     const operatorName = (
       receipt?.provider ??
@@ -221,11 +231,14 @@ export async function printReceipt(
 
     const formattedAmount = `${Number(
       transaction.amount
-    ).toLocaleString('pt-AO')} ${transaction.currency || 'AOA'}`
+    ).toLocaleString('pt-AO')} ${
+      transaction.currency || 'AOA'
+    }`
 
-    const dateFormatted = new Date(
-      transaction.createdAt
-    ).toLocaleString('pt-AO')
+    const dateFormatted =
+      new Date(
+        transaction.createdAt
+      ).toLocaleString('pt-AO')
 
     const customerReference =
       receipt?.customerReference ??
@@ -249,51 +262,92 @@ export async function printReceipt(
       null
 
     // -------------------------------------------------
-    // 3. Construir recibo
+    // 3. URL DO LOGOTIPO
     // -------------------------------------------------
 
-    const printer = CapacitorThermalPrinter
-      .begin()
-      .align('center')
-      .bold()
-      .text(
-        normalizeText(
-          'EMATEA COMERCIO GERAL\n'
+    const logoUrl =
+      `${window.location.origin}/logo.png`
+
+    // -------------------------------------------------
+    // 4. CONSTRUIR RECIBO
+    // -------------------------------------------------
+
+    const printer =
+      CapacitorThermalPrinter
+        .begin()
+        .align('center')
+
+        // -------------------------------------------------
+        // LOGOTIPO EMATEA
+        // -------------------------------------------------
+        //
+        // O logo deve ser preparado como imagem circular
+        // no próprio arquivo public/logo.png.
+        //
+        // -------------------------------------------------
+
+        .image(logoUrl)
+
+        .text('\n')
+
+        // -------------------------------------------------
+        // CABEÇALHO
+        // -------------------------------------------------
+
+        .bold()
+        .text(
+          normalizeText(
+            'EMATEA COMERCIO GERAL\n'
+          )
         )
-      )
-      .text(
-        normalizeText(
-          'NIF: 5000000000\n'
+        .text(
+          normalizeText(
+            'NIF: 5002577666\n'
+          )
         )
-      )
-      .text(
-        normalizeText(
-          'Malanje - Angola\n'
+        .text(
+          normalizeText(
+            'Malanje - Angola\n'
+          )
         )
-      )
-      .text(
-        '--------------------------------\n'
-      )
-      .text(
-        normalizeText(
-          'COMPROVATIVO DE VENDA\n'
+
+        .text(
+          '--------------------------------\n'
         )
-      )
-      .text(
-        '--------------------------------\n'
-      )
-      .align('left')
-      .clearFormatting()
-      .text(
-        normalizeText(
-          `ID: ${operationId}\n`
+
+        .bold()
+        .text(
+          normalizeText(
+            'COMPROVATIVO DE VENDA\n'
+          )
         )
-      )
-      .text(
-        normalizeText(
-          `Operadora: ${operatorName}\n`
+
+        .text(
+          '--------------------------------\n'
         )
-      )
+
+        // -------------------------------------------------
+        // DADOS DA TRANSAÇÃO
+        // -------------------------------------------------
+
+        .align('left')
+        .clearFormatting()
+
+        .text(
+          normalizeText(
+            `ID: ${operationId}\n`
+          )
+        )
+
+        .text(
+          normalizeText(
+            `Operadora: ${operatorName}\n`
+          )
+        )
+
+    // -------------------------------------------------
+    // SERVIÇO
+    // -------------------------------------------------
 
     if (serviceName) {
       printer.text(
@@ -303,6 +357,10 @@ export async function printReceipt(
       )
     }
 
+    // -------------------------------------------------
+    // REFERÊNCIA DO CLIENTE
+    // -------------------------------------------------
+
     if (customerReference) {
       printer.text(
         normalizeText(
@@ -310,6 +368,10 @@ export async function printReceipt(
         )
       )
     }
+
+    // -------------------------------------------------
+    // NOME DO CLIENTE
+    // -------------------------------------------------
 
     if (customerName) {
       printer.text(
@@ -319,15 +381,25 @@ export async function printReceipt(
       )
     }
 
+    // -------------------------------------------------
+    // DATA
+    // -------------------------------------------------
+
     printer
       .text(
         normalizeText(
           `Data: ${dateFormatted}\n`
         )
       )
+
       .text(
         '--------------------------------\n'
       )
+
+      // -------------------------------------------------
+      // TOTAL
+      // -------------------------------------------------
+
       .align('center')
       .bold()
       .text(
@@ -335,6 +407,10 @@ export async function printReceipt(
           `TOTAL: ${formattedAmount}\n`
         )
       )
+
+    // -------------------------------------------------
+    // PIN DO VOUCHER
+    // -------------------------------------------------
 
     if (voucherPin) {
       printer
@@ -346,20 +422,31 @@ export async function printReceipt(
         )
     }
 
+    // -------------------------------------------------
+    // RODAPÉ
+    // -------------------------------------------------
+
     printer
       .text('\n')
+      .clearFormatting()
       .text(
         normalizeText(
           'Obrigado pela preferencia\n'
         )
       )
+      .text(
+        normalizeText(
+          'EMATEA\n'
+        )
+      )
       .text('\n\n\n')
 
     // -------------------------------------------------
-    // 4. ENVIAR PARA A IMPRESSORA
+    // 5. ENVIAR PARA A IMPRESSORA
     // -------------------------------------------------
 
     await printer.write()
+
   } catch (error: any) {
     console.error(
       'Erro na impressão:',

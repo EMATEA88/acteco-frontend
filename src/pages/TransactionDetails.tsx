@@ -17,9 +17,9 @@ import {
 
 // Importe a função de impressão e utilitários que criámos (ajuste o caminho se necessário)
 import {
+  getPairedPrinters,
   printReceipt,
-  scanPrinters,
-  type ThermalPrinterDevice
+  type PairedPrinter
 } from "../services/printReceipt";
 
 // =====================================================
@@ -296,13 +296,13 @@ export default function TransactionDetails() {
     useState(false)
 
   const [printers, setPrinters] =
-    useState<ThermalPrinterDevice[]>([])
+    useState<PairedPrinter[]>([])
 
   const [isScanningPrinters, setIsScanningPrinters] =
     useState(false)
 
   const [selectedPrinter, setSelectedPrinter] =
-    useState<ThermalPrinterDevice | null>(null)
+    useState<PairedPrinter | null>(null)
 
   const [printerError, setPrinterError] =
     useState<string | null>(null)
@@ -361,24 +361,24 @@ export default function TransactionDetails() {
     setIsScanningPrinters(true)
 
     try {
-      const devices = await scanPrinters()
+      const devices = await getPairedPrinters()
 
       setPrinters(devices)
 
       if (devices.length === 0) {
         setPrinterError(
-          "Nenhuma impressora Bluetooth foi encontrada. Verifique se a impressora está ligada e emparelhada com o telefone."
+          "Nenhuma impressora emparelhada foi encontrada. Verifique se a impressora está ligada e emparelhada com o telefone."
         )
       }
     } catch (error: any) {
       console.error(
-        "Erro ao procurar impressoras:",
+        "Erro ao obter impressoras emparelhadas:",
         error
       )
 
       setPrinterError(
         error?.message ||
-          "Não foi possível procurar as impressoras Bluetooth."
+          "Não foi possível obter as impressoras emparelhadas."
       )
     } finally {
       setIsScanningPrinters(false)
@@ -386,7 +386,7 @@ export default function TransactionDetails() {
   }
 
   const handleSelectPrinter = async (
-    printer: ThermalPrinterDevice
+    printer: PairedPrinter
   ) => {
     if (!transaction) return
 
@@ -396,9 +396,9 @@ export default function TransactionDetails() {
 
     try {
       await printReceipt(
-        transaction,
-        printer
-      )
+  transaction,
+  printer
+)
 
       setShowPrinterModal(false)
     } catch (error: any) {
@@ -1004,7 +1004,7 @@ export default function TransactionDetails() {
                   <div className="w-9 h-9 border-2 border-[#38bdf8]/30 border-t-[#38bdf8] rounded-full animate-spin" />
 
                   <p className="text-xs font-bold text-white mt-4">
-                    Procurando impressoras...
+                    A procurar impressoras...
                   </p>
 
                   <p className="text-[10px] text-[#7dd3fc] mt-1">
@@ -1118,7 +1118,7 @@ export default function TransactionDetails() {
 
                       try {
                         const devices =
-                          await scanPrinters()
+                          await getPairedPrinters()
 
                         setPrinters(devices)
 
@@ -1126,13 +1126,13 @@ export default function TransactionDetails() {
                           devices.length === 0
                         ) {
                           setPrinterError(
-                            "Nenhuma impressora Bluetooth foi encontrada."
+                            "Nenhuma impressora emparelhada foi encontrada."
                           )
                         }
                       } catch (error: any) {
                         setPrinterError(
                           error?.message ||
-                            "Falha ao procurar impressoras."
+                            "Falha ao obter impressoras emparelhadas."
                         )
                       } finally {
                         setIsScanningPrinters(false)

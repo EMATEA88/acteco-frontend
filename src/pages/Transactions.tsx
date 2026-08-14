@@ -171,31 +171,71 @@ export default function Transactions() {
   ]
 
   const rawName = sources
-  .filter(Boolean)
-  .join(" ")
-  .toUpperCase()
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g, "")
-  .trim()
+    .filter(Boolean)
+    .join(" ")
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
 
-  if (rawName.includes("UNITEL") || rawName.includes("BAZZA")) return "UNITEL"
-  if (rawName.includes("MOVICEL")) return "MOVICEL"
-  if (rawName.includes("AFRICELL")) return "AFRICELL"
- if (
+  // TELECOMUNICAÇÕES
+  if (
+    rawName.includes("UNITEL") ||
+    rawName.includes("BAZZA")
+  ) {
+    return "UNITEL"
+  }
+
+  if (rawName.includes("MOVICEL")) {
+    return "MOVICEL"
+  }
+
+  if (rawName.includes("AFRICELL")) {
+    return "AFRICELL"
+  }
+
+  if (rawName.includes("NETONE")) {
+    return "NETONE"
+  }
+
+  // TELEVISÃO
+  // TELEVISÃO
+if (
   rawName.includes("DSTV") ||
-  rawName.includes("FAMÍLIA/7D") ||
   rawName.includes("FAMILIA/7D") ||
-  rawName.includes("FAMÍLIA 7D") ||
-  rawName.includes("FAMILIA 7D")
+  rawName.includes("FAMILIA 7D") ||
+  rawName.includes("FAMILIA MAIS")
 ) {
   return "DSTV"
 }
 
-  if (rawName.includes("ZAP")) return "ZAP"
-  if (rawName.includes("ENDE")) return "ENDE"
-  if (rawName.includes("EPAL")) return "EPAL"
-  if (rawName.includes("STAS")) return "STAS"
+  if (rawName.includes("ZAP")) {
+    return "ZAP"
+  }
 
+  // SERVIÇOS PÚBLICOS
+  if (rawName.includes("ENDE")) {
+    return "ENDE"
+  }
+
+  if (rawName.includes("EPAL")) {
+    return "EPAL"
+  }
+
+  if (rawName.includes("STAS")) {
+    return "STAS"
+  }
+
+  // 5LINHAS
+  if (
+    rawName.includes("5LINHAS") ||
+    rawName.includes("5 LINHAS") ||
+    rawName.includes("CINCO")
+  ) {
+    return "5LINHAS"
+  }
+
+  // JOGOS E APOSTAS
   if (
     rawName.includes("PREMIERBET") ||
     rawName.includes("PBET")
@@ -224,7 +264,79 @@ export default function Transactions() {
     return "AFRIBET"
   }
 
-  if (rawName.includes("NETONE")) return "NETONE"
+  if (
+    rawName.includes("MOBET")
+  ) {
+    return "MOBET"
+  }
+
+  if (
+    rawName.includes("MELBET") ||
+    rawName.includes("MGMBET")
+  ) {
+    return "MELBET"
+  }
+
+  if (
+    rawName.includes("KWANZABET")
+  ) {
+    return "KWANZABET"
+  }
+
+  if (
+    rawName.includes("888BETS") ||
+    rawName.includes("888BET") ||
+    rawName.includes("888")
+  ) {
+    return "888BETS"
+  }
+
+  // SERVIÇOS DIGITAIS / PARCEIROS
+  if (
+    rawName.includes("AMAZON") ||
+    rawName.includes("INT_VCH2")
+  ) {
+    return "AMAZON"
+  }
+
+  if (rawName.includes("APPLE")) {
+    return "APPLE"
+  }
+
+  if (
+    rawName.includes("GOOGLE PLAY") ||
+    rawName.includes("GOOGLEPLAY") ||
+    rawName.includes("GOOGLE")
+  ) {
+    return "GOOGLE PLAY"
+  }
+
+  if (rawName.includes("NETFLIX")) {
+    return "NETFLIX"
+  }
+
+  if (rawName.includes("SPOTIFY")) {
+    return "SPOTIFY"
+  }
+
+  if (
+    rawName.includes("PLAYSTATION") ||
+    rawName.includes("TEAM")
+  ) {
+    return "PLAYSTATION"
+  }
+
+  if (rawName.includes("XBOX")) {
+    return "XBOX"
+  }
+
+  if (rawName.includes("BOLT")) {
+    return "BOLT"
+  }
+
+  if (rawName.includes("FLIXBUS")) {
+    return "FLIXBUS"
+  }
 
   return (
     tx?.metadata?.providerName ??
