@@ -93,173 +93,237 @@ export default function Profile() {
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#0a2533] text-[#e0f2fe] flex flex-col fixed inset-0 font-sans antialiased">
-      
-      {/* ÁREA COM SCROLL REAL E ESTÁVEL */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 pt-8 pb-32 flex flex-col gap-6">
-
-        {/* 1. CARD CENTRAL (HEADER) */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 pt-5 pb-28">
+        {/* CABEÇALHO DA CONTA */}
         {isLoading ? (
-          <div className="bg-[#0e364a] py-5 px-6 rounded-[2rem] border border-cyan-500/20 animate-pulse shadow-xl">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-[#144863]" />
+          <div className="py-5 border-b border-cyan-500/10 animate-pulse">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-[#144863]" />
               <div className="flex-1 space-y-2">
                 <div className="h-4 bg-[#144863] rounded w-1/2" />
-                <div className="h-3 bg-[#144863]/60 rounded w-1/3" />
+                <div className="h-2.5 bg-[#144863]/70 rounded w-1/3" />
               </div>
             </div>
-            <div className="mt-6 pt-5 border-t border-cyan-500/10 flex justify-between">
-               <div className="space-y-2"><div className="h-3 bg-[#144863] rounded w-12"/><div className="h-6 bg-[#144863] rounded w-24"/></div>
-               <div className="flex gap-3"><div className="w-10 h-10 rounded-full bg-[#144863]"/><div className="w-10 h-10 rounded-full bg-[#144863]"/></div>
+            <div className="mt-5 pt-4 border-t border-cyan-500/10">
+              <div className="h-2.5 bg-[#144863] rounded w-24 mb-2" />
+              <div className="h-7 bg-[#144863] rounded w-32" />
             </div>
           </div>
         ) : (
-          <div className="bg-[#0e364a] py-5 px-6 rounded-[2rem] relative border border-cyan-500/25 shadow-2xl shadow-cyan-950/40">
-            
-            {/* BOTÕES E BADGE DO CANTO SUPERIOR DIREITO */}
-            <div className="absolute top-5 right-5 flex flex-col items-end gap-2.5 z-10">
-              <div className="flex items-center gap-2">
-                {/* Botão de Configurações visível para USER, SUB_AGENT ou qualquer role que não seja estritamente Agent/Admin puro */}
-                {(rawRole === "USER" || rawRole === "SUB_AGENT" || !["AGENT", "ADMIN"].includes(rawRole)) && (
-                  <button 
-                    onClick={() => navigate('/settings')} 
-                    className="p-2 rounded-full bg-[#144863] border border-cyan-500/30 text-cyan-300 hover:text-white hover:bg-cyan-600 transition-all cursor-pointer shadow-md"
+          <section className="border-b border-cyan-500/10 pb-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-12 h-12 rounded-full border border-cyan-500/20 overflow-hidden bg-[#144863] p-1 shrink-0">
+                  <img
+                    src="/logo.png"
+                    className="w-full h-full object-contain rounded-full"
+                    alt="Logo"
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <h1 className="text-sm font-bold text-white uppercase truncate">
+                      {user?.fullName?.toUpperCase() ?? user?.phone}
+                    </h1>
+                    {kyc?.isVerified && (
+                      <SealCheck
+                        size={15}
+                        weight="fill"
+                        className="text-cyan-400 shrink-0"
+                      />
+                    )}
+                  </div>
+
+                  <p className="text-[10px] text-cyan-200/55 truncate mt-0.5">
+                    {user?.email}
+                  </p>
+
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-[9px] text-cyan-300/55 font-mono">
+                      ID: {user?.publicId}
+                    </span>
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(user?.publicId ?? "")
+                      }
+                      className="text-cyan-300/45 hover:text-cyan-200 transition-colors cursor-pointer"
+                      aria-label="Copiar ID"
+                    >
+                      <Copy size={12} weight="bold" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                {(rawRole === "USER" ||
+                  rawRole === "SUB_AGENT" ||
+                  !["AGENT", "ADMIN"].includes(rawRole)) && (
+                  <button
+                    onClick={() => navigate("/settings")}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-cyan-500/15 text-cyan-300 hover:text-white hover:bg-[#0e364a] transition-colors cursor-pointer"
                     title="Configurações"
+                    aria-label="Configurações"
                   >
-                    <Gear size={20} weight="bold" />
+                    <Gear size={16} weight="bold" />
                   </button>
                 )}
 
-                {/* Menu de agente visível para AGENT e ADMIN */}
                 {(rawRole === "AGENT" || rawRole === "ADMIN") && (
                   <div className="scale-90 origin-right">
-                    <AgentMenuButton onClick={() => setAgentMenuOpen(true)} />
+                    <AgentMenuButton
+                      onClick={() => setAgentMenuOpen(true)}
+                    />
                   </div>
                 )}
-              </div>
-              
-              {/* Badge de Identificação Obrigatório */}
-              <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md border ${currentRoleBadge.className}`}>
-                {currentRoleBadge.label}
-              </span>
-            </div>
 
-            <div className="flex items-center gap-4 pr-16">
-              {/* LOGÓTIPO + BOTÃO DE VERIFICAÇÃO ABAIXO */}
-              <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                <div className="w-14 h-14 rounded-full border border-cyan-500/30 overflow-hidden bg-[#144863] p-1 shadow-md">
-                  <img src="/logo.png" className="w-full h-full object-contain rounded-full" alt="Logo" />
-                </div>
-
-                {(!kyc || !kyc.isVerified) && (
-                  <button
-                    onClick={() => navigate('/kyc')}
-                    className="text-[9px] font-black uppercase tracking-tight text-rose-400 hover:text-rose-300 underline decoration-rose-500/50 hover:decoration-rose-300 transition-colors whitespace-nowrap text-center"
-                  >
-                    {kyc?.status === "PENDING" ? "Em Análise" : "Verificar Conta"}
-                  </button>
-                )}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <h1 className="text-base font-bold tracking-tight text-white uppercase truncate">
-                    {user?.fullName?.toUpperCase() ?? user?.phone}
-                  </h1>
-                  {kyc?.isVerified && <SealCheck size={16} weight="fill" className="text-cyan-400 flex-shrink-0" />}
-                </div>
-                <p className="text-cyan-200/70 text-[11px] font-medium mt-0.5 truncate">{user?.email}</p>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-[10px] text-cyan-300/60 font-mono font-bold tracking-wider uppercase">ID: {user?.publicId}</span>
-                  <button onClick={() => navigator.clipboard.writeText(user?.publicId ?? '')} className="text-cyan-300/60 hover:text-cyan-200 transition-colors">
-                    <Copy size={13} weight="bold" />
-                  </button>
-                </div>
+                <span
+                  className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${currentRoleBadge.className}`}
+                >
+                  {currentRoleBadge.label}
+                </span>
               </div>
             </div>
 
-            <div className="mt-5 pt-4 border-t border-cyan-500/15 flex items-center justify-between">
+            <div className="mt-5 pt-4 border-t border-cyan-500/10 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[9px] text-cyan-300/60 uppercase tracking-widest font-black mb-0.5">Saldo Disponível</p>
-                <span className="text-2xl font-black tracking-tight text-cyan-300">{formatCurrencyAOA(user?.balance ?? 0)}</span>
+                <p className="text-[8px] text-cyan-300/55 uppercase tracking-[0.16em] font-bold">
+                  Saldo disponível
+                </p>
+                <p className="text-2xl font-bold tracking-tight text-cyan-300 mt-1">
+                  {formatCurrencyAOA(user?.balance ?? 0)}
+                </p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button onClick={() => navigate("/deposit")} className="flex flex-col items-center gap-1 group">
-                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#144863] border border-cyan-500/30 text-cyan-300 group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-md">
-                    <Wallet size={18} weight="bold" />
-                  </div>
-                  <span className="text-[8px] font-black uppercase text-cyan-200/70 tracking-wide">Depósito</span>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => navigate("/deposit")}
+                  className="flex flex-col items-center gap-1 text-cyan-300 hover:text-white transition-colors cursor-pointer"
+                >
+                  <Wallet size={18} weight="bold" />
+                  <span className="text-[8px] uppercase tracking-wider">
+                    Depósito
+                  </span>
                 </button>
-                <button onClick={() => navigate("/withdraw")} className="flex flex-col items-center gap-1 group">
-                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#144863] border border-cyan-500/30 text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all shadow-md">
-                    <ArrowDown size={18} weight="bold" />
-                  </div>
-                  <span className="text-[8px] font-black uppercase text-cyan-200/70 tracking-wide">Saque</span>
+
+                <button
+                  onClick={() => navigate("/withdraw")}
+                  className="flex flex-col items-center gap-1 text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
+                >
+                  <ArrowDown size={18} weight="bold" />
+                  <span className="text-[8px] uppercase tracking-wider">
+                    Saque
+                  </span>
                 </button>
               </div>
             </div>
-          </div>
+
+            {!kyc?.isVerified && (
+              <button
+                onClick={() => navigate("/kyc")}
+                className="mt-4 text-[9px] font-bold uppercase tracking-wider text-rose-400 hover:text-rose-300 cursor-pointer"
+              >
+                {kyc?.status === "PENDING"
+                  ? "Conta em análise"
+                  : "Verificar conta"}
+              </button>
+            )}
+          </section>
         )}
 
-        <div>
-          <h3 className="text-[10px] font-black text-cyan-300/60 uppercase tracking-[0.2em] mb-4 ml-2 font-mono">
-            Terminal de Operações
-          </h3>
-
-          <div className="grid grid-cols-2 gap-4">
-            {isLoading ? (
-              Array.from({ length: 6 }).map((_, idx) => (
-                <div key={idx} className="bg-[#0e364a] h-20 rounded-2xl border border-cyan-500/20 animate-pulse p-4 flex gap-3 items-center shadow-md">
-                  <div className="w-10 h-10 rounded-full bg-[#144863]" />
-                  <div className="flex-1 space-y-2"><div className="h-3 bg-[#144863] rounded w-3/4"/><div className="h-2 bg-[#144863] rounded w-1/2"/></div>
-                </div>
-              ))
-            ) : (
-              <>
-                <SessionCard label="Transferir" sub="Envio Interno" icon={<PaperPlaneTilt size={18} weight="bold" />} to="/transfer" />
-                <SessionCard label="Banco" sub="Conta & Dados" icon={<Bank size={18} weight="bold" />} to="/bank" />
-                <SessionCard label="Transações" sub="Histórico" icon={<ArrowsLeftRight size={18} weight="bold" />} to="/transactions" />
-                <SessionCard label="Presente" sub="Bônus" icon={<Gift size={18} weight="bold" />} to="/gift" />
-                <SessionCard label="Segurança" sub="Proteção" icon={<ShieldCheck size={18} weight="bold" />} to="/security" />
-                <SessionCard label="Senha" sub="Alterar" icon={<LockKey size={18} weight="bold" />} to="/password" />
-              </>
-            )}
+        {/* OPERAÇÕES DA CONTA */}
+        <section className="mt-6">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-cyan-400">
+                Conta
+              </p>
+              <h2 className="text-sm font-semibold text-white mt-1">
+                Operações
+              </h2>
+            </div>
           </div>
-        </div>
+
+          {isLoading ? (
+            <div className="divide-y divide-cyan-500/10 border-y border-cyan-500/10">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="py-4 flex items-center gap-3 animate-pulse"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-[#144863]" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 bg-[#144863] rounded w-1/3" />
+                    <div className="h-2 bg-[#144863]/70 rounded w-1/5" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="divide-y divide-cyan-500/10 border-y border-cyan-500/10">
+              <SessionCard
+                label="Transferir"
+                sub="Envio interno"
+                icon={<PaperPlaneTilt size={17} weight="bold" />}
+                to="/transfer"
+              />
+              <SessionCard
+                label="Banco"
+                sub="Conta e dados"
+                icon={<Bank size={17} weight="bold" />}
+                to="/bank"
+              />
+              <SessionCard
+                label="Transações"
+                sub="Histórico"
+                icon={<ArrowsLeftRight size={17} weight="bold" />}
+                to="/transactions"
+              />
+              <SessionCard
+                label="Presente"
+                sub="Bônus"
+                icon={<Gift size={17} weight="bold" />}
+                to="/gift"
+              />
+              <SessionCard
+                label="Segurança"
+                sub="Proteção"
+                icon={<ShieldCheck size={17} weight="bold" />}
+                to="/security"
+              />
+              <SessionCard
+                label="Senha"
+                sub="Alterar senha"
+                icon={<LockKey size={17} weight="bold" />}
+                to="/password"
+              />
+            </div>
+          )}
+        </section>
 
         {!isLoading && (
-          <div className="flex justify-center mt-2 mb-4">
+          <section className="mt-8 border-t border-cyan-500/10 pt-5">
             <button
-              onClick={() => { 
-                queryClient.clear();
-                localStorage.clear(); 
-                navigate('/login'); 
+              onClick={() => {
+                queryClient.clear()
+                localStorage.clear()
+                navigate("/login")
               }}
-              className="
-                group relative flex items-center justify-center gap-2.5 
-                w-44 h-12 rounded-full 
-                bg-rose-500/10 border-2 border-rose-500/40 
-                hover:bg-rose-500 hover:border-rose-500 
-                text-rose-400 hover:text-white 
-                text-[11px] font-black uppercase tracking-wider 
-                shadow-[0_4px_15px_rgba(244,63,94,0.2)] 
-                hover:shadow-[0_6px_20px_rgba(244,63,94,0.4)] 
-                transition-all duration-300 active:scale-95 cursor-pointer
-              "
+              className="w-full py-3 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-wider text-rose-400 hover:text-white border border-rose-500/20 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
             >
-              <div className="w-7 h-7 rounded-full bg-rose-500/20 group-hover:bg-white/20 flex items-center justify-center transition-colors">
-                <SignOut size={15} weight="bold" />
-              </div>
-              <span>Sair da Conta</span>
+              <SignOut size={15} weight="bold" />
+              Sair da conta
             </button>
-          </div>
+          </section>
         )}
       </div>
 
-      <AgentDrawer open={agentMenuOpen} onClose={() => setAgentMenuOpen(false)}>
-        <AgentSidebar
-          onClose={() => setAgentMenuOpen(false)}
-        />
+      <AgentDrawer
+        open={agentMenuOpen}
+        onClose={() => setAgentMenuOpen(false)}
+      >
+        <AgentSidebar onClose={() => setAgentMenuOpen(false)} />
       </AgentDrawer>
     </div>
   )
@@ -267,18 +331,26 @@ export default function Profile() {
 
 function SessionCard({ label, sub, icon, to }: any) {
   const navigate = useNavigate()
+
   return (
     <button
       onClick={() => navigate(to)}
-      className="bg-[#0e364a] flex items-center gap-3 p-4 rounded-2xl border border-cyan-500/20 hover:border-cyan-400/50 hover:bg-[#124158] transition-all duration-200 group text-left shadow-lg shadow-cyan-950/20 cursor-pointer"
+      className="w-full py-3.5 flex items-center gap-3 text-left hover:bg-[#0e364a]/55 transition-colors cursor-pointer"
     >
-      <div className="w-10 h-10 rounded-xl bg-[#144863] flex items-center justify-center border border-cyan-500/30 text-cyan-300 group-hover:text-white group-hover:bg-cyan-600 transition-colors shadow-md">
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-cyan-300 bg-cyan-500/5 border border-cyan-500/10">
         {icon}
       </div>
+
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-bold tracking-tight text-white">{label}</p>
-        <p className="text-[9px] text-cyan-200/70 font-bold uppercase tracking-wider mt-0.5">{sub}</p>
+        <p className="text-xs font-semibold text-white">
+          {label}
+        </p>
+        <p className="text-[9px] text-cyan-200/45 uppercase tracking-wider mt-0.5">
+          {sub}
+        </p>
       </div>
+
+      <span className="text-cyan-300/35 text-sm">›</span>
     </button>
   )
 }
