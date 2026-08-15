@@ -1,12 +1,9 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
 import {
   TransactionService,
   type Transaction
 } from '../services/transaction.service'
-import { UserService } from '../services/user.service'
-import { formatCurrencyAOA } from "../utils/formatCurrency"
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -19,22 +16,10 @@ import {
   PaperPlaneTilt,
   UsersThree,
   Clock,
-  ArrowDown,
-  Copy,
-  Gear,
   MagnifyingGlass,
   X,
   Check
 } from '@phosphor-icons/react'
-
-type User = {
-  fullName?: string
-  phone: string
-  email: string
-  publicId: string
-  balance: number
-  role: "USER" | "AGENT" | "SUB_AGENT" | "ADMIN"
-}
 
 type ExtendedTransaction = Transaction & {
   metadata?: {
@@ -133,14 +118,6 @@ export default function Transactions() {
   const [searchCriteria, setSearchCriteria] = useState<'ALL' | 'PHONE' | 'OPERATOR' | 'DATE' | 'ID'>('ALL')
   const [showCriteriaModal, setShowCriteriaModal] = useState(false)
 
-  const { data: user, isLoading: isUserLoading } = useQuery<User>({
-    queryKey: ['me'],
-    queryFn: async () => {
-      const res = await UserService.me()
-      return res as User
-    },
-    staleTime: 1000 * 60 * 5
-  })
 
   useEffect(() => {
     TransactionService.list()
@@ -159,203 +136,324 @@ export default function Transactions() {
     return `${amount.toLocaleString()} Kz`
   }
 
-  const getOperatorName = (tx: ExtendedTransaction) => {
-  const sources = [
-    tx?.metadata?.providerName,
-    tx?.metadata?.partnerName,
-    tx?.metadata?.serviceName,
-    tx?.metadata?.serviceGroupName,
-    tx?.metadata?.planName,
-    tx?.metadata?.plan,
-    tx?.description
-  ]
-
-  const rawName = sources
-    .filter(Boolean)
-    .join(" ")
+  const normalizeBrandKey = (value: string = "") =>
+  value
     .toUpperCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
     .trim()
 
-  // TELECOMUNICAÇÕES
-  if (
-    rawName.includes("UNITEL") ||
-    rawName.includes("BAZZA")
-  ) {
-    return "UNITEL"
+const getOperatorName = (tx: ExtendedTransaction) => {
+    /**
+     * Prioridade 1: providerName/partnerName vindo do backend.
+     * Isso é mais confiável do que tentar adivinhar a operadora
+     * somente pelo texto do plano.
+     */
+    const directProvider =
+      tx?.metadata?.providerName ??
+      tx?.metadata?.partnerName ??
+      null
+
+    if (directProvider) {
+      const normalizedProvider = normalizeBrandKey(directProvider)
+
+      const directMap: Record<string, string> = {
+        UNITEL: "UNITEL",
+        BAZZA: "UNITEL",
+        MOVICEL: "MOVICEL",
+        AFRICELL: "AFRICELL",
+        NETONE: "NETONE",
+        DSTV: "DSTV",
+        ZAP: "ZAP",
+        "ZAP SAT": "ZAP_SAT",
+        "ZAP FIBRA": "ZAP FIBRA",
+        "ZAP MEDIA": "ZAP_MEDIA",
+        ENDE: "ENDE",
+        EPAL: "EPAL",
+        STAS: "STAS",
+        "5LINHAS": "5LINHAS",
+        "5 LINHAS": "5 LINHAS",
+        CINCO: "CINCO",
+        INT_VCH2: "INT_VCH2",
+        AMAZON: "AMAZON",
+        APPLE: "APPLE",
+        "GOOGLE PLAY": "GOOGLE PLAY",
+        GOOGLE: "GOOGLE",
+        NETFLIX: "NETFLIX",
+        SPOTIFY: "SPOTIFY",
+        PLAYSTATION: "PLAYSTATION",
+        TEAM: "TEAM",
+        XBOX: "XBOX",
+        BOLT: "BOLT",
+        FLIXBUS: "FLIXBUS",
+        PREMIERBET: "PREMIERBET",
+        PBET: "PBET",
+        BANTUBET: "BANTUBET",
+        BBET: "BBET",
+        ELEPHANTBET: "ELEPHANTBET",
+        EBET: "EBET",
+        AFRIBET: "AFRIBET",
+        ABET: "ABET",
+        MOBET: "MOBET",
+        MELBET: "MELBET",
+        MGMBET: "MGMBET",
+        KWANZABET: "KWANZABET",
+        "888BETS": "888BETS",
+        "888BET": "888BET",
+        "888": "888",
+      }
+
+      if (directMap[normalizedProvider]) {
+        return directMap[normalizedProvider]
+      }
+
+      const brandingMatch = Object.keys(providerBranding).find(key => {
+        const normalizedKey = normalizeBrandKey(key)
+        return (
+          normalizedKey === normalizedProvider ||
+          normalizedProvider.includes(normalizedKey) ||
+          normalizedKey.includes(normalizedProvider)
+        )
+      })
+
+      if (brandingMatch) {
+        return brandingMatch
+      }
+    }
+
+    /**
+     * Prioridade 2: identificação pelo conteúdo da transação.
+     * Incluímos o plano, serviço, grupo e descrição para cobrir
+     * transações antigas que não tenham providerName gravado.
+     */
+    const sources = [
+      tx?.metadata?.serviceName,
+      tx?.metadata?.serviceGroupName,
+      tx?.metadata?.planName,
+      tx?.metadata?.plan,
+      tx?.description,
+      tx?.metadata?.providerName,
+      tx?.metadata?.partnerName,
+    ]
+
+    const rawName = sources
+      .filter(Boolean)
+      .join(" ")
+      .toUpperCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+
+    // TELECOMUNICAÇÕES
+    if (rawName.includes("UNITEL") || rawName.includes("BAZZA")) {
+      return "UNITEL"
+    }
+
+    if (rawName.includes("MOVICEL")) {
+      return "MOVICEL"
+    }
+
+    if (rawName.includes("AFRICELL")) {
+      return "AFRICELL"
+    }
+
+    if (rawName.includes("NETONE")) {
+      return "NETONE"
+    }
+
+    // TELEVISÃO
+    if (
+      rawName.includes("DSTV") ||
+      rawName.includes("FAMILIA/7D") ||
+      rawName.includes("FAMILIA 7D") ||
+      rawName.includes("FAMILIA MAIS")
+    ) {
+      return "DSTV"
+    }
+
+    if (rawName.includes("ZAP FIBRA")) {
+      return "ZAP FIBRA"
+    }
+
+    if (rawName.includes("ZAP SAT")) {
+      return "ZAP_SAT"
+    }
+
+    if (rawName.includes("ZAP MEDIA")) {
+      return "ZAP_MEDIA"
+    }
+
+    if (rawName.includes("ZAP")) {
+      return "ZAP"
+    }
+
+    // SERVIÇOS PÚBLICOS
+    if (rawName.includes("ENDE")) {
+      return "ENDE"
+    }
+
+    if (rawName.includes("EPAL")) {
+      return "EPAL"
+    }
+
+    if (rawName.includes("STAS")) {
+      return "STAS"
+    }
+
+    // 5LINHAS
+    if (
+      rawName.includes("5LINHAS") ||
+      rawName.includes("5 LINHAS") ||
+      rawName.includes("CINCO")
+    ) {
+      return "5LINHAS"
+    }
+
+    // JOGOS E APOSTAS
+    if (rawName.includes("PREMIERBET") || rawName.includes("PBET")) {
+      return "PREMIERBET"
+    }
+
+    if (rawName.includes("BANTUBET") || rawName.includes("BBET")) {
+      return "BANTUBET"
+    }
+
+    if (rawName.includes("ELEPHANTBET") || rawName.includes("EBET")) {
+      return "ELEPHANTBET"
+    }
+
+    if (rawName.includes("AFRIBET") || rawName.includes("ABET")) {
+      return "AFRIBET"
+    }
+
+    if (rawName.includes("MOBET")) {
+      return "MOBET"
+    }
+
+    if (rawName.includes("MELBET") || rawName.includes("MGMBET")) {
+      return "MELBET"
+    }
+
+    if (rawName.includes("KWANZABET")) {
+      return "KWANZABET"
+    }
+
+    if (
+      rawName.includes("888BETS") ||
+      rawName.includes("888BET") ||
+      rawName.includes("888")
+    ) {
+      return "888BETS"
+    }
+
+    // SERVIÇOS DIGITAIS / PARCEIROS
+    if (rawName.includes("AMAZON") || rawName.includes("INT VCH2")) {
+      return "AMAZON"
+    }
+
+    if (rawName.includes("APPLE")) {
+      return "APPLE"
+    }
+
+    if (
+      rawName.includes("GOOGLE PLAY") ||
+      rawName.includes("GOOGLEPLAY") ||
+      rawName.includes("GOOGLE")
+    ) {
+      return "GOOGLE PLAY"
+    }
+
+    if (rawName.includes("NETFLIX")) {
+      return "NETFLIX"
+    }
+
+    if (rawName.includes("SPOTIFY")) {
+      return "SPOTIFY"
+    }
+
+    if (rawName.includes("PLAYSTATION")) {
+      return "PLAYSTATION"
+    }
+
+    if (rawName.includes("XBOX")) {
+      return "XBOX"
+    }
+
+    if (rawName.includes("BOLT")) {
+      return "BOLT"
+    }
+
+    if (rawName.includes("FLIXBUS")) {
+      return "FLIXBUS"
+    }
+
+    return directProvider ?? null
   }
-
-  if (rawName.includes("MOVICEL")) {
-    return "MOVICEL"
-  }
-
-  if (rawName.includes("AFRICELL")) {
-    return "AFRICELL"
-  }
-
-  if (rawName.includes("NETONE")) {
-    return "NETONE"
-  }
-
-  // TELEVISÃO
-  // TELEVISÃO
-if (
-  rawName.includes("DSTV") ||
-  rawName.includes("FAMILIA/7D") ||
-  rawName.includes("FAMILIA 7D") ||
-  rawName.includes("FAMILIA MAIS")
-) {
-  return "DSTV"
-}
-
-  if (rawName.includes("ZAP")) {
-    return "ZAP"
-  }
-
-  // SERVIÇOS PÚBLICOS
-  if (rawName.includes("ENDE")) {
-    return "ENDE"
-  }
-
-  if (rawName.includes("EPAL")) {
-    return "EPAL"
-  }
-
-  if (rawName.includes("STAS")) {
-    return "STAS"
-  }
-
-  // 5LINHAS
-  if (
-    rawName.includes("5LINHAS") ||
-    rawName.includes("5 LINHAS") ||
-    rawName.includes("CINCO")
-  ) {
-    return "5LINHAS"
-  }
-
-  // JOGOS E APOSTAS
-  if (
-    rawName.includes("PREMIERBET") ||
-    rawName.includes("PBET")
-  ) {
-    return "PREMIERBET"
-  }
-
-  if (
-    rawName.includes("BANTUBET") ||
-    rawName.includes("BBET")
-  ) {
-    return "BANTUBET"
-  }
-
-  if (
-    rawName.includes("ELEPHANTBET") ||
-    rawName.includes("EBET")
-  ) {
-    return "ELEPHANTBET"
-  }
-
-  if (
-    rawName.includes("AFRIBET") ||
-    rawName.includes("ABET")
-  ) {
-    return "AFRIBET"
-  }
-
-  if (
-    rawName.includes("MOBET")
-  ) {
-    return "MOBET"
-  }
-
-  if (
-    rawName.includes("MELBET") ||
-    rawName.includes("MGMBET")
-  ) {
-    return "MELBET"
-  }
-
-  if (
-    rawName.includes("KWANZABET")
-  ) {
-    return "KWANZABET"
-  }
-
-  if (
-    rawName.includes("888BETS") ||
-    rawName.includes("888BET") ||
-    rawName.includes("888")
-  ) {
-    return "888BETS"
-  }
-
-  // SERVIÇOS DIGITAIS / PARCEIROS
-  if (
-    rawName.includes("AMAZON") ||
-    rawName.includes("INT_VCH2")
-  ) {
-    return "AMAZON"
-  }
-
-  if (rawName.includes("APPLE")) {
-    return "APPLE"
-  }
-
-  if (
-    rawName.includes("GOOGLE PLAY") ||
-    rawName.includes("GOOGLEPLAY") ||
-    rawName.includes("GOOGLE")
-  ) {
-    return "GOOGLE PLAY"
-  }
-
-  if (rawName.includes("NETFLIX")) {
-    return "NETFLIX"
-  }
-
-  if (rawName.includes("SPOTIFY")) {
-    return "SPOTIFY"
-  }
-
-  if (
-    rawName.includes("PLAYSTATION") ||
-    rawName.includes("TEAM")
-  ) {
-    return "PLAYSTATION"
-  }
-
-  if (rawName.includes("XBOX")) {
-    return "XBOX"
-  }
-
-  if (rawName.includes("BOLT")) {
-    return "BOLT"
-  }
-
-  if (rawName.includes("FLIXBUS")) {
-    return "FLIXBUS"
-  }
-
-  return (
-    tx?.metadata?.providerName ??
-    tx?.metadata?.partnerName ??
-    null
-  )
-}
 
   const getOperatorLogo = (operatorKey: string | null) => {
     if (!operatorKey) return null
-    const brand = providerBranding[operatorKey.toUpperCase().trim()]
-    if (!brand) return null
 
-    const targetFileName = brand.logo.toLowerCase()
+    const normalizedOperator = normalizeBrandKey(operatorKey)
+
+    /**
+     * Primeiro tenta a chave exata.
+     */
+    let brand = providerBranding[operatorKey.toUpperCase().trim()]
+
+    /**
+     * Depois tenta uma correspondência normalizada.
+     */
+    if (!brand) {
+      const matchingKey = Object.keys(providerBranding).find(key => {
+        const normalizedKey = normalizeBrandKey(key)
+
+        return (
+          normalizedKey === normalizedOperator ||
+          normalizedOperator.includes(normalizedKey) ||
+          normalizedKey.includes(normalizedOperator)
+        )
+      })
+
+      if (matchingKey) {
+        brand = providerBranding[matchingKey]
+      }
+    }
+
+    if (!brand?.logo) return null
+
+    const targetFileName = brand.logo.toLowerCase().trim()
+
+    /**
+     * Procura o arquivo físico dentro de assets/recharges,
+     * ignorando maiúsculas/minúsculas no nome/caminho.
+     */
     for (const path in rechargeImages) {
       if (path.toLowerCase().endsWith(targetFileName)) {
         return rechargeImages[path]
       }
     }
+
+    /**
+     * Fallback: compara somente o nome sem extensão.
+     */
+    const targetWithoutExtension = targetFileName.replace(/\.[^/.]+$/, "")
+
+    for (const path in rechargeImages) {
+      const fileName = path
+        .split("/")
+        .pop()
+        ?.toLowerCase()
+        .replace(/\.[^/.]+$/, "")
+
+      if (fileName === targetWithoutExtension) {
+        return rechargeImages[path]
+      }
+    }
+
     return null
   }
 
@@ -435,7 +533,7 @@ if (
   return (
     <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe] antialiased">
       {/* HEADER FIXO */}
-      <div className="sticky top-0 z-10 bg-[#0a2533]/90 backdrop-blur-md px-5 py-5 flex items-center justify-between border-b border-cyan-500/10">
+      <div className="sticky top-0 z-10 bg-[#0a2533] px-5 py-4 flex items-center justify-between border-b border-cyan-500/10">
         <button 
           onClick={() => navigate(-1)} 
           className="p-2 bg-[#144863] border border-cyan-500/30 text-cyan-300 rounded-xl hover:bg-cyan-600 hover:text-white transition-all shadow-sm cursor-pointer"
@@ -478,7 +576,7 @@ if (
               </button>
             </div>
 
-            <div className="space-y-1.5 pt-2">
+            <div className="space-y-1.5 pt-1">
               {(['ALL', 'PHONE', 'OPERATOR', 'DATE', 'ID'] as const).map(criteria => (
                 <button
                   key={criteria}
@@ -514,78 +612,7 @@ if (
       )}
 
       <div className="px-5 py-6 space-y-6 pb-28">
-        
-        {/* CARD CENTRAL DE SALDO E PERFIL */}
-        {isUserLoading ? (
-          <div className="bg-[#0e364a] py-5 px-6 rounded-[2rem] border border-cyan-500/20 animate-pulse shadow-xl">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-[#144863]" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-[#144863] rounded w-1/2" />
-                <div className="h-3 bg-[#144863]/60 rounded w-1/3" />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-[#0e364a] py-5 px-6 rounded-[2rem] relative border border-cyan-500/25 shadow-2xl shadow-cyan-950/40">
-            <div className="absolute top-5 right-5 flex flex-col items-end gap-2.5">
-              <button 
-                onClick={() => navigate('/settings')} 
-                className="p-2 rounded-full bg-[#144863] border border-cyan-500/30 text-cyan-300 hover:text-white hover:bg-cyan-600 transition-all shadow-md cursor-pointer"
-                title="Configurações"
-              >
-                <Gear size={20} weight="bold" />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-4 pr-12">
-              <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                <div className="w-14 h-14 rounded-full border border-cyan-500/30 overflow-hidden bg-[#144863] p-1 shadow-md">
-                  <img src="/logo.png" className="w-full h-full object-contain rounded-full" alt="Logo" />
-                </div>
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <h1 className="text-base font-bold tracking-tight text-white uppercase truncate">
-                    {user?.fullName?.toUpperCase() ?? user?.phone}
-                  </h1>
-                </div>
-                <p className="text-cyan-200/70 text-[11px] font-medium mt-0.5 truncate">{user?.email}</p>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-[10px] text-cyan-300/60 font-mono font-bold tracking-wider uppercase">ID: {user?.publicId}</span>
-                  <button onClick={() => navigator.clipboard.writeText(user?.publicId ?? '')} className="text-cyan-300/60 hover:text-cyan-200 transition-colors cursor-pointer">
-                    <Copy size={13} weight="bold" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 pt-4 border-t border-cyan-500/15 flex items-center justify-between">
-              <div>
-                <p className="text-[9px] text-cyan-300/60 uppercase tracking-widest font-black mb-0.5">Saldo Disponível</p>
-                <span className="text-2xl font-black tracking-tight text-cyan-300">{formatCurrencyAOA(user?.balance ?? 0)}</span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button onClick={() => navigate("/deposit")} className="flex flex-col items-center gap-1 group cursor-pointer">
-                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#144863] border border-cyan-500/30 text-cyan-300 group-hover:bg-cyan-500 group-hover:text-white transition-all shadow-md">
-                    <Wallet size={18} weight="bold" />
-                  </div>
-                  <span className="text-[8px] font-black uppercase text-cyan-200/70 tracking-wide">Depósito</span>
-                </button>
-                <button onClick={() => navigate("/withdraw")} className="flex flex-col items-center gap-1 group cursor-pointer">
-                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#144863] border border-cyan-500/30 text-rose-400 group-hover:bg-rose-500 group-hover:text-white transition-all shadow-md">
-                    <ArrowDown size={18} weight="bold" />
-                  </div>
-                  <span className="text-[8px] font-black uppercase text-cyan-200/70 tracking-wide">Saque</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* BARRA DE PESQUISA COM INDICADOR DO FILTRO ATIVO */}
+        {/* PESQUISA */}
         <div className="space-y-2">
           {searchCriteria !== 'ALL' && (
             <div className="flex items-center justify-between px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/30 rounded-xl text-[10px] text-cyan-300 font-bold">
@@ -611,21 +638,21 @@ if (
                 searchCriteria === 'ID' ? 'Digite o ID da transação...' :
                 'Pesquisar por telefone, operadora, serviço, plano ou data...'
               }
-              className="w-full bg-[#0e364a] border border-cyan-500/20 rounded-2xl pl-11 pr-4 py-3 text-xs text-white placeholder-cyan-200/50 focus:outline-none focus:border-cyan-400 transition-all shadow-md"
+              className="w-full bg-[#0e364a] border border-cyan-500/15 rounded-xl pl-11 pr-4 py-3 text-xs text-white placeholder-cyan-200/50 focus:outline-none focus:border-cyan-400 transition-all shadow-md"
             />
           </div>
         </div>
 
         {/* CONTROLE DE FLUXO RÁPIDO (TODOS / ENTRADAS / SAÍDAS) */}
-        <div className="flex gap-2 bg-[#0e364a] p-1.5 rounded-2xl border border-cyan-500/20 shadow-md">
+        <div className="flex border-b border-cyan-500/15">
           {(['ALL', 'IN', 'OUT'] as const).map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+              className={`flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider border-b-2 transition-colors cursor-pointer ${
                 filter === f 
-                  ? 'bg-[#144863] text-white border border-cyan-500/40 shadow-sm' 
-                  : 'text-cyan-200/70 hover:text-white hover:bg-[#124158]'
+                  ? 'text-cyan-300 border-cyan-400' 
+                  : 'text-cyan-200/45 border-transparent hover:text-cyan-200'
               }`}
             >
               {f === 'ALL' ? 'Todos' : f === 'IN' ? 'Entradas' : 'Saídas'}
@@ -640,7 +667,7 @@ if (
               {[1, 2, 3, 4, 5].map((n) => (
                 <div 
                   key={n} 
-                  className="w-full flex justify-between items-center p-4 bg-[#0e364a] border border-cyan-500/20 rounded-2xl animate-pulse shadow-md"
+                  className="w-full flex justify-between items-center py-4 border-b border-cyan-500/10 animate-pulse"
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-11 h-11 rounded-full bg-[#144863] shrink-0" />
@@ -657,14 +684,14 @@ if (
               ))}
             </div>
           ) : Object.keys(grouped).length === 0 ? (
-            <div className="text-center py-10 bg-[#0e364a] border border-cyan-500/20 rounded-2xl text-xs text-cyan-200/70 font-medium shadow-md">
+            <div className="text-center py-12 border-y border-cyan-500/10 text-xs text-cyan-200/55 font-medium">
               Nenhuma transação encontrada para os critérios informados.
             </div>
           ) : Object.entries(grouped).map(([date, txs]) => (
             <div key={date} className="space-y-3">
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex items-center gap-3 pt-1">
                 <span className="text-[10px] text-cyan-300/60 font-mono font-black uppercase tracking-wider">{date}</span>
-                <div className="h-[1px] flex-1 bg-cyan-500/15" />
+                <div className="h-px flex-1 bg-cyan-500/10" />
               </div>
 
               {txs.map((tx) => {
@@ -679,10 +706,10 @@ if (
                   <button
                     key={tx.id}
                     onClick={() => navigate(`/transactions/${tx.id}`)}
-                    className="w-full flex justify-between items-center p-4 bg-[#0e364a] border border-cyan-500/20 rounded-2xl hover:border-cyan-400/50 hover:bg-[#124158] transition-all shadow-lg shadow-cyan-950/20 active:scale-[0.99] cursor-pointer text-left"
+                    className="w-full flex justify-between items-center py-3.5 border-b border-cyan-500/10 hover:bg-[#0e364a]/55 transition-colors cursor-pointer text-left"
                   >
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 overflow-hidden border ${
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden border ${
                         logoSrc ? 'bg-white border-cyan-500/30' : (isOut ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300')
                       }`}>
                         {logoSrc ? (
