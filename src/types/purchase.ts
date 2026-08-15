@@ -1,6 +1,7 @@
 export interface PurchaseRequest {
   planId: number;
   customerReference: string;
+  customerName?: string;
   customerNotification: string;
   amount: number;
 }

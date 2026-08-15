@@ -257,9 +257,29 @@ export async function printReceipt(
       serviceReq?.serviceName ??
       null
 
-    const voucherPin =
-      receipt?.voucherPin ??
-      null
+    const rawExtraInfo =
+  transaction.metadata?.extraInfo ?? null
+
+let parsedExtraInfo: any = rawExtraInfo
+
+if (typeof rawExtraInfo === 'string') {
+  try {
+    parsedExtraInfo = JSON.parse(rawExtraInfo)
+  } catch {
+    parsedExtraInfo = rawExtraInfo
+  }
+}
+
+const voucherPin =
+  receipt?.voucherPin ??
+  parsedExtraInfo?.VoucherPIN ??
+  parsedExtraInfo?.voucherPIN ??
+  (
+    typeof parsedExtraInfo === 'string' &&
+    parsedExtraInfo.trim() !== ""
+      ? parsedExtraInfo.trim()
+      : null
+  )
 
     // -------------------------------------------------
     // 3. URL DO LOGOTIPO

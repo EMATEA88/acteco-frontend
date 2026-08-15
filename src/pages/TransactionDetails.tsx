@@ -588,10 +588,15 @@ export default function TransactionDetails() {
     null
 
   const voucherPin =
-    storedReceipt?.voucherPin ??
-    extraInfo?.VoucherPIN ??
-    extraInfo?.voucherPIN ??
-    null
+  storedReceipt?.voucherPin ??
+  extraInfo?.VoucherPIN ??
+  extraInfo?.voucherPIN ??
+  (
+    typeof extraInfo === "string" &&
+    extraInfo.trim() !== ""
+      ? extraInfo.trim()
+      : null
+  )
 
   const voucherUnits =
     storedReceipt?.voucherUnits ??

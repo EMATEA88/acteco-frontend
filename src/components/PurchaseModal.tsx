@@ -590,12 +590,16 @@ export default function PurchaseModal({
 
       setLoading(true);
 
-      const response = (await purchaseService.purchase({
-        planId: plan.id,
-        customerReference: purchaseCustomerReference,
-        customerNotification: notification,
-        amount: payableAmount
-      })) as any;
+      const customerNameForPurchase =
+  extractCustomerName(customerInfo) ?? undefined;
+
+const response = (await purchaseService.purchase({
+  planId: plan.id,
+  customerReference: purchaseCustomerReference,
+  customerName: customerNameForPurchase,
+  customerNotification: notification,
+  amount: payableAmount
+})) as any;
 
       const akiResponse =
         response?.akiResponse ??
