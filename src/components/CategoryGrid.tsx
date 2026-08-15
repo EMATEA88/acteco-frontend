@@ -1,12 +1,13 @@
 import type { CatalogCategory } from "../types/catalog";
-
-// Importação direta das imagens dos setores/categorias solicitadas
-import telecomImage from "../assets/recharges/telecomunicacao.png";
-import tvImage from "../assets/recharges/televisao.png";
-import apostasImage from "../assets/recharges/apostas.png";
-import parceirosImage from "../assets/recharges/parceiros.png";
-import internacionaisImage from "../assets/recharges/internacionais.png";
-import servicosImage from "../assets/recharges/servicos.png";
+import {
+  Smartphone,
+  Tv,
+  Trophy,
+  Users,
+  Globe,
+  Layers,
+  ChevronRight
+} from "lucide-react";
 
 interface CategoryGridProps {
   categories: CatalogCategory[];
@@ -17,53 +18,57 @@ export default function CategoryGrid({
   categories,
   onSelect
 }: CategoryGridProps) {
-  // Função auxiliar para mapear o nome da categoria para a imagem correspondente
-  const getCategoryAsset = (categoryName: string) => {
-    if (!categoryName) return null;
-    
+  const getCategoryIcon = (categoryName: string) => {
+    if (!categoryName) {
+      return <Layers className="w-5 h-5 text-cyan-400" />;
+    }
+
     const normalized = categoryName
       .toUpperCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "");
 
     if (normalized.includes("TELECOM") || normalized.includes("MOVEL")) {
-      return telecomImage;
+      return <Smartphone className="w-5 h-5 text-cyan-400" />;
     }
+
     if (normalized.includes("TELEVISAO") || normalized.includes("TV")) {
-      return tvImage;
+      return <Tv className="w-5 h-5 text-cyan-400" />;
     }
+
     if (normalized.includes("JOGOS") || normalized.includes("APOSTA")) {
-      return apostasImage;
+      return <Trophy className="w-5 h-5 text-cyan-400" />;
     }
+
     if (normalized.includes("PARCEIRO")) {
-      return parceirosImage;
+      return <Users className="w-5 h-5 text-cyan-400" />;
     }
-    if (normalized.includes("INTERNACIONAL") || normalized.includes("PAGAMENTOS INTERNACIONAIS")) {
-      return internacionaisImage;
+
+    if (
+      normalized.includes("INTERNACIONAL") ||
+      normalized.includes("PAGAMENTOS INTERNACIONAIS")
+    ) {
+      return <Globe className="w-5 h-5 text-cyan-400" />;
     }
-    if (normalized.includes("PUBLICO") || normalized.includes("SERVICOS")) {
-      return servicosImage;
-    }
-    return null;
+
+    return <Layers className="w-5 h-5 text-cyan-400" />;
   };
 
   return (
-    <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-[#0a2533] text-[#e0f2fe] flex flex-col justify-center items-center px-5 font-sans antialiased selection:bg-cyan-500/25 z-50">
-      
-      {/* CONTAINER CENTRALIZADO SEM SCROLL */}
-      <div className="max-w-4xl w-full flex flex-col justify-center h-full py-6">
-        
-        {/* TÍTULO CENTRALIZADO */}
-        <div className="text-center mb-6 shrink-0">
-          <p className="text-xs font-semibold text-cyan-200/70 tracking-wider uppercase">
-            Escolha uma categoria
-          </p>
+    <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-[#071d28] text-[#e0f2fe] flex flex-col items-center px-4 sm:px-5 font-sans antialiased selection:bg-cyan-500/25 z-50">
+      <div className="max-w-4xl w-full h-full flex flex-col justify-center py-5 sm:py-7">
+
+        {/* CABEÇALHO — SOMENTE RECARGAS */}
+        <div className="text-center mb-5 sm:mb-6 shrink-0">
+          <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+            Recargas
+          </h1>
         </div>
 
-        {/* GRELHA COM CARDS */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 w-full">
-          {categories.map(category => {
-            const categoryImage = getCategoryAsset(category.name);
+        {/* LISTA VERTICAL — SEM SCROLL INTERNO */}
+        <div className="flex flex-col gap-3 sm:gap-4 w-full">
+          {categories.map((category) => {
+            const iconComponent = getCategoryIcon(category.name);
 
             return (
               <button
@@ -71,47 +76,41 @@ export default function CategoryGrid({
                 onClick={() => onSelect(category)}
                 className="
                   group
-                  bg-[#0e364a]
+                  relative
+                  min-h-[72px] sm:min-h-[82px]
+                  bg-[#0c2d3d]
+                  hover:bg-[#103a4f]
                   border
                   border-cyan-500/20
-                  rounded-2xl
-                  p-4
-                  transition-all
+                  hover:border-cyan-400/40
+                  rounded-xl
+                  px-3 py-3 sm:px-4 sm:py-4
+                  transition-colors
                   duration-200
-                  hover:border-cyan-400/50
-                  hover:bg-[#124158]
                   flex
-                  flex-col
                   items-center
-                  justify-center
+                  justify-between
+                  gap-2
                   cursor-pointer
-                  shrink-0
-                  shadow-lg
-                  shadow-cyan-950/20
                 "
               >
-                {/* Imagem do Setor */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center overflow-hidden rounded-xl mb-3 bg-[#144863] border border-cyan-500/30 shrink-0 shadow-sm">
-                  {categoryImage ? (
-                    <img
-                      src={categoryImage}
-                      alt={category.name}
-                      className="w-12 h-12 sm:w-16 sm:h-16 object-contain transition-transform duration-200 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-[#144863] flex items-center justify-center">
-                      <span className="text-white text-[11px] text-center px-1 font-semibold">
-                        {category.name}
-                      </span>
-                    </div>
-                  )}
+                {/* ÍCONE */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-[#071d28] border border-cyan-500/25 flex items-center justify-center shrink-0">
+                    {iconComponent}
+                  </div>
+
+                  {/* NOME DA CATEGORIA */}
+                  <div className="text-left min-w-0">
+                    <h2 className="text-white font-semibold text-xs sm:text-sm leading-tight truncate">
+                      {category.name}
+                    </h2>
+                  </div>
                 </div>
 
-                {/* Nome do Serviço / Categoria */}
-                <div className="text-center w-full">
-                  <h2 className="text-white font-medium text-xs sm:text-sm group-hover:text-cyan-200 transition-colors truncate">
-                    {category.name}
-                  </h2>
+                {/* SETA */}
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 shrink-0">
+                  <ChevronRight className="w-4 h-4" />
                 </div>
               </button>
             );
