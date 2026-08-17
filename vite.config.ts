@@ -29,26 +29,31 @@ export default defineConfig({
         lang: 'pt-PT',
 
         icons: [
-          {
-            src: '/assets/icons/icon-192.webp',
-            sizes: '192x192',
-            type: 'image/webp',
-            purpose: 'any',
-          },
-          {
-            src: '/assets/icons/icon-512.webp',
-            sizes: '512x512',
-            type: 'image/webp',
-            purpose: 'any',
-          },
-        ],
-      },
-
-      workbox: {
-        cleanupOutdatedCaches: true,
-        navigateFallbackDenylist: [
-          /^\/api\//,
-        ],
+  {
+    src: '/assets/icons/icon-192.webp',
+    sizes: '192x192',
+    type: 'image/webp',
+    purpose: 'any',
+  },
+  {
+    src: '/assets/icons/icon-512.webp',
+    sizes: '512x512',
+    type: 'image/webp',
+    purpose: 'any',
+  },
+  {
+    src: '/assets/icons/icon-192.webp',
+    sizes: '192x192',
+    type: 'image/webp',
+    purpose: 'maskable',
+  },
+  {
+    src: '/assets/icons/icon-512.webp',
+    sizes: '512x512',
+    type: 'image/webp',
+    purpose: 'maskable',
+  },
+],
       },
     }),
   ],
