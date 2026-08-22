@@ -242,6 +242,102 @@ export default function PlanGrid({
 
   /**
    * ============================================================
+   * REGRAS ESPECÍFICAS UNITEL
+   * ============================================================
+   */
+
+  /**
+   * Detecta planos internacionais pelo país/destino.
+   */
+  const isInternationalPlan = (name: string) => {
+    const countries = [
+      "NAMIBIA",
+      "PORTUGAL",
+      "EAU",
+      "EMIRADOS ARABES UNIDOS",
+      "BRASIL",
+      "MOCAMBIQUE",
+      "AFRICA DO SUL",
+      "CONGO",
+      "FRANCA",
+      "INGLATERRA",
+      "ESPANHA",
+      "EUA",
+      "ESTADOS UNIDOS"
+    ];
+
+    return countries.some((country) =>
+      name.includes(normalize(country))
+    );
+  };
+
+  /**
+   * Detecta planos destinados a Redes Sociais.
+   *
+   * A regra é deliberadamente baseada no nome do produto,
+   * porque a classificação deve acompanhar o catálogo da Unitel.
+   */
+  const isSocialNetworkPlan = (name: string) =>
+    name.includes("REDES SOCIAIS") ||
+    name.includes("REDES");
+
+  /**
+   * Detecta especificamente Redes Sociais do Bazza.
+   *
+   * Esses produtos permanecem dentro da estrutura Bazza
+   * e não devem aparecer na categoria global "Redes Sociais".
+   */
+  const isBazzaSocialNetworkPlan = (name: string) =>
+    isBazzaPlan(name) && isSocialNetworkPlan(name);
+
+  /**
+   * Detecta campanhas comerciais/promocionais.
+   */
+  const isCampaignPlan = (name: string) =>
+    name.includes("NAVEGA TUDO") ||
+    name.includes("FALA TUDO");
+
+  /**
+   * Linhas específicas dos Planos Mais.
+   */
+  const isMaisLevePlan = (name: string) =>
+    name.includes("MAIS LEVE");
+
+  const isMaisAgilPlan = (name: string) =>
+    name.includes("MAIS AGIL");
+
+  const isMaisLivrePlan = (name: string) =>
+    name.includes("MAIS LIVRE");
+
+  /**
+   * NET AO DIA.
+   *
+   * Qualquer plano Unitel com MB/GB e sem minutos explícitos
+   * entra nesta categoria.
+   *
+   * Exemplos:
+   * - 400MB/1D
+   * - 800MB/1D
+   * - 750MB/3D
+   * - 1GB/1D
+   * - 1.5GB/7D
+   * - Net 1.5GB/30D
+   * - 2.5GB/7D
+   */
+  const isNetAoDiaPlan = (name: string) => {
+    if (!hasDataUnit(name)) {
+      return false;
+    }
+
+    const hasMinutes =
+      /\b\d+\s*MIN\b/.test(name) ||
+      /\b\d+\s*MINUTO/.test(name);
+
+    return !hasMinutes;
+  };
+
+  /**
+   * ============================================================
    * CLASSIFICAÇÃO
    * ============================================================
    *
@@ -275,8 +371,6 @@ export default function PlanGrid({
          * =====================================================
          * 1. RECARGAS DIRETAS
          * =====================================================
-         *
-         * Recargas de saldo/voz configuráveis.
          */
         if (isDirectVoiceRecharge(name)) {
           return {
@@ -287,11 +381,72 @@ export default function PlanGrid({
 
         /**
          * =====================================================
-         * 2. PLANOS MAIS
+         * 2. PLANOS BALA
          * =====================================================
-         *
-         * "Mais" possui prioridade sobre MB/GB,
-         * minutos e SMS.
+         */
+        if (name.includes("BALA")) {
+          return {
+            title: "Planos Bala",
+            order: 2,
+          };
+        }
+
+        /**
+         * =====================================================
+         * 3. PLANOS ÓPTIMO
+         * =====================================================
+         * normalize() remove os acentos, portanto OPTIMO também
+         * corresponde a ÓPTIMO.
+         */
+        if (name.includes("OPTIMO")) {
+          return {
+            title: "Planos Óptimo",
+            order: 3,
+          };
+        }
+
+        /**
+         * =====================================================
+         * 4. PLANOS MAIS LEVE
+         * =====================================================
+         */
+        if (isMaisLevePlan(name)) {
+          return {
+            title: "Planos Mais Leve",
+            order: 4,
+          };
+        }
+
+        /**
+         * =====================================================
+         * 5. PLANOS MAIS ÁGIL
+         * =====================================================
+         */
+        if (isMaisAgilPlan(name)) {
+          return {
+            title: "Planos Mais Ágil",
+            order: 5,
+          };
+        }
+
+        /**
+         * =====================================================
+         * 6. PLANOS MAIS LIVRE
+         * =====================================================
+         */
+        if (isMaisLivrePlan(name)) {
+          return {
+            title: "Planos Mais Livre",
+            order: 6,
+          };
+        }
+
+        /**
+         * =====================================================
+         * 7. PLANOS MAIS GENÉRICOS
+         * =====================================================
+         * Fallback para outros produtos da família MAIS que
+         * não pertençam às três linhas específicas acima.
          */
         if (
           name.startsWith("UNITEL: MAIS ") ||
@@ -300,13 +455,52 @@ export default function PlanGrid({
         ) {
           return {
             title: "Planos Mais",
-            order: 2,
+            order: 7,
           };
         }
 
         /**
          * =====================================================
-         * 3. TELCOTV
+         * 8. REDES SOCIAIS
+         * =====================================================
+         */
+        if (
+          isSocialNetworkPlan(name) &&
+          !isBazzaPlan(name)
+        ) {
+          return {
+            title: "Redes Sociais",
+            order: 8,
+          };
+        }
+
+        /**
+         * =====================================================
+         * 9. PLANOS INTERNACIONAIS
+         * =====================================================
+         */
+        if (isInternationalPlan(name)) {
+          return {
+            title: "Planos Internacionais",
+            order: 9,
+          };
+        }
+
+        /**
+         * =====================================================
+         * 10. CAMPANHAS
+         * =====================================================
+         */
+        if (isCampaignPlan(name)) {
+          return {
+            title: "Campanhas",
+            order: 10,
+          };
+        }
+
+        /**
+         * =====================================================
+         * 11. TELCOTV
          * =====================================================
          */
         if (
@@ -315,56 +509,57 @@ export default function PlanGrid({
         ) {
           return {
             title: "TELCOTV",
-            order: 3,
+            order: 11,
           };
         }
 
         /**
          * =====================================================
-         * 4. BAZZA
+         * 12. BAZZA
          * =====================================================
-         *
-         * Bazza pertence à Unitel na origem, mas deve
-         * permanecer completamente separado dos planos Unitel.
+         * Bazza pertence ao catálogo Unitel, mas permanece
+         * completamente separado dos planos Unitel normais.
          */
         if (isBazzaPlan(name)) {
 
           /**
-           * Bazza com MB/GB → Dados
+           * Redes Sociais Bazza permanecem dentro de
+           * "Planos Bazza", separadas da categoria global
+           * "Redes Sociais" da Unitel.
            */
+          if (isBazzaSocialNetworkPlan(name)) {
+            return {
+              title: "Planos Bazza",
+              order: 12,
+            };
+          }
+
           if (hasDataUnit(name)) {
             return {
               title: "Planos Bazza Dados",
-              order: 5,
+              order: 13,
             };
           }
 
-          /**
-           * Bazza com Voz/Min/Minutos/SMS → Voz
-           */
           if (hasVoiceKeyword(name)) {
             return {
               title: "Planos Bazza Voz",
-              order: 4,
+              order: 12,
             };
           }
 
-          /**
-           * Bazza sem indicador explícito.
-           */
           return {
             title: "Planos Bazza",
-            order: 4,
+            order: 12,
           };
         }
 
         /**
          * =====================================================
-         * 5. RESIDENCIAL
+         * 13. RESIDENCIAL
          * =====================================================
-         *
-         * NetCasa/Casa 4G/Casa 5G não deve entrar em
-         * Planos de Dados mesmo possuindo MB/GB.
+         * NetCasa/Casa 4G/Casa 5G não deve entrar em NET AO DIA
+         * mesmo possuindo MB/GB.
          */
         if (
           name.includes("CASA 4G") ||
@@ -374,70 +569,57 @@ export default function PlanGrid({
         ) {
           return {
             title: "Residencial",
-            order: 6,
+            order: 14,
           };
         }
 
         /**
          * =====================================================
-         * 6. DADOS
+         * 14. NET AO DIA
          * =====================================================
-         *
-         * REGRA PRINCIPAL:
-         *
-         * Qualquer plano Unitel que tenha MB ou GB
-         * pertence a Planos de Dados.
-         *
-         * Isso inclui:
-         *
-         * - 7GB/30D
-         * - 15GB/30D
-         * - 300MB/1D
-         * - 300min+5GB/30D
-         * - 10GB + minutos
-         *
-         * Se tiver MB/GB, Dados tem prioridade sobre Voz.
+         * Internet Unitel com MB/GB e sem minutos explícitos.
          */
-        if (hasDataUnit(name)) {
+        if (isNetAoDiaPlan(name)) {
           return {
-            title: "Planos de Dados",
-            order: 7,
+            title: "NET AO DIA",
+            order: 15,
           };
         }
 
         /**
          * =====================================================
-         * 7. VOZ
+         * 15. VOZ
          * =====================================================
-         *
-         * Produtos que possuem:
-         *
-         * - VOZ
-         * - MIN
-         * - MINUTO
-         * - SMS
-         *
-         * mas que NÃO possuem MB/GB
-         * entram aqui.
          */
         if (hasVoiceKeyword(name)) {
           return {
             title: "Planos de Voz",
-            order: 8,
+            order: 16,
           };
         }
 
         /**
          * =====================================================
-         * 8. PACOTES
+         * 16. DADOS
          * =====================================================
-         *
-         * Produtos Unitel que não se enquadram nas
-         * categorias anteriores.
+         * Fallback para produtos Unitel com MB/GB que não tenham
+         * sido classificados em uma categoria comercial específica.
+         */
+        if (hasDataUnit(name)) {
+          return {
+            title: "Planos de Dados",
+            order: 17,
+          };
+        }
+
+        /**
+         * =====================================================
+         * 17. PLanos Extras
+         * =====================================================
          */
         return {
-          title: "Pacotes",
-          order: 9,
+          title: "PLanos Extras",
+          order: 18,
         };
       }
 
@@ -685,17 +867,10 @@ export default function PlanGrid({
     });
 
     /**
-     * Ordena:
+     * Ordena as categorias pela prioridade definida em classifyPlan().
      *
-     * Recargas Diretas
-     * Planos Mais
-     * TELCOTV
-     * Bazza Voz
-     * Bazza Dados
-     * Voz
-     * Dados
-     * Residencial
-     * Pacotes
+     * Categorias específicas da Unitel aparecem antes dos fallbacks
+     * genéricos, mantendo a navegação do catálogo previsível.
      */
     return Array.from(sections.values()).sort(
       (a, b) => {
