@@ -86,19 +86,22 @@ export default function PurchaseModal({
   // ===================================================
 
   useEffect(() => {
-    const reference = customerReference
-      .replace(/\D/g, "")
-      .slice(0, 9);
+  const reference = customerReference
+    .replace(/\D/g, "");
 
-    if (reference.length === 9) {
-      setCustomerNotification((current) => {
-        if (current.trim() !== "") {
-          return current;
-        }
-        return reference;
-      });
-    }
-  }, [customerReference]);
+  // Só preencher automaticamente quando
+  // a referência já for claramente um telefone
+  // angolano de 9 dígitos.
+  if (reference.length === 9) {
+    setCustomerNotification((current) => {
+      if (current.trim() !== "") {
+        return current;
+      }
+
+      return reference;
+    });
+  }
+}, [customerReference]);
 
   // ===================================================
   // TEXTO / PROVIDER
@@ -168,7 +171,10 @@ export default function PurchaseModal({
   ).trim().toUpperCase();
 
   const requiresCustomerNotification =
-    notificationType === "SMS";
+   notificationType === "SMS" ||
+   providerCode === "ZAP_SAT" ||
+   providerCode === "ZAP_MEDIA" ||
+   providerCode === "DSTV";
 
   const productCode = String(
     plan.externalId ?? ""
@@ -774,6 +780,8 @@ const response = (await purchaseService.purchase({
                           : "Ex.: 000988522LA037"
                       : "Nº de Telemóvel, Contador ou ID"
                   }
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={customerReference}
                   onChange={(e) => {
                     setCustomerReference(e.target.value);
