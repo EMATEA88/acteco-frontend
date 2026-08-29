@@ -884,6 +884,8 @@ const response = (await purchaseService.purchase({
                 <input
                   className="w-full rounded-xl bg-[#0c4a6e] border border-[#0ea5e9]/30 px-3 py-2.5 text-xs text-white placeholder-[#7dd3fc]/50 focus:outline-none focus:border-[#38bdf8] transition-colors font-mono shadow-inner"
                   placeholder="Ex.: 923000000"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={customerNotification}
                   onChange={(e) => setCustomerNotification(e.target.value)}
                   maxLength={9}
