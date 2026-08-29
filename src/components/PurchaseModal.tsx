@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { CatalogPlan } from "../types/catalog";
 import { purchaseService } from "../services/purchase.service";
 import {
@@ -85,23 +85,23 @@ export default function PurchaseModal({
   // AUTO-PREENCHIMENTO DO TELEFONE
   // ===================================================
 
-  useEffect(() => {
-  const reference = customerReference
-    .replace(/\D/g, "");
+ // useEffect(() => {
+  //const reference = customerReference
+   // .replace(/\D/g, "");
 
   // Só preencher automaticamente quando
   // a referência já for claramente um telefone
   // angolano de 9 dígitos.
-  if (reference.length === 9) {
-    setCustomerNotification((current) => {
-      if (current.trim() !== "") {
-        return current;
-      }
+  //if (reference.length === 9) {
+    //setCustomerNotification((current) => {
+    //  if (current.trim() !== "") {
+      //  return current;
+      //}
 
-      return reference;
-    });
-  }
-}, [customerReference]);
+    //  return reference;
+   // });
+  //}
+//}, [customerReference]);
 
   // ===================================================
   // TEXTO / PROVIDER
