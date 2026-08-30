@@ -24,8 +24,6 @@ export interface Transaction {
   createdAt: string;
 
   processedAt?: string | null;
-
-  metadata?: Record<string, any> | null;
 }
 
 /* ================= PAGINATION ================= */
