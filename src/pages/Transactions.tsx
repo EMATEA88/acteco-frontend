@@ -2,7 +2,8 @@ import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   TransactionService,
-  type Transaction
+  type Transaction,
+  type TransactionPagination
 } from '../services/transaction.service'
 import {
   ArrowDownLeft,
@@ -118,16 +119,134 @@ export default function Transactions() {
   const [searchCriteria, setSearchCriteria] = useState<'ALL' | 'PHONE' | 'OPERATOR' | 'DATE' | 'ID'>('ALL')
   const [showCriteriaModal, setShowCriteriaModal] = useState(false)
 
+  const [page, setPage] = useState(1)
+
+  const [pagination, setPagination] =
+   useState<TransactionPagination | null>(null)
+
+  const [loadingMore, setLoadingMore] =
+   useState(false)
+
+  const TRANSACTIONS_PER_PAGE = 20
+
 
   useEffect(() => {
-    TransactionService.list()
-      .then(data => {
-        if (!Array.isArray(data)) return
-        setItems(data as ExtendedTransaction[])
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [])
+  let mounted = true
+
+  const loadInitialTransactions = async () => {
+    try {
+      setLoading(true)
+
+      const result =
+        await TransactionService.paginate(
+          1,
+          TRANSACTIONS_PER_PAGE
+        )
+
+      if (!mounted) return
+
+      setItems(
+        result.transactions as ExtendedTransaction[]
+      )
+
+      setPagination(
+        result.pagination
+      )
+
+      setPage(1)
+
+    } catch (error) {
+
+      console.error(
+        'TRANSACTION_HISTORY_LOAD_ERROR:',
+        error
+      )
+
+    } finally {
+
+      if (mounted) {
+        setLoading(false)
+      }
+
+    }
+  }
+
+  loadInitialTransactions()
+
+  return () => {
+    mounted = false
+  }
+
+}, [])
+
+const loadMoreTransactions = async () => {
+
+  if (
+    loadingMore ||
+    !pagination?.hasNextPage
+  ) {
+    return
+  }
+
+  const nextPage =
+    page + 1
+
+  try {
+
+    setLoadingMore(true)
+
+    const result =
+      await TransactionService.paginate(
+        nextPage,
+        TRANSACTIONS_PER_PAGE
+      )
+
+    setItems(current => {
+
+      const existingIds =
+        new Set(
+          current.map(
+            transaction => transaction.id
+          )
+        )
+
+      const newTransactions =
+        result.transactions
+          .filter(
+            transaction =>
+              !existingIds.has(transaction.id)
+          )
+          .map(
+            transaction =>
+              transaction as ExtendedTransaction
+          )
+
+      return [
+        ...current,
+        ...newTransactions
+      ]
+    })
+
+    setPagination(
+      result.pagination
+    )
+
+    setPage(nextPage)
+
+  } catch (error) {
+
+    console.error(
+      'TRANSACTION_HISTORY_LOAD_MORE_ERROR:',
+      error
+    )
+
+  } finally {
+
+    setLoadingMore(false)
+
+  }
+
+}
 
   function formatCurrency(amount: number, currency: string) {
     if (currency === 'USDT') {
@@ -746,7 +865,33 @@ const getOperatorName = (tx: ExtendedTransaction) => {
               })}
             </div>
           ))}
-        </div>
+               </div>
+
+        {/* PAGINAÇÃO DO HISTÓRICO */}
+
+        {pagination?.hasNextPage && (
+          <div className="pt-2 flex justify-center">
+
+            <button
+              type="button"
+              onClick={loadMoreTransactions}
+              disabled={loadingMore}
+              className="px-5 py-3 rounded-xl bg-[#144863] border border-cyan-500/30 text-cyan-300 text-xs font-bold hover:bg-[#124158] hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loadingMore
+                ? 'Carregando...'
+                : 'Carregar mais transações'}
+            </button>
+
+          </div>
+        )}
+
+        {pagination && pagination.total > 0 && (
+          <div className="text-center text-[10px] text-cyan-200/50 font-medium pt-1">
+            Mostrando {items.length} de {pagination.total} transações
+          </div>
+        )}
+
       </div>
     </div>
   )

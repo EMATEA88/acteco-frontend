@@ -24,6 +24,30 @@ export interface Transaction {
   createdAt: string;
 
   processedAt?: string | null;
+
+  metadata?: Record<string, any> | null;
+}
+
+/* ================= PAGINATION ================= */
+
+export interface TransactionPagination {
+  page: number;
+
+  limit: number;
+
+  total: number;
+
+  totalPages: number;
+
+  hasNextPage: boolean;
+
+  hasPreviousPage: boolean;
+}
+
+export interface TransactionListResponse {
+  transactions: Transaction[];
+
+  pagination: TransactionPagination;
 }
 
 /* ================= SERVICE REQUEST ================= */
@@ -103,8 +127,6 @@ export interface TransactionDetails
 
   providerOrderSn?: string | null;
 
-  metadata?: Record<string, any> | null;
-
   serviceRequest?: TransactionServiceRequest | null;
 }
 
@@ -129,11 +151,11 @@ export const TransactionService = {
     try {
 
       const { data } =
-        await api.get<Transaction[]>(
+        await api.get<TransactionListResponse>(
           "/transactions"
         );
 
-      return data;
+      return data.transactions;
 
     } catch (err: any) {
 
@@ -155,14 +177,14 @@ export const TransactionService = {
     try {
 
       const { data } =
-        await api.get<Transaction[]>(
+        await api.get<TransactionListResponse>(
           "/transactions",
           {
             params
           }
         );
 
-      return data;
+      return data.transactions;
 
     } catch (err: any) {
 
@@ -180,12 +202,12 @@ export const TransactionService = {
   async paginate(
     page = 1,
     limit = 20
-  ): Promise<Transaction[]> {
+  ): Promise<TransactionListResponse> {
 
     try {
 
       const { data } =
-        await api.get<Transaction[]>(
+        await api.get<TransactionListResponse>(
           "/transactions",
           {
             params: {
@@ -211,27 +233,27 @@ export const TransactionService = {
   /* ================= DETAILS ================= */
 
   async details(
-  id: number
-): Promise<TransactionDetails> {
+    id: number
+  ): Promise<TransactionDetails> {
 
-  try {
+    try {
 
-    const { data } =
-      await api.get<TransactionDetails>(
-        `/transactions/${id}`
+      const { data } =
+        await api.get<TransactionDetails>(
+          `/transactions/${id}`
+        );
+
+      return data;
+
+    } catch (err: any) {
+
+      throw new Error(
+        err?.response?.data?.error ||
+        "Erro ao carregar detalhes da transação"
       );
 
-    return data;
-
-  } catch (err: any) {
-
-    throw new Error(
-      err?.response?.data?.error ||
-      "Erro ao carregar detalhes da transação"
-    );
+    }
 
   }
-
-}
 
 };
