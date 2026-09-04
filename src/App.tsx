@@ -95,7 +95,6 @@ function App() {
 
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/about" element={<About />} />
 
         {/* ================= AGENT STATUS ================= */}
 
@@ -149,6 +148,7 @@ function App() {
 
           {/* PROFILE */}
           <Route path="profile" element={<Profile />} />
+          <Route path="/about" element={<About />} />
           <Route path="bank" element={<Bank />} />
           <Route path="transactions" element={<Transactions />} />
           <Route path="/transactions/:id" element={<TransactionDetails />} />

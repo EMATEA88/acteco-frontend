@@ -18,6 +18,7 @@ import {
   SealCheck,
   PaperPlaneTilt,
   Gear,
+  Info,
 } from '@phosphor-icons/react'
 
 import AgentDrawer from "../components/agent/AgentDrawer";
@@ -297,6 +298,12 @@ export default function Profile() {
                 sub="Alterar senha"
                 icon={<LockKey size={17} weight="bold" />}
                 to="/password"
+              />
+              <SessionCard
+                label="EMATEA"
+                sub="Informações institucionais"
+                icon={<Info size={17} weight="bold" />}
+                to="/about"
               />
             </div>
           )}
