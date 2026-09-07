@@ -16,6 +16,14 @@ export interface RechargeHistory {
   createdAt: string
 }
 
+export interface USDTQuoteResponse {
+  amount: string
+  currency: string
+  rate: string
+  convertedAmount: string
+  convertedCurrency: string
+}
+
 /* ================= SERVICE ================= */
 
 export class RechargeService {
@@ -23,14 +31,26 @@ export class RechargeService {
   /* ================= AOA (FIAT ONLY) ================= */
 
   static async create(amount: number) {
-  const response = await api.post('/recharges', {
-    amount: Number(amount),
-    currency: 'AOA',
-    method: 'BANK'
-  })
+    const response = await api.post('/recharges', {
+      amount: Number(amount),
+      currency: 'AOA',
+      method: 'BANK'
+    })
 
-  return response.data
-}
+    return response.data
+  }
+
+  /* ================= USDT → AOA QUOTE ================= */
+
+  static async getQuote(amount: number): Promise<USDTQuoteResponse> {
+    const { data } = await api.get('/redotpay/quote', {
+      params: {
+        amount: Number(amount)
+      }
+    })
+
+    return data
+  }
 
   /* ================= UPLOAD PROOF ================= */
 

@@ -204,15 +204,59 @@ function DepositAOA() {
 
 function DepositRedotPay() {
   const navigate = useNavigate()
+
   const [amount, setAmount] = useState<number | "">("")
   const [loading, setLoading] = useState(false)
   const [balance, setBalance] = useState<number | null>(null)
+
+  const [quote, setQuote] = useState<{
+    amount: string
+    currency: string
+    rate: string
+    convertedAmount: string
+    convertedCurrency: string
+  } | null>(null)
+
+  const [quoteLoading, setQuoteLoading] = useState(false)
+
+  /* ================= SALDO ================= */
 
   useEffect(() => {
     UserService.me()
       .then(user => setBalance(user.balance))
       .catch(() => {})
   }, [])
+
+  /* ================= COTAÇÃO USDT → AOA ================= */
+
+  useEffect(() => {
+    const value = Number(amount)
+
+    if (!value || value <= 0) {
+      setQuote(null)
+      setQuoteLoading(false)
+      return
+    }
+
+    setQuoteLoading(true)
+
+    const timer = setTimeout(async () => {
+      try {
+        const result = await RechargeService.getQuote(value)
+
+        setQuote(result)
+      } catch (error) {
+        console.error("Erro ao obter cotação USDT → AOA:", error)
+        setQuote(null)
+      } finally {
+        setQuoteLoading(false)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [amount])
+
+  /* ================= CRIAR PAGAMENTO ================= */
 
   async function submit() {
     if (!amount || Number(amount) <= 0) {
@@ -222,12 +266,21 @@ function DepositRedotPay() {
 
     try {
       setLoading(true)
-      const response = await RedotPayService.createDeposit({ amount: Number(amount) })
+
+      const response = await RedotPayService.createDeposit({
+        amount: Number(amount)
+      })
+
       const gateway = response.gateway
 
-      if (!gateway) throw new Error("Resposta inválida da RedotPay.")
+      if (!gateway) {
+        throw new Error("Resposta inválida da RedotPay.")
+      }
 
-      const checkoutUrl = gateway.data?.checkoutUrl ?? gateway.data?.cashierUrl ?? gateway.data?.payUrl
+      const checkoutUrl =
+        gateway.data?.checkoutUrl ??
+        gateway.data?.cashierUrl ??
+        gateway.data?.payUrl
 
       if (!checkoutUrl) {
         toast.error("A RedotPay não retornou a URL de pagamento.")
@@ -235,6 +288,7 @@ function DepositRedotPay() {
       }
 
       window.location.href = checkoutUrl
+
     } catch (error) {
       console.error(error)
       toast.error("Erro ao criar pagamento.")
@@ -245,30 +299,154 @@ function DepositRedotPay() {
 
   return (
     <div>
-      <Header onBack={() => navigate('/deposit')} title="RedotPay Checkout" />
+      <Header
+        onBack={() => navigate('/deposit')}
+        title="RedotPay Checkout"
+      />
 
       <div className="px-6 py-6 max-w-lg mx-auto space-y-6">
+
+        {/* ================= SALDO ATUAL ================= */}
+
         <div className="bg-[#0e364a] p-4 rounded-2xl flex justify-between items-center border border-cyan-500/20 shadow-lg shadow-cyan-950/20">
-          <span className="text-xs font-mono text-cyan-200/70 uppercase">Saldo Atual</span>
+          <span className="text-xs font-mono text-cyan-200/70 uppercase">
+            Saldo Atual
+          </span>
+
           <span className="font-mono font-bold text-cyan-400 text-sm">
-            {balance !== null ? `${balance.toLocaleString("pt-PT")} Kz` : <Skeleton className="w-24 h-5" />}
+            {balance !== null
+              ? `${balance.toLocaleString("pt-PT")} Kz`
+              : <Skeleton className="w-24 h-5" />
+            }
           </span>
         </div>
 
+        {/* ================= VALOR USDT ================= */}
+
         <div>
-          <label className="block text-xs font-mono text-cyan-200/70 uppercase font-bold mb-2 ml-1">Valor do depósito</label>
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(Number(e.target.value) || "")}
-            placeholder="0.00"
-            className="w-full h-14 bg-[#0a2533] border border-cyan-500/20 rounded-2xl px-4 text-lg font-mono font-bold focus:border-cyan-400 outline-none transition-all text-white shadow-inner placeholder:text-cyan-200/30"
-          />
+          <label className="block text-xs font-mono text-cyan-200/70 uppercase font-bold mb-2 ml-1">
+            Valor do depósito
+          </label>
+
+          <div className="relative">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={amount}
+              onChange={(e) => {
+                const value = e.target.value
+
+                setAmount(
+                  value === ""
+                    ? ""
+                    : Number(value)
+                )
+              }}
+              placeholder="0.00"
+              className="w-full h-14 bg-[#0a2533] border border-cyan-500/20 rounded-2xl px-4 pr-20 text-lg font-mono font-bold focus:border-cyan-400 outline-none transition-all text-white shadow-inner placeholder:text-cyan-200/30"
+            />
+
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-cyan-400">
+              USDT
+            </span>
+          </div>
         </div>
 
-        <PrimaryButton onClick={submit} loading={loading}>
+        {/* ================= COTAÇÃO ================= */}
+
+        {amount && Number(amount) > 0 && (
+          <div className="bg-[#0e364a] border border-cyan-500/20 rounded-2xl p-5 shadow-lg shadow-cyan-950/20">
+
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-200/60">
+                Conversão
+              </span>
+
+              {quoteLoading && (
+                <div className="flex items-center gap-2 text-[10px] font-mono text-cyan-400">
+                  <div className="w-3 h-3 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+                  Atualizando
+                </div>
+              )}
+            </div>
+
+            {quote ? (
+              <>
+                <div className="flex items-center justify-between gap-4">
+
+                  <div>
+                    <p className="text-[10px] font-mono text-cyan-200/60 uppercase mb-1">
+                      Você deposita
+                    </p>
+
+                    <p className="text-xl font-mono font-black text-white">
+                      {Number(quote.amount).toLocaleString("pt-PT", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 8
+                      })}
+
+                      <span className="text-sm text-cyan-400 ml-1">
+                        {quote.currency}
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="text-cyan-400 text-xl">
+                    →
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-[10px] font-mono text-cyan-200/60 uppercase mb-1">
+                      Você receberá
+                    </p>
+
+                    <p className="text-xl font-mono font-black text-cyan-400">
+                      {Number(quote.convertedAmount).toLocaleString("pt-PT", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}
+
+                      <span className="text-sm ml-1">
+                        {quote.convertedCurrency}
+                      </span>
+                    </p>
+                  </div>
+
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-cyan-500/10 flex justify-between items-center">
+
+                  <span className="text-[10px] font-mono text-cyan-200/50 uppercase">
+                    Taxa aplicada
+                  </span>
+
+                  <span className="text-xs font-mono font-bold text-cyan-300">
+                    1 USDT ={" "}
+                    {Number(quote.rate).toLocaleString("pt-PT")} AOA
+                  </span>
+
+                </div>
+              </>
+            ) : !quoteLoading ? (
+              <p className="text-xs font-mono text-cyan-200/50 text-center py-2">
+                Não foi possível obter a cotação.
+              </p>
+            ) : null}
+
+          </div>
+        )}
+
+        {/* ================= PAGAMENTO ================= */}
+
+        <PrimaryButton
+          onClick={submit}
+          loading={loading}
+          disabled={!amount || Number(amount) <= 0 || quoteLoading}
+        >
           Pagar com RedotPay
         </PrimaryButton>
+
       </div>
     </div>
   )
