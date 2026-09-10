@@ -35,23 +35,49 @@ export const WithdrawalService = {
 
   /* ================= AOA ================= */
 
-  async create(amount: number) {
-    try {
-      const { data } = await api.post('/withdrawals', {
-        amount
-      })
+  /* ================= AOA ================= */
 
-      return data
+async requestOtp(): Promise<{ success: boolean; message: string }> {
+  try {
+    const { data } = await api.post('/withdrawals/otp')
+    return data
+  } catch (err: any) {
+    const errorData = err.response?.data as WithdrawalError
 
-    } catch (err: any) {
-      const errorData = err.response?.data as WithdrawalError
+    throw {
+      error: errorData?.error || 'INTERNAL_ERROR',
+      message:
+        errorData?.message ||
+        'Erro ao enviar código de verificação'
+    } as WithdrawalError
+  }
+},
 
-      throw {
-        error: errorData?.error || 'INTERNAL_ERROR',
-        message: errorData?.message || 'Erro ao processar levantamento'
-      } as WithdrawalError
-    }
-  },
+async create(
+  amount: number,
+  otp: string,
+  email: string
+) {
+  try {
+    const { data } = await api.post('/withdrawals', {
+      amount,
+      otp,
+      email
+    })
+
+    return data
+
+  } catch (err: any) {
+    const errorData = err.response?.data as WithdrawalError
+
+    throw {
+      error: errorData?.error || 'INTERNAL_ERROR',
+      message:
+        errorData?.message ||
+        'Erro ao processar levantamento'
+    } as WithdrawalError
+  }
+},
 
   /* ================= USDT (BSC) ================= */
 

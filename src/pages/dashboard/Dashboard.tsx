@@ -70,25 +70,14 @@ const rechargeImages = import.meta.glob<string>(
   }
 );
 
-type DashboardTransaction = Transaction & {
-  metadata?: {
-    phone?: string;
-    phoneNumber?: string;
-    planName?: string;
-    plan?: string;
-    partnerName?: string;
-    providerName?: string;
-    serviceName?: string;
-    serviceGroupName?: string;
-    [key: string]: any;
-  };
-};
+type DashboardTransaction = Transaction;
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [transactions, setTransactions] = useState<DashboardTransaction[]>([]);
+  const [successfulSales, setSuccessfulSales] = useState(0);
   const [dynamicOperator, setDynamicOperator] = useState<string>("Sem dados");
 
   useEffect(() => {
@@ -280,17 +269,47 @@ export default function Dashboard() {
   };
 
   /**
+   * =====================================================
+   * IDENTIFICA UMA VENDA/RECARGA REALMENTE CONCLUÍDA
+   * =====================================================
+   *
+   * Uma venda só entra nas estatísticas quando existe uma
+   * Transaction financeira efetiva, com status PAID.
+   *
+   * Operações RUNNING/IN_PROGRESS/FAILED não possuem
+   * Transaction financeira concluída e, portanto, não
+   * podem aumentar o número de vendas.
+   *
+   * Taxas de levantamento também usam SERVICE_DEBIT, por
+   * isso são excluídas pela descrição.
+   */
+  const isSuccessfulSale = (tx: DashboardTransaction) => {
+    const type = String(tx.type || "").toUpperCase().trim();
+    const status = String(tx.status || "").toUpperCase().trim();
+    const description = String(tx.description || "").toLowerCase().trim();
+
+    return (
+      type === "SERVICE_DEBIT" &&
+      status === "PAID" &&
+      !description.includes("taxa")
+    );
+  };
+
+  /**
    * Função criada para calcular o serviço mais vendido e atualizar o estado.
+   * Só considera vendas efetivamente concluídas.
    */
   const calculateMostSoldService = (txs: DashboardTransaction[]) => {
-    if (!txs || txs.length === 0) {
+    const successfulTransactions = txs.filter(isSuccessfulSale);
+
+    if (successfulTransactions.length === 0) {
       setDynamicOperator("Sem dados");
       return;
     }
 
     const counts: Record<string, number> = {};
 
-    for (const tx of txs) {
+    for (const tx of successfulTransactions) {
       const operator = getOperatorName(tx);
       if (operator) {
         counts[operator] = (counts[operator] || 0) + 1;
@@ -303,21 +322,64 @@ export default function Dashboard() {
       return;
     }
 
-    // Ordena para encontrar o mais frequente
     entries.sort((a, b) => b[1] - a[1]);
     setDynamicOperator(entries[0][0]);
   };
 
   async function loadStats() {
     try {
-      const [statsData, transactionsData] = await Promise.all([
+      const [statsData, firstPage] = await Promise.all([
         dashboardService.getStats(),
-        TransactionService.list()
+        TransactionService.paginate(1, 100)
       ]);
 
+      /**
+       * =====================================================
+       * CARREGAR TODAS AS TRANSAÇÕES FINANCEIRAS
+       * =====================================================
+       *
+       * O endpoint é paginado. Para o contador de vendas não
+       * ficar limitado apenas às primeiras 100 transações,
+       * percorremos as páginas enquanto houver mais resultados.
+       */
+      const allTransactions: DashboardTransaction[] = [
+        ...firstPage.transactions
+      ];
+
+      let currentPage = firstPage.pagination.page;
+      let hasNextPage = firstPage.pagination.hasNextPage;
+
+      while (hasNextPage) {
+        const nextPage = await TransactionService.paginate(
+          currentPage + 1,
+          100
+        );
+
+        allTransactions.push(...nextPage.transactions);
+
+        currentPage = nextPage.pagination.page;
+        hasNextPage = nextPage.pagination.hasNextPage;
+      }
+
+      /**
+       * =====================================================
+       * CONTADOR REAL DE VENDAS
+       * =====================================================
+       */
+      const completedSales = allTransactions.filter(
+        isSuccessfulSale
+      );
+
+      setSuccessfulSales(completedSales.length);
+
       setStats(statsData);
-      setTransactions(transactionsData.slice(0, 5));
-      calculateMostSoldService(transactionsData);
+
+      // Mantém apenas as 5 transações mais recentes na lista visual.
+      setTransactions(allTransactions.slice(0, 5));
+
+      // O serviço mais vendido também usa somente vendas concluídas.
+      calculateMostSoldService(allTransactions);
+
     } catch (error) {
       console.error(error);
       toast.error("Erro ao carregar dashboard");
@@ -349,7 +411,7 @@ export default function Dashboard() {
       title: "Total Recargas",
       value: loading
         ? null
-        : String(stats?.totalRequests || 0),
+        : String(successfulSales),
       valueColor: "text-white"
     },
     {
@@ -476,7 +538,36 @@ export default function Dashboard() {
                     typeUpper.includes("DEBIT");
 
                   const operatorKey = getOperatorName(tx);
-                  const logoSrc = getOperatorLogo(operatorKey);
+
+                  /**
+                   * Operações próprias da EMATEA usam o logotipo oficial.
+                   * SERVICE_DEBIT não entra automaticamente porque também
+                   * representa compras de serviços dos provedores.
+                   * Taxas de levantamento que usam SERVICE_DEBIT são
+                   * identificadas pela descrição.
+                   */
+                  const descriptionLower =
+                    String(tx.description || "").toLowerCase();
+
+                  const isEmateaOperation =
+                    typeUpper === "DEPOSIT" ||
+                    typeUpper.includes("DEPOSIT") ||
+                    typeUpper === "WITHDRAW" ||
+                    typeUpper.includes("WITHDRAW") ||
+                    typeUpper === "FEE" ||
+                    typeUpper === "CHARGE" ||
+                    typeUpper === "SERVICE_FEE" ||
+                    (
+                      typeUpper === "SERVICE_DEBIT" &&
+                      descriptionLower.includes("taxa")
+                    ) ||
+                    descriptionLower.includes("wallet deposit") ||
+                    descriptionLower.includes("depósito") ||
+                    descriptionLower.includes("deposito");
+
+                  const logoSrc = isEmateaOperation
+                    ? "/logo.png"
+                    : getOperatorLogo(operatorKey);
 
                   return (
                     <button
@@ -490,7 +581,7 @@ export default function Dashboard() {
                           {logoSrc ? (
                             <img
                               src={logoSrc}
-                              alt={operatorKey ?? "Operadora"}
+                              alt={isEmateaOperation ? "EMATEA" : (operatorKey ?? "Operadora")}
                               className="w-full h-full object-cover"
                             />
                           ) : (

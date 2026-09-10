@@ -24,6 +24,8 @@ export interface Transaction {
   createdAt: string;
 
   processedAt?: string | null;
+
+  metadata?: Record<string, any> | null;
 }
 
 /* ================= PAGINATION ================= */
@@ -42,8 +44,82 @@ export interface TransactionPagination {
   hasPreviousPage: boolean;
 }
 
+/* ================= PENDING PURCHASE ================= */
+
+export interface PendingPurchase {
+  id: number;
+
+  type: "SERVICE_PURCHASE";
+
+  amount: number;
+
+  currency: string;
+
+  method: string;
+
+  status: string;
+
+  description: string;
+
+  reference: string;
+
+  relatedPublicId: string;
+
+  createdAt: string;
+
+  processedAt?: string | null;
+
+  metadata?: {
+    source?: string;
+
+    serviceRequestId?: number;
+
+    planId?: number;
+
+    serviceId?: number | null;
+
+    serviceGroupId?: number | null;
+
+    providerId?: number | null;
+
+    providerName?: string | null;
+
+    customerReference?: string | null;
+
+    customerName?: string | null;
+
+    partnerName?: string | null;
+
+    partnerId?: number | null;
+
+    serviceName?: string | null;
+
+    serviceGroupName?: string | null;
+
+    planName?: string | null;
+
+    transactionId?: number | null;
+
+    externalProviderRef?: string | null;
+
+    externalTransactionId?: string | null;
+
+    providerResponse?: Record<string, any> | string | null;
+
+    phone?: string;
+
+    phoneNumber?: string;
+
+    [key: string]: any;
+  } | null;
+}
+
+/* ================= LIST RESPONSE ================= */
+
 export interface TransactionListResponse {
   transactions: Transaction[];
+
+  pendingPurchases: PendingPurchase[];
 
   pagination: TransactionPagination;
 }

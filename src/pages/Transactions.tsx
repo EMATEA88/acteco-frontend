@@ -15,21 +15,43 @@ import {
   ArrowLeft,
   Funnel,
   PaperPlaneTilt,
-  UsersThree,
   Clock,
   MagnifyingGlass,
   X,
   Check
 } from '@phosphor-icons/react'
 
-type ExtendedTransaction = Transaction & {
+type ExtendedTransaction = Omit<
+  Transaction,
+  'createdAt' | 'processedAt' | 'metadata'
+> & {
+  createdAt: string | Date
+  processedAt?: string | Date | null
+  metadata?: Record<string, any> | null
+}
+
+type PendingPurchase = {
+  id: number
+  type: 'SERVICE_PURCHASE'
+  amount: number
+  currency: string
+  method: string
+  status: string
+  description: string
+  reference: string
+  relatedPublicId: string
+  createdAt: string | Date
+  processedAt: string | Date | null
   metadata?: {
+    providerName?: string
+    partnerName?: string
+    serviceName?: string
+    serviceGroupName?: string
+    planName?: string
+    customerReference?: string
+    customerName?: string
     phone?: string
     phoneNumber?: string
-    planName?: string
-    plan?: string
-    partnerName?: string
-    providerName?: string
     [key: string]: any
   }
 }
@@ -88,6 +110,8 @@ const rechargeImages = import.meta.glob<string>(
   }
 )
 
+const emateaLogo = "/logo.png"
+
 const TYPE_META: Record<string, any> = {
   DEPOSIT: { label: 'Depósito', icon: ArrowDownLeft, color: 'text-cyan-300', sign: '+', category: 'IN' },
   TRANSFER: { label: 'Transferência', icon: PaperPlaneTilt, color: 'text-rose-400', sign: '-', category: 'OUT' },
@@ -97,6 +121,8 @@ const TYPE_META: Record<string, any> = {
   BUY_DEBIT: { label: 'Compra OTC', icon: ArrowUpRight, color: 'text-rose-400', sign: '-', category: 'OUT' },
   SELL_CREDIT: { label: 'Venda OTC', icon: ArrowDownLeft, color: 'text-cyan-300', sign: '+', category: 'IN' },
   SERVICE_DEBIT: { label: 'Serviço', icon: Receipt, color: 'text-rose-400', sign: '-', category: 'OUT' },
+  SERVICE_PURCHASE: { label: 'Recarga', icon: Clock, color: 'text-amber-300', sign: '-', category: 'OUT' },
+  WALLET_DEPOSIT: { label: 'Depósito', icon: Wallet, color: 'text-cyan-300', sign: '+', category: 'IN' },
   REFUND: { label: 'Reembolso', icon: ArrowDownLeft, color: 'text-cyan-300', sign: '+', category: 'IN' },
   COMMISSION: { label: 'Comissão', icon: Coins, color: 'text-cyan-300', sign: '+', category: 'IN' },
   GIFT: { label: 'Presente', icon: Gift, color: 'text-rose-400', sign: '-', category: 'OUT' },
@@ -105,14 +131,16 @@ const TYPE_META: Record<string, any> = {
   TASK_REWARD: { label: 'Tarefa', icon: Coins, color: 'text-cyan-300', sign: '+', category: 'IN' },
   INTERNAL_TRANSFER_IN: { label: 'Transf. Recebida', icon: ArrowDownLeft, color: 'text-cyan-300', sign: '+', category: 'IN' },
   INTERNAL_TRANSFER_OUT: { label: 'Transf. Enviada', icon: PaperPlaneTilt, color: 'text-rose-400', sign: '-', category: 'OUT' },
-  KIXIKILA_IN: { label: 'Kixikila Recebida', icon: UsersThree, color: 'text-cyan-300', sign: '+', category: 'IN' },
-  KIXIKILA_OUT: { label: 'Kixikila Enviada', icon: UsersThree, color: 'text-rose-400', sign: '-', category: 'OUT' }
+  FEE: { label: 'Taxa', icon: Receipt, color: 'text-rose-400', sign: '-', category: 'OUT' },
+  CHARGE: {label: 'Taxa', icon: Receipt, color: 'text-rose-400', sign: '-', category: 'OUT' },
+  SERVICE_FEE: { label: 'Taxa', icon: Receipt, color: 'text-rose-400', sign: '-', category: 'OUT' },
 }
 
 export default function Transactions() {
   const navigate = useNavigate()
 
   const [items, setItems] = useState<ExtendedTransaction[]>([])
+  const [pendingPurchases, setPendingPurchases] = useState<PendingPurchase[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'ALL' | 'IN' | 'OUT'>('ALL')
   const [searchTerm, setSearchTerm] = useState('')
@@ -147,6 +175,10 @@ export default function Transactions() {
 
       setItems(
         result.transactions as ExtendedTransaction[]
+       )
+
+      setPendingPurchases(
+      ((result as any).pendingPurchases ?? []) as PendingPurchase[]
       )
 
       setPagination(
@@ -226,6 +258,10 @@ const loadMoreTransactions = async () => {
         ...newTransactions
       ]
     })
+
+    setPendingPurchases(
+      ((result as any).pendingPurchases ?? []) as PendingPurchase[]
+    )
 
     setPagination(
       result.pagination
@@ -577,7 +613,34 @@ const getOperatorName = (tx: ExtendedTransaction) => {
   }
 
   const filtered = useMemo(() => {
-    return items.filter(tx => {
+
+  const pendingAsTransactions: ExtendedTransaction[] =
+    pendingPurchases.map(purchase => ({
+      id: purchase.id,
+      type: 'SERVICE_PURCHASE',
+      amount: purchase.amount,
+      currency: purchase.currency,
+      method: purchase.method,
+      status: purchase.status,
+      description: purchase.description,
+      reference: purchase.reference,
+      relatedPublicId: purchase.relatedPublicId,
+      createdAt: purchase.createdAt,
+      processedAt: purchase.processedAt,
+      metadata: {
+        ...(purchase.metadata ?? {}),
+        source: 'SERVICE_REQUEST',
+        pending: true,
+        serviceRequestId: purchase.id
+      }
+    }))
+
+  const allItems = [
+    ...pendingAsTransactions,
+    ...items
+  ]
+
+  return allItems.filter(tx => {
       const meta = TYPE_META[tx.type]
       
       if (filter === 'IN' && meta?.category !== 'IN') return false
@@ -628,7 +691,13 @@ const getOperatorName = (tx: ExtendedTransaction) => {
 
       return true
     })
-  }, [items, filter, searchTerm, searchCriteria])
+  }, [
+  items,
+  pendingPurchases,
+  filter,
+  searchTerm,
+  searchCriteria
+])
 
   const grouped = useMemo(() => {
     return filtered.reduce((acc: Record<string, ExtendedTransaction[]>, tx) => {
@@ -819,14 +888,58 @@ const getOperatorName = (tx: ExtendedTransaction) => {
                 const isOut = meta.category === 'OUT'
 
                 const operatorKey = getOperatorName(tx)
-                const logoSrc = getOperatorLogo(operatorKey)
+
+                const typeUpper =
+                  String(tx.type || '').toUpperCase()
+
+                const descriptionLower =
+                  String(tx.description || '').toLowerCase()
+
+                /**
+                 * Operações próprias da EMATEA.
+                 *
+                 * Wallet Deposit é identificado tanto pelo tipo
+                 * quanto pela descrição. Assim o logo EMATEA aparece
+                 * sem remover o ícone Wallet definido no TYPE_META.
+                 *
+                 * SERVICE_DEBIT só usa EMATEA quando for uma taxa;
+                 * compras de serviços continuam com o logo do provedor.
+                 */
+                const isEmateaOperation =
+                  typeUpper.includes('DEPOSIT') ||
+                  typeUpper.includes('WITHDRAW') ||
+                  typeUpper === 'FEE' ||
+                  typeUpper === 'CHARGE' ||
+                  typeUpper === 'SERVICE_FEE' ||
+                  (
+                    typeUpper === 'SERVICE_DEBIT' &&
+                    descriptionLower.includes('taxa')
+                  ) ||
+                  descriptionLower.includes('wallet deposit') ||
+                  descriptionLower.includes('depósito de carteira')
+
+                const logoSrc =
+                  isEmateaOperation
+                    ? emateaLogo
+                    : getOperatorLogo(operatorKey)
 
                 return (
                   <button
                     key={tx.id}
-                    onClick={() => navigate(`/transactions/${tx.id}`)}
-                    className="w-full flex justify-between items-center py-3.5 border-b border-cyan-500/10 hover:bg-[#0e364a]/55 transition-colors cursor-pointer text-left"
-                  >
+                    onClick={() => {
+                     const isPending =
+                      tx.metadata?.pending === true ||
+                      tx.type === 'SERVICE_PURCHASE'
+
+                if (!isPending) {
+                    navigate(`/transactions/${tx.id}`)
+               }
+             }}
+                    className={`w-full flex justify-between items-center py-3.5 border-b border-cyan-500/10 transition-colors text-left ${
+                      tx.type === 'SERVICE_PURCHASE'
+                        ? 'cursor-default'
+                        : 'hover:bg-[#0e364a]/55 cursor-pointer'
+                  }`}>
                     <div className="flex items-center gap-4 min-w-0">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden border ${
                         logoSrc ? 'bg-white border-cyan-500/30' : (isOut ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300')
@@ -834,7 +947,7 @@ const getOperatorName = (tx: ExtendedTransaction) => {
                         {logoSrc ? (
                           <img 
                             src={logoSrc} 
-                            alt={operatorKey ?? "Operadora"} 
+                            alt={isEmateaOperation ? "EMATEA" : (operatorKey ?? "Operadora")} 
                             className="w-full h-full object-cover p-0" 
                           />
                         ) : (
@@ -853,12 +966,19 @@ const getOperatorName = (tx: ExtendedTransaction) => {
                     </div>
 
                     <div className="text-right shrink-0 pl-3">
-                      <p className={`text-xs font-mono font-bold ${meta.color}`}>
-                        {meta.sign}{formatCurrency(Number(tx.amount), tx.currency)}
-                      </p>
-                      <span className="inline-block text-[8px] text-cyan-300/70 font-black uppercase tracking-wide bg-[#144863] border border-cyan-500/30 px-1.5 py-0.5 rounded mt-1">
+                     <p className={`text-xs font-mono font-bold ${meta.color}`}>
+                       {meta.sign}{formatCurrency(Number(tx.amount), tx.currency)}
+                     </p>
+
+                       {tx.type === 'SERVICE_PURCHASE' ? (
+                        <span className="inline-block text-[8px] text-amber-300 font-black uppercase tracking-wide bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded mt-1">
+                          Em processamento
+                        </span>
+                      ) : (
+                        <span className="inline-block text-[8px] text-cyan-300/70 font-black uppercase tracking-wide bg-[#144863] border border-cyan-500/30 px-1.5 py-0.5 rounded mt-1">
                         {tx.currency}
                       </span>
+                     )}
                     </div>
                   </button>
                 )

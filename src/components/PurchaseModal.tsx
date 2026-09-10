@@ -76,10 +76,11 @@ export default function PurchaseModal({
   const [customerInfoError, setCustomerInfoError] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [resultData, setResultData] = useState<{
-    success: boolean;
-    transaction?: any;
-    errorMessage?: string;
-  } | null>(null);
+  success: boolean;
+  pending?: boolean;
+  transaction?: any;
+  errorMessage?: string;
+} | null>(null);
   
   // ===================================================
   // AUTO-PREENCHIMENTO DO TELEFONE
@@ -613,6 +614,28 @@ const response = (await purchaseService.purchase({
         response?.data ??
         response;
 
+        const purchaseStatus = String(
+  response?.status ??
+  response?.data?.status ??
+  akiResponse?.Status ??
+  akiResponse?.status ??
+  ""
+)
+  .trim()
+  .toUpperCase();
+
+const pending =
+  response?.pending === true ||
+  purchaseStatus === "RUNNING" ||
+  purchaseStatus === "IN_PROGRESS";
+
+const normalizedStatus =
+  pending
+    ? "IN_PROGRESS"
+    : purchaseStatus === "SUCCESS" || purchaseStatus === "COMPLETED"
+      ? "SUCCESS"
+      : purchaseStatus || "UNKNOWN";
+
       let transactionExtraInfo =
         akiResponse?.Transaction_ExtraInfo ??
         akiResponse?.transaction_ExtraInfo ??
@@ -642,7 +665,7 @@ const response = (await purchaseService.purchase({
         amount: payableAmount,
         currency: "AOA",
         createdAt: new Date().toISOString(),
-        status: akiResponse?.Status ?? akiResponse?.status ?? "SUCCESS",
+        status: normalizedStatus,
         voucherPIN: transactionExtraInfo?.VoucherPIN ?? transactionExtraInfo?.voucherPIN ?? null,
         voucherValue: transactionExtraInfo?.VoucherValue ?? transactionExtraInfo?.voucherValue ?? null,
         customerName,
@@ -654,8 +677,9 @@ const response = (await purchaseService.purchase({
 
       setResultData({
         success: true,
+        pending,
         transaction
-      });
+     });
     } catch (error: any) {
       setResultData({
         success: false,
@@ -948,20 +972,35 @@ const response = (await purchaseService.purchase({
 
               {/* ESTADO */}
               <div>
-                <div className="flex items-center justify-center gap-1.5 text-[#34d399]">
-                  <CheckCircle size={15} weight="fill" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider">
-                    Transação Bem-Sucedida
-                  </span>
-                </div>
+                <div
+                  className={`flex items-center justify-center gap-1.5 ${
+                    resultData.pending ? "text-amber-400" : "text-[#34d399]"
+                 }`}
+                >
+               {resultData.pending ? (
+              <Receipt size={15} weight="fill" />
+              ) : (
+             <CheckCircle size={15} weight="fill" />
+           )}
 
-                <h3 className="text-base font-bold text-white mt-2">
-                  Comprovativo de Pagamento
-                </h3>
+           <span className="text-[10px] font-bold uppercase tracking-wider">
+            {resultData.pending
+            ? "Transação em Processamento"
+           : "Transação Bem-Sucedida"}
+         </span>
+      </div>
 
-                <p className="text-[11px] text-[#7dd3fc] mt-1">
-                  A sua transação foi efetuada com sucesso.
-                </p>
+         <h3 className="text-base font-bold text-white mt-2">
+           {resultData.pending
+          ? "Recarga em Processamento"
+          : "Comprovativo de Pagamento"}
+        </h3>
+
+        <p className="text-[11px] text-[#7dd3fc] mt-1">
+              {resultData.pending
+               ? "A sua operação foi recebida e está a ser processada. Não efetue uma nova recarga para a mesma referência."
+               : "A sua transação foi efetuada com sucesso."}
+            </p>
               </div>
 
               {/* DETALHES DA TRANSAÇÃO */}
@@ -1089,18 +1128,22 @@ const response = (await purchaseService.purchase({
                     Estado
                   </span>
 
-                  <span className="text-[10px] text-[#34d399] font-bold uppercase">
-                    {String(
-                      resultData.transaction?.status ?? "SUCCESS"
-                    ) === "SUCCESS"
-                      ? "CONCLUÍDO"
-                      : String(resultData.transaction?.status ?? "N/D")}
+                  <span
+                    className={`text-[10px] font-bold uppercase ${
+                    resultData.pending
+                    ? "text-amber-400"
+                    : "text-[#34d399]"
+                    }`}
+                   >
+                    {resultData.pending
+                    ? "EM PROCESSAMENTO"
+                    : "CONCLUÍDO"}
                   </span>
                 </div>
               </div>
 
               {/* PIN DE VOUCHER */}
-              {resultData.transaction?.voucherPIN && (
+              {!resultData.pending && resultData.transaction?.voucherPIN && (
                 <div className="rounded-xl bg-[#0c4a6e] border border-[#0ea5e9]/40 p-3 text-left space-y-1.5 font-mono shadow-inner">
                   <div className="flex justify-between items-center text-[10px] text-[#38bdf8] font-bold">
                     <span>PIN DE CARREGAMENTO</span>
@@ -1144,7 +1187,7 @@ const response = (await purchaseService.purchase({
                 onClick={onClose}
                 className="w-full rounded-xl bg-[#0ea5e9] py-3 text-xs font-bold text-white hover:bg-[#0284c7] transition-all cursor-pointer shadow-lg shadow-[#0ea5e9]/30"
               >
-                Concluir
+                {resultData.pending ? "Fechar" : "Concluir"}
               </button>
             </>
           ) : (
