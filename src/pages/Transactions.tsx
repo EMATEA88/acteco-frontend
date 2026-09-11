@@ -311,6 +311,31 @@ const getOperatorName = (tx: ExtendedTransaction) => {
       tx?.metadata?.partnerName ??
       null
 
+      const combinedBrandText = [
+  tx?.metadata?.serviceName,
+  tx?.metadata?.serviceGroupName,
+  tx?.metadata?.planName,
+  tx?.metadata?.plan,
+  tx?.description,
+  directProvider,
+]
+  .filter(Boolean)
+  .join(" ")
+  .toUpperCase()
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[_-]+/g, " ")
+  .replace(/\s+/g, " ")
+  .trim()
+
+if (combinedBrandText.includes("KWANZABET")) {
+  return "KWANZABET"
+}
+
+if (combinedBrandText.includes("DSTV")) {
+  return "DSTV"
+}
+
     if (directProvider) {
       const normalizedProvider = normalizeBrandKey(directProvider)
 
@@ -422,13 +447,16 @@ const getOperatorName = (tx: ExtendedTransaction) => {
 
     // TELEVISÃO
     if (
-      rawName.includes("DSTV") ||
-      rawName.includes("FAMILIA/7D") ||
-      rawName.includes("FAMILIA 7D") ||
-      rawName.includes("FAMILIA MAIS")
-    ) {
-      return "DSTV"
-    }
+  rawName.includes("DSTV") ||
+  rawName.includes("FAMILIA/7D") ||
+  rawName.includes("FAMILIA 7D") ||
+  rawName.includes("FAMILIA MAIS") ||
+  rawName.includes("COMPRA DE FAMILIA") ||
+  rawName === "FAMILIA" ||
+  rawName.includes("GRANDE/7D")
+) {
+  return "DSTV"
+}
 
     if (rawName.includes("ZAP FIBRA")) {
       return "ZAP FIBRA"
@@ -579,6 +607,13 @@ const getOperatorName = (tx: ExtendedTransaction) => {
     }
 
     if (!brand?.logo) return null
+
+    if (normalizedOperator === "DSTV") {
+  return new URL(
+    "../assets/recharges/DSTV.PNG",
+    import.meta.url
+  ).href
+}
 
     const targetFileName = brand.logo.toLowerCase().trim()
 
