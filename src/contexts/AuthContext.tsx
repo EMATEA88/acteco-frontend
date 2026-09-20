@@ -140,29 +140,79 @@ export function AuthProvider({
 
   async function refreshUser() {
 
-    try {
+  try {
 
-      const response =
-        await api.get("/users/me")
+    const response =
+      await api.get("/users/me")
 
-      const raw =
-        response.data?.data ??
-        response.data
+    const raw =
+      response.data?.data ??
+      response.data
 
-      setUser(raw)
+    const currentUser: User = {
+      ...raw,
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(raw)
-      )
+      isAgentApproved:
+        Boolean(raw.isAgentApproved),
 
-    } catch {
+      agent:
+        raw.agent
+          ? {
+              ...raw.agent,
+              status:
+                raw.agent.status ??
+                raw.agentStatus ??
+                "PENDING",
+            }
+          : raw.role === "AGENT"
+            ? {
+                status:
+                  raw.agentStatus ??
+                  (raw.isAgentApproved
+                    ? "APPROVED"
+                    : "PENDING"),
 
-      logout()
+                isActive:
+                  Boolean(raw.isActive),
 
+                agentCode:
+                  raw.agentCode ?? "",
+
+                companyName:
+                  raw.companyName ?? null,
+
+                commissionBalance:
+                  Number(
+                    raw.commissionBalance ?? 0
+                  ),
+
+                totalSales:
+                  Number(
+                    raw.totalSales ?? 0
+                  ),
+
+                totalCommission:
+                  Number(
+                    raw.totalCommission ?? 0
+                  ),
+              }
+            : null,
     }
 
+    setUser(currentUser)
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify(currentUser)
+    )
+
+  } catch {
+
+    logout()
+
   }
+
+}
 
   /* ================= LOGIN ================= */
 

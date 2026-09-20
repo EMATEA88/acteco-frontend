@@ -79,15 +79,8 @@ export default function Home() {
       {/* HEADER LIMPO E PROFISSIONAL (FIXO NO TOPO) */}
       <div className="px-5 pt-4 pb-5 flex items-center justify-between border-b border-cyan-500/10 bg-[#0a2533]/90 backdrop-blur-md shrink-0 z-50">
         <div>
-          <p className="text-[11px] text-cyan-200/70 font-medium tracking-wide">
-            Bem-vindo à
-          </p>
-          <h1 className="text-xl font-black tracking-wider text-white flex items-center gap-1.5 mt-0.5">
+          <h1 className="text-xl font-black tracking-wider text-white">
             EMATEA
-            <span className="inline-flex relative items-center justify-center h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-400"></span>
-            </span>
           </h1>
         </div>
 
@@ -103,8 +96,11 @@ export default function Home() {
             transition-all duration-200 shadow-sm cursor-pointer
           "
         >
-          <Headset size={15} className="text-cyan-400" strokeWidth={2.5} />
-          Suporte
+          <Headset
+            size={18}
+            className="text-cyan-400"
+            strokeWidth={2.5}
+        />
         </button>
       </div>
 

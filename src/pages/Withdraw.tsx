@@ -88,7 +88,7 @@ export default function Withdraw() {
                 </p>
 
                 <p className="text-[10px] font-bold font-mono text-cyan-200/70 uppercase tracking-widest mt-0.5">
-                  Transferência Bancária
+                  Levantamento instantâneo
                 </p>
 
               </div>

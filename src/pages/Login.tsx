@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import {  
-  Globe, 
-  Palette, 
-  ArrowRight, 
-  MapPin, 
-  Phone, 
+import {
+  Globe,
+  Palette,
+  ArrowRight,
+  MapPin,
+  Phone,
   Mail,
   Eye,
   EyeOff,
@@ -13,13 +13,13 @@ import {
   BarChart3
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { loginUser } from "../services/api"; 
+import { loginUser } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Landing() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  
+
   // Estados de entrada e controlo de UI
   const [identity, setIdentity] = useState("");
   const [password, setPassword] = useState("");
@@ -84,10 +84,10 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe] flex flex-col lg:flex-row antialiased selection:bg-cyan-500/30">
-      
+
       {/* LEFT SIDE: VISUAL & SERVICES */}
       <div className="w-full lg:w-7/12 bg-gradient-to-br from-[#0e364a] via-[#0a2533] to-[#071d28] p-8 lg:p-16 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-cyan-500/10">
-        
+
         {/* BRAND HEADER */}
         <div className="flex items-center gap-4">
           <img
@@ -95,20 +95,28 @@ export default function Landing() {
             alt="EMATEA Logo"
             className="w-12 h-12 rounded-full border border-cyan-500/30 shadow-md object-cover"
           />
+
           <div>
-            <h2 className="text-xl font-black tracking-wider text-white italic font-mono">EMATEA</h2>
-            <p className="text-[10px] uppercase tracking-widest text-cyan-400 font-mono">Fintech & Tech Solutions</p>
+            <h2 className="text-xl font-black tracking-wider text-white italic font-mono">
+              EMATEA
+            </h2>
+
+            <p className="text-[10px] uppercase tracking-widest text-cyan-400 font-mono">
+              COMÉRCIO GERAL E PRESTAÇÃO DE SERVIÇOS
+            </p>
           </div>
         </div>
 
         {/* HERO TEXT & SERVICES */}
         <div className="my-12 lg:my-0 space-y-8 max-w-xl">
+
           <div className="space-y-3">
             <h1 className="text-3xl lg:text-5xl font-black tracking-tight leading-none bg-gradient-to-r from-white via-cyan-100 to-cyan-300/60 bg-clip-text text-transparent font-mono">
-              Soluções financeiras e tecnológicas para o seu negócio.
+              Serviços para o seu negócio.
             </h1>
+
             <p className="text-sm text-cyan-200/80 max-w-sm font-mono">
-              Conectamos inovação, agilidade e segurança para impulsionar a gestão e os serviços digitais em Angola.
+              Soluções digitais para pagamentos, recargas e serviços empresariais.
             </p>
           </div>
 
@@ -116,6 +124,7 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
             {services.map((service, index) => {
               const Icon = service.icon;
+
               return (
                 <div
                   key={index}
@@ -124,9 +133,15 @@ export default function Landing() {
                   <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mt-0.5">
                     <Icon size={16} />
                   </div>
+
                   <div>
-                    <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">{service.title}</h3>
-                    <p className="text-[11px] text-cyan-200/70 mt-1 leading-relaxed font-mono">{service.desc}</p>
+                    <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                      {service.title}
+                    </h3>
+
+                    <p className="text-[11px] text-cyan-200/70 mt-1 leading-relaxed font-mono">
+                      {service.desc}
+                    </p>
                   </div>
                 </div>
               );
@@ -136,25 +151,51 @@ export default function Landing() {
 
         {/* COMPACT FOOTER INFO */}
         <div className="pt-6 border-t border-cyan-500/10 flex flex-wrap gap-x-6 gap-y-2 text-[11px] font-mono text-cyan-200/60">
-          <span className="flex items-center gap-1.5"><MapPin size={12} className="text-cyan-400" /> Malanje, Controlo nº1</span>
-          <span className="flex items-center gap-1.5"><Phone size={12} className="text-cyan-400" /> +244 928 270 636</span>
-          <span className="flex items-center gap-1.5"><Mail size={12} className="text-cyan-400" /> comercial@ematea.org</span>
-          <span className="block w-full mt-2 text-[10px] text-cyan-200/40">NIF: 5002577666 • © 2026 EMATEA</span>
+
+          <span className="flex items-center gap-1.5">
+            <MapPin size={12} className="text-cyan-400" />
+            Malanje, Controlo nº1
+          </span>
+
+          <span className="flex items-center gap-1.5">
+            <Phone size={12} className="text-cyan-400" />
+            +244 928 270 636
+          </span>
+
+          <span className="flex items-center gap-1.5">
+            <Mail size={12} className="text-cyan-400" />
+            comercial@ematea.org
+          </span>
+
+          <span className="block w-full mt-2 text-[10px] text-cyan-200/40">
+            NIF: 5002577666 • © 2026 EMATEA
+          </span>
+
         </div>
       </div>
 
       {/* RIGHT SIDE: CLEAN CONVERSION FORM */}
       <div className="w-full lg:w-5/12 p-8 lg:p-16 flex flex-col justify-center items-center bg-[#0a2533]">
+
         <div className="w-full max-w-sm space-y-6">
-          
+
           <div className="space-y-1 text-center lg:text-left">
-            <h3 className="text-2xl font-bold tracking-tight text-white font-mono">Aceder à Plataforma</h3>
-            <p className="text-xs text-cyan-200/70 font-mono">Insira as suas credenciais para entrar na sua conta.</p>
+            <h3 className="text-2xl font-bold tracking-tight text-white font-mono">
+              Aceder à Plataforma
+            </h3>
+
+            <p className="text-xs text-cyan-200/70 font-mono">
+              Insira as suas credenciais para entrar na sua conta.
+            </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
+
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase tracking-widest font-mono text-cyan-200/70 font-bold">Identificação</label>
+              <label className="text-[10px] uppercase tracking-widest font-mono text-cyan-200/70 font-bold">
+                Identificação
+              </label>
+
               <input
                 type="text"
                 value={identity}
@@ -165,8 +206,10 @@ export default function Landing() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] uppercase tracking-widest font-mono text-cyan-200/70 font-bold">Palavra-passe</label>
-              
+              <label className="text-[10px] uppercase tracking-widest font-mono text-cyan-200/70 font-bold">
+                Palavra-passe
+              </label>
+
               {/* CAMPO DE SENHA COM VISUALIZADOR EMBUTIDO */}
               <div className="relative">
                 <input
@@ -176,13 +219,22 @@ export default function Landing() {
                   placeholder="••••••••"
                   className="w-full p-3.5 pr-11 rounded-xl bg-[#0e364a] border border-cyan-500/20 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm font-mono text-white transition-all duration-200 placeholder:text-cyan-200/30 focus:outline-none"
                 />
+
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Ocultar palavra-passe" : "Mostrar palavra-passe"}
+                  aria-label={
+                    showPassword
+                      ? "Ocultar palavra-passe"
+                      : "Mostrar palavra-passe"
+                  }
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-cyan-200/50 hover:text-cyan-300 transition-colors focus:outline-none cursor-pointer"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? (
+                    <EyeOff size={18} />
+                  ) : (
+                    <Eye size={18} />
+                  )}
                 </button>
               </div>
             </div>
@@ -201,6 +253,7 @@ export default function Landing() {
                 </>
               )}
             </button>
+
             <div className="flex justify-end pt-1">
               <button
                 type="button"
@@ -210,9 +263,11 @@ export default function Landing() {
                 Esqueceu a palavra-passe?
               </button>
             </div>
+
           </form>
 
           <div className="space-y-4 text-center font-mono">
+
             <p className="text-xs text-cyan-200/70">
               Não tem uma conta?{" "}
               <span
@@ -225,8 +280,15 @@ export default function Landing() {
 
             <p className="text-[10px] text-cyan-200/40 leading-relaxed">
               Ao entrar, confirma estar de acordo com os nossos <br />
-              <span className="underline cursor-pointer hover:text-cyan-200/70">Termos de Uso</span> e <span className="underline cursor-pointer hover:text-cyan-200/70">Políticas de Privacidade</span>.
+              <span className="underline cursor-pointer hover:text-cyan-200/70">
+                Termos de Uso
+              </span>{" "}
+              e{" "}
+              <span className="underline cursor-pointer hover:text-cyan-200/70">
+                Políticas de Privacidade
+              </span>.
             </p>
+
           </div>
 
         </div>
@@ -239,7 +301,7 @@ export default function Landing() {
 const services = [
   {
     title: "Recargas Eletrónicas",
-    desc: "Distribuição instantânea de serviços digitais e recargas para todo o território nacional.",
+    desc: "Recargas e serviços digitais para os seus clientes.",
     icon: Zap
   },
   {

@@ -114,8 +114,8 @@ function SelectMethod() {
                 <Bank size={24} weight="duotone" />
               </div>
               <div className="text-left">
-                <p className="font-bold font-mono text-sm text-white">Kwanza (AOA)</p>
-                <p className="text-xs text-cyan-200/70">Transferência bancária local (Multicaixa)</p>
+                <p className="font-bold font-mono text-sm text-white">Kwanza AOA</p>
+                <p className="text-xs text-cyan-200/70">Multicaixa, ATM, APP BANKING</p>
               </div>
             </div>
           </button>
@@ -130,8 +130,8 @@ function SelectMethod() {
                 <CurrencyCircleDollar size={24} weight="duotone" />
               </div>
               <div className="text-left">
-                <p className="font-bold font-mono text-sm text-white">Cartão / Crypto</p>
-                <p className="text-xs text-cyan-200/70">Checkout automatizado RedotPay</p>
+                <p className="font-bold font-mono text-sm text-white">USDT e USDC</p>
+                <p className="text-xs text-cyan-200/70">RedotPay, Binance, Trust Wallet...</p>
               </div>
             </div>
           </button>
