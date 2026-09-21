@@ -43,6 +43,7 @@ import SubAgentDetails from "./pages/agent/SubAgentDetails";
 import AgentCommissions from "./pages/agent/AgentCommissions";
 import AgentStatistics from "./pages/agent/AgentStatistics";
 import AgentHistory from "./pages/agent/AgentHistory";
+import Lucro from "./pages/Lucro"
 
 /* ===== SERVICES ===== */
 import Services from './pages/services/Services'
@@ -185,15 +186,19 @@ function App() {
           {/* RECHARGES */}
 
           <Route
-    path="recharges"
-    element={<RecargasPage />}
-/>
+            path="recharges"
+            element={<RecargasPage />}
+          />
 
-<Route
-    path="recharges/:providerCode"
-    element={<RecargasPage />}
-/>
-
+          <Route
+            path="recharges/:providerCode"
+            element={<RecargasPage />}
+          />
+           
+          <Route
+            path="/lucro"
+            element={<Lucro />}
+          />
 
           {/* DASHBOARD */}
 

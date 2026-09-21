@@ -1,10 +1,12 @@
 import { NavLink } from "react-router-dom"
+import { useAuth } from "../contexts/AuthContext"
 import {
   House,                 // Home limpa e moderna
-  UserCircle,           // Perfil com silhueta corporativa/bancária
-  DeviceMobile,         // Recargas (muito mais intuitivo para telemóvel/serviços)
+  UserCircle,            // Perfil com silhueta corporativa/bancária
+  DeviceMobile,        // Recargas (muito mais intuitivo para telemóvel/serviços)
   ClockCounterClockwise, // Transações (focado em histórico/movimentos)
-  SquaresFour,          // Dashboard / Visão Geral em grelha
+  SquaresFour,
+  ChartBar,              // Dashboard / Relatórios de Lucro profissional
 } from "@phosphor-icons/react"
 
 const links = [
@@ -12,10 +14,18 @@ const links = [
   { to: "/recharges", label: "Recargas", icon: DeviceMobile },
   { to: "/transactions", label: "Histórico", icon: ClockCounterClockwise },
   { to: "/dashboard", label: "Painel", icon: SquaresFour },
+  { to: "/lucro", label: "Lucros", icon: ChartBar },
   { to: "/profile", label: "Perfil", icon: UserCircle },
 ]
 
 export default function BottomNav() {
+  const { user } = useAuth()
+
+  const visibleLinks =
+    user?.role === "AGENT"
+      ? links
+      : links.filter(link => link.to !== "/lucro")
+
   return (
     <nav
       className="
@@ -29,7 +39,7 @@ export default function BottomNav() {
     >
       <div className="flex justify-around items-center w-full px-2">
 
-        {links.map(({ to, label, icon: Icon }) => (
+        {visibleLinks.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
