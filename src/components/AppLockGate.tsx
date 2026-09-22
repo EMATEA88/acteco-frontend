@@ -20,7 +20,11 @@ export default function AppLockGate({
 }: {
   children: React.ReactNode;
 }) {
-  const [mode, setMode] = useState<LockMode>("LOADING");
+  const isNativeApp = Capacitor.isNativePlatform();
+
+  const [mode, setMode] = useState<LockMode>(() =>
+    isNativeApp ? "LOADING" : "UNLOCKED"
+  );
   const [setupStep, setSetupStep] = useState<"CREATE" | "CONFIRM">("CREATE");
   const [pin, setPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
@@ -148,6 +152,10 @@ export default function AppLockGate({
   // =========================================================
 
   const prepareUnlock = async (autoBiometry: boolean) => {
+    if (!isNativeApp) {
+      return;
+    }
+
     try {
       const configured = await appLockService.isConfigured();
 
@@ -218,6 +226,12 @@ export default function AppLockGate({
 
   useEffect(() => {
     mountedRef.current = true;
+
+    if (!isNativeApp) {
+      return () => {
+        mountedRef.current = false;
+      };
+    }
 
     /*
      * Primeira abertura.
