@@ -452,6 +452,7 @@ if (combinedBrandText.includes("DSTV")) {
   rawName.includes("FAMILIA 7D") ||
   rawName.includes("FAMILIA MAIS") ||
   rawName.includes("COMPRA DE FAMILIA") ||
+  rawName.includes("COMPRA DE GRANDE") ||
   rawName === "FAMILIA" ||
   rawName.includes("GRANDE/7D")
 ) {
