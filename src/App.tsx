@@ -15,6 +15,8 @@ import Profile from './pages/Profile'
 import About from './pages/About'
 import Notifications from './pages/Notifications'
 
+import AppLockGate from "./components/AppLockGate";
+
 /* ===== FINANCE ===== */
 import Deposit from './pages/Deposit'
 import RechargeHistory from './pages/RechargeHistory'
@@ -86,9 +88,8 @@ function App() {
         }}
       />
 
+      {/* ROTAS PÚBLICAS — NÃO PASSAM PELO APP LOCK */}
       <Routes>
-
-        {/* ================= PUBLIC ================= */}
 
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -97,41 +98,14 @@ function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
-        {/* ================= AGENT STATUS ================= */}
-
-        <Route
-          path="/agent/pending"
-          element={
-            <AgentRoute>
-              <AgentPending />
-            </AgentRoute>
-          }
-        />
-
-        <Route
-          path="/agent/rejected"
-          element={
-            <AgentRoute>
-              <AgentRejected />
-            </AgentRoute>
-          }
-        />
-
-        <Route
-          path="/agent/suspended"
-          element={
-            <AgentRoute>
-              <AgentSuspended />
-            </AgentRoute>
-          }
-        />
-
-        {/* ================= CLIENT ================= */}
+        {/* ================= APP PROTEGIDO ================= */}
 
         <Route
           element={
             <ProtectedRoute>
-              <AppLayout />
+              <AppLockGate>
+                <AppLayout />
+              </AppLockGate>
             </ProtectedRoute>
           }
         >
@@ -141,13 +115,9 @@ function App() {
             element={<Navigate to="/home" replace />}
           />
 
-          {/* HOME */}
           <Route path="home" element={<Home />} />
-
-          {/* HISTORY */}
           <Route path="history" element={<History />} />
 
-          {/* PROFILE */}
           <Route path="profile" element={<Profile />} />
           <Route path="/about" element={<About />} />
           <Route path="bank" element={<Bank />} />
@@ -159,16 +129,10 @@ function App() {
           <Route path="kyc" element={<KYCPage />} />
           <Route path="settings" element={<Settings />} />
 
-          {/* SERVICES */}
           <Route path="services" element={<Services />} />
-
-          {/* TRANSFER */}
           <Route path="transfer" element={<Transfer />} />
-
-          {/* WITHDRAW */}
           <Route path="withdraw/aoa" element={<WithdrawAOA />} />
 
-          {/* FINANCIAL */}
           <Route path="deposit/*" element={<Deposit />} />
 
           <Route
@@ -183,8 +147,6 @@ function App() {
             element={<WithdrawHistory />}
           />
 
-          {/* RECHARGES */}
-
           <Route
             path="recharges"
             element={<RecargasPage />}
@@ -194,20 +156,16 @@ function App() {
             path="recharges/:providerCode"
             element={<RecargasPage />}
           />
-           
+
           <Route
             path="/lucro"
             element={<Lucro />}
           />
 
-          {/* DASHBOARD */}
-
           <Route
             path="dashboard"
             element={<Dashboard />}
           />
-
-          {/* NOTIFICATIONS */}
 
           <Route
             path="notifications"
@@ -222,7 +180,9 @@ function App() {
           path="/agent"
           element={
             <ProtectedRoute>
-              <AgentLayout />
+              <AppLockGate>
+                <AgentLayout />
+              </AppLockGate>
             </ProtectedRoute>
           }
         >
@@ -274,7 +234,32 @@ function App() {
 
         </Route>
 
-        {/* FALLBACK */}
+        <Route
+          path="/agent/pending"
+          element={
+            <AgentRoute>
+              <AgentPending />
+            </AgentRoute>
+          }
+        />
+
+        <Route
+          path="/agent/rejected"
+          element={
+            <AgentRoute>
+              <AgentRejected />
+            </AgentRoute>
+          }
+        />
+
+        <Route
+          path="/agent/suspended"
+          element={
+            <AgentRoute>
+              <AgentSuspended />
+            </AgentRoute>
+          }
+        />
 
         <Route
           path="*"

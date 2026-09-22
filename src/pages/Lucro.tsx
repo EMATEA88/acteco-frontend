@@ -1,4 +1,4 @@
-import { FileText, Info, Percent, TrendingUp, Search, ChevronLeft, ChevronRight } from "lucide-react"
+import { FileText, Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { useState } from "react"
 
 export default function Lucro() {
@@ -175,123 +175,97 @@ export default function Lucro() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a2533] text-slate-100">
+    <div
+      className="min-h-screen bg-[#0a2533] text-slate-100"
+      style={{
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+      }}
+    >
+      <style>{`
+        .lucro-page-scroll::-webkit-scrollbar {
+          display: none;
+        }
+        .lucro-table-scroll::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
 
-      {/* HEADER */}
-      <header className="sticky top-0 z-40 border-b border-cyan-900/50 bg-[#0a2533]/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#159abb]">
-              EMATEA
-            </p>
-            <h1 className="mt-1 text-xl font-black tracking-tight text-white sm:text-2xl">
-              Lucros e Comissões
-            </h1>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-800 bg-cyan-950/70">
-            <Percent size={20} className="text-[#079bc0]" strokeWidth={2.5} />
-          </div>
-        </div>
-      </header>
-
-      {/* CONTEÚDO */}
-      <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-8 sm:py-10">
-
-        {/* TÍTULO */}
-        <section className="mb-7">
-          <div className="flex items-start gap-3">
-            <div className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-950 border border-cyan-800 shadow-sm">
-              <TrendingUp size={22} className="text-[#079bc0]" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-                Tabela de Produtos e Comissões
-              </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                Consulte os preços de referência, lucros e comissões aplicáveis aos produtos e serviços disponibilizados pela EMATEA.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* INFORMAÇÕES */}
-        <section className="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-cyan-900 bg-cyan-950/40 p-5 shadow-sm">
-            <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-900/50">
-              <Percent size={18} className="text-[#079bc0]" />
-            </div>
-            <h3 className="text-sm font-bold text-white">Comissão</h3>
-            <p className="mt-1 text-xs leading-5 text-slate-300">Percentagem aplicada ao produto ou serviço.</p>
-          </div>
-
-          <div className="rounded-2xl border border-cyan-900 bg-cyan-950/40 p-5 shadow-sm">
-            <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-900/50">
-              <TrendingUp size={18} className="text-[#079bc0]" />
-            </div>
-            <h3 className="text-sm font-bold text-white">Lucro</h3>
-            <p className="mt-1 text-xs leading-5 text-slate-300">Valor da comissão correspondente ao preço indicado.</p>
-          </div>
-
-          <div className="rounded-2xl border border-cyan-900 bg-cyan-950/40 p-5 shadow-sm">
-            <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-900/50">
-              <Info size={18} className="text-[#079bc0]" />
-            </div>
-            <h3 className="text-sm font-bold text-white">Valores de referência</h3>
-            <p className="mt-1 text-xs leading-5 text-slate-300">Os valores podem sofrer alterações conforme as regras dos fornecedores.</p>
-          </div>
-        </section>
-
-        {/* TABELA DE DADOS COMPLETA */}
-        <section className="overflow-hidden rounded-2xl border border-cyan-900 bg-cyan-950/60 shadow-xl">
-          
-          {/* CABEÇALHO DA TABELA E PESQUISA */}
-          <div className="flex flex-col gap-4 border-b border-cyan-900 bg-[#071c26] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0e9fc2]">
+      <main className="lucro-page-scroll mx-auto w-full max-w-7xl px-4 py-5 pb-24 sm:px-8 sm:py-7">
+        {/* CABEÇALHO DA TABELA + PESQUISA */}
+        <section className="border-b border-cyan-900/70 pb-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0e9fc2]">
                 <FileText size={19} className="text-white" />
               </div>
-              <div>
-                <h3 className="text-sm font-bold text-white">Tabela Oficial EMATEA</h3>
-                <p className="text-[11px] text-cyan-200/70">Produtos, preços e comissões</p>
+
+              <div className="min-w-0">
+                <h1 className="truncate text-base font-bold text-white sm:text-lg">
+                  Tabela de comissão
+                </h1>
+                <p className="text-[11px] text-cyan-200/70">
+                  Produtos, preços e comissões
+                </p>
               </div>
             </div>
 
-            {/* Barra de Pesquisa */}
             <div className="relative w-full sm:w-72">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
                 <Search size={16} />
               </span>
+
               <input
                 type="text"
                 placeholder="Pesquisar produto ou provedor..."
                 value={searchTerm}
-                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                className="w-full rounded-xl border border-cyan-800 bg-cyan-900/40 py-2 pl-9 pr-4 text-xs text-white placeholder-cyan-200/50 outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                onChange={(e) => {
+                  setSearchTerm(e.target.value)
+                  setCurrentPage(1)
+                }}
+                className="w-full rounded-xl border border-cyan-800 bg-cyan-900/40 py-2.5 pl-9 pr-4 text-xs text-white placeholder-cyan-200/50 outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
               />
             </div>
           </div>
+        </section>
 
-          {/* TABELA RESPONSIVA */}
-          <div className="overflow-x-auto p-2 sm:p-4">
-            <table className="w-full border-collapse text-left text-xs sm:text-sm">
+        {/* TABELA */}
+        <section className="w-full">
+          <div className="lucro-table-scroll overflow-x-auto">
+            <table className="w-full min-w-[720px] border-collapse text-left text-xs sm:text-sm">
               <thead>
                 <tr className="border-b border-cyan-900 text-cyan-200">
-                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Provedor</th>
-                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Produto</th>
-                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Preço (Kz)</th>
-                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Lucro (Kz)</th>
-                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">Comissão (%)</th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">
+                    Provedor
+                  </th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">
+                    Produto
+                  </th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">
+                    Preço (Kz)
+                  </th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">
+                    Lucro (Kz)
+                  </th>
+                  <th className="p-3 font-bold uppercase tracking-wider text-[11px]">
+                    Comissão (%)
+                  </th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-cyan-900/40 text-slate-200">
                 {currentData.length > 0 ? (
                   currentData.map((item, index) => (
-                    <tr key={index} className="transition-colors hover:bg-cyan-900/20">
+                    <tr
+                      key={index}
+                      className="transition-colors hover:bg-cyan-900/20"
+                    >
                       <td className="p-3 font-semibold text-white">
-                        <span className="rounded-md bg-cyan-900/60 px-2 py-1 text-[11px] font-bold text-cyan-300 border border-cyan-700/50">
+                        <span className="rounded-md border border-cyan-700/50 bg-cyan-900/60 px-2 py-1 text-[11px] font-bold text-cyan-300">
                           {item.provedor}
                         </span>
                       </td>
+
                       <td className="p-3 text-slate-200">{item.produto}</td>
                       <td className="p-3 text-cyan-100">{item.preco}</td>
                       <td className="p-3 font-medium text-cyan-400">{item.lucro}</td>
@@ -300,7 +274,7 @@ export default function Lucro() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="p-6 text-center text-slate-400">
+                    <td colSpan={5} className="p-8 text-center text-slate-400">
                       Nenhum produto encontrado para "{searchTerm}".
                     </td>
                   </tr>
@@ -309,52 +283,35 @@ export default function Lucro() {
             </table>
           </div>
 
-          {/* NUMERADOR DE PÁGINAS E NAVEGAÇÃO */}
-          <div className="flex flex-col sm:flex-row items-center justify-between border-t border-cyan-900 bg-[#071c26] px-5 py-3 gap-3">
-            <span className="text-xs text-cyan-200/80 font-medium">
+          {/* PAGINAÇÃO */}
+          <div className="flex flex-col gap-3 border-t border-cyan-900/70 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <span className="text-xs font-medium text-cyan-200/80">
               Página {currentPage} de {totalPages}
             </span>
+
             <div className="flex items-center gap-2">
               <button
                 onClick={prevPage}
                 disabled={currentPage === 1}
-                className="flex items-center gap-1 rounded-lg border border-cyan-800 bg-cyan-950 px-3 py-1.5 text-xs font-semibold text-cyan-200 disabled:opacity-40 hover:bg-cyan-900 transition-colors"
+                className="flex items-center gap-1 rounded-lg border border-cyan-800 bg-cyan-950 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition-colors hover:bg-cyan-900 disabled:opacity-40"
               >
-                <ChevronLeft size={14} /> Anterior
+                <ChevronLeft size={14} />
+                Anterior
               </button>
+
               <button
                 onClick={nextPage}
                 disabled={currentPage === totalPages}
-                className="flex items-center gap-1 rounded-lg border border-cyan-800 bg-cyan-950 px-3 py-1.5 text-xs font-semibold text-cyan-200 disabled:opacity-40 hover:bg-cyan-900 transition-colors"
+                className="flex items-center gap-1 rounded-lg border border-cyan-800 bg-cyan-950 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition-colors hover:bg-cyan-900 disabled:opacity-40"
               >
-                Seguinte <ChevronRight size={14} />
+                Seguinte
+                <ChevronRight size={14} />
               </button>
             </div>
           </div>
-
         </section>
-
-        {/* NOTA */}
-        <section className="mt-6 rounded-2xl border border-cyan-900 bg-cyan-950/40 p-5 shadow-sm">
-          <div className="flex items-start gap-3">
-            <Info size={18} className="mt-0.5 shrink-0 text-[#079bc0]" />
-            <div>
-              <h3 className="text-sm font-bold text-white">Informação importante</h3>
-              <p className="mt-1 text-xs leading-5 text-slate-300">
-                Os preços e comissões apresentados são valores de referência e podem ser alterados de acordo com as regras dos fornecedores.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* RODAPÉ */}
-        <footer className="py-7 text-center">
-          <p className="text-[11px] font-medium text-slate-300">EMATEA • Tecnologia e Serviços</p>
-          <p className="mt-1 text-[10px] text-slate-400">comercial@ematea.org • www.ematea.org</p>
-        </footer>
-
       </main>
-
     </div>
   )
+
 }
