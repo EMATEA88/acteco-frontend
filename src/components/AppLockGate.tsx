@@ -12,6 +12,7 @@ import {
   Check,
 } from "lucide-react";
 import appLockService from "../services/app-lock.service";
+import { Capacitor } from "@capacitor/core";
 
 type LockMode = "LOADING" | "SETUP" | "UNLOCK" | "UNLOCKED";
 
