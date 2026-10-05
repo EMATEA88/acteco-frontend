@@ -1,5 +1,7 @@
 export const providerBranding: Record<string, { logo: string }> = {
-  // Telecomunicações
+  // =========================================================
+  // TELECOMUNICAÇÕES
+  // =========================================================
   UNITEL: {
     logo: "UNITEL.PNG"
   },
@@ -13,7 +15,9 @@ export const providerBranding: Record<string, { logo: string }> = {
     logo: "NETONE.PNG"
   },
 
-  // Televisão (Incluindo variações exatas da API: ZAP_SAT e ZAP_MEDIA)
+  // =========================================================
+  // TELEVISÃO
+  // =========================================================
   DSTV: {
     logo: "DSTV.PNG"
   },
@@ -33,7 +37,9 @@ export const providerBranding: Record<string, { logo: string }> = {
     logo: "ZAP2.PNG"
   },
 
-  // Serviços Públicos e Parceiros (Incluindo 5linhas)
+  // =========================================================
+  // SERVIÇOS PÚBLICOS E PARCEIROS
+  // =========================================================
   ENDE: {
     logo: "ENDE.PNG"
   },
@@ -53,7 +59,9 @@ export const providerBranding: Record<string, { logo: string }> = {
     logo: "CINCO.PNG"
   },
 
-  // Serviços e Pagamentos Internacionais (Incluindo INT_VCH2)
+  // =========================================================
+  // PAGAMENTOS INTERNACIONAIS
+  // =========================================================
   INT_VCH2: {
     logo: "AMAZON.PNG"
   },
@@ -64,6 +72,9 @@ export const providerBranding: Record<string, { logo: string }> = {
     logo: "APPLE.PNG"
   },
   "GOOGLE PLAY": {
+    logo: "GOOGLEPLAY.PNG"
+  },
+  GOOGLEPLAY: {
     logo: "GOOGLEPLAY.PNG"
   },
   GOOGLE: {
@@ -91,7 +102,19 @@ export const providerBranding: Record<string, { logo: string }> = {
     logo: "FLIXBUS.PNG"
   },
 
-  // Jogos e Apostas (Incluindo siglas curtas da API: ABET, BBET, EBET, PBET, etc.)
+  // Eneba
+  ENEBA: {
+    logo: "eneba.png"
+  },
+
+  // VeniceBet
+  VENICEBET: {
+    logo: "venicebet.png"
+  },
+
+  // =========================================================
+  // JOGOS E APOSTAS
+  // =========================================================
   PREMIERBET: {
     logo: "Premiebet.png"
   },
