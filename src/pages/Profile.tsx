@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { UserService } from '../services/user.service'
 import { KYCService } from '../services/kyc'
 import { formatCurrencyAOA } from "../utils/formatCurrency"
+import { AgentService } from '../services/agent.service'
 
 import {
   ArrowDown,
@@ -67,6 +68,12 @@ export default function Profile() {
     staleTime: 0,
     gcTime: 0,
   })
+
+  const { data: agentStats } = useQuery({
+  queryKey: ['agent-premium-statistics'],
+  queryFn: () => AgentService.getPremiumStatistics(),
+  enabled: user?.role?.toUpperCase() === 'AGENT',
+})
   
   useEffect(() => {
     async function loadKYC() {
@@ -195,6 +202,16 @@ export default function Profile() {
                 <p className="text-2xl font-bold tracking-tight text-cyan-300 mt-1">
                   {formatCurrencyAOA(user?.balance ?? 0)}
                 </p>
+                {rawRole === "AGENT" && (
+  <div className="mt-3">
+    <p className="text-[8px] text-emerald-300/70 uppercase tracking-[0.16em] font-bold">
+      Comissão Acumulada
+    </p>
+    <p className="text-lg font-bold tracking-tight text-emerald-300 mt-1">
+      {formatCurrencyAOA(agentStats?.overview?.totalCommission ?? 0)}
+    </p>
+  </div>
+)}
               </div>
 
               <div className="flex items-center gap-4">

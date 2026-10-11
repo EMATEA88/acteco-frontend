@@ -4,7 +4,6 @@ import {
   UserPlus,
   Coins,
   ChartLine,
-  ClockCounterClockwise,
   User,
   Gear,
   X,
@@ -38,11 +37,7 @@ const menus = [
     icon: ChartLine,
     to: "/agent/statistics",
   },
-  {
-    title: "Histórico",
-    icon: ClockCounterClockwise,
-    to: "/agent/history",
-  },
+  
   {
     title: "Perfil",
     icon: User,

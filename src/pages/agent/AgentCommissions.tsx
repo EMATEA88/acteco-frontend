@@ -1,155 +1,389 @@
-import { useEffect, useState } from "react"
-import { BadgeDollarSign, Clock3, CheckCircle2, XCircle, TrendingUp } from "lucide-react"
-import { AgentService } from "../../services/agent.service"
+import { useEffect, useMemo, useState } from "react";
+import {
+  BadgeDollarSign,
+  Clock3,
+  CheckCircle2,
+  XCircle,
+  TrendingUp,
+  Search,
+  RefreshCw,
+  Coins,
+  ReceiptText,
+  CalendarDays,
+} from "lucide-react";
+import { AgentService } from "../../services/agent.service";
 
-// Componente Skeleton para carregamento fluido
 const Skeleton = ({ className }: { className: string }) => (
-  <div className={`animate-pulse bg-white/5 rounded-lg ${className}`} />
-)
+  <div className={`animate-pulse rounded-xl bg-white/[0.06] ${className}`} />
+);
+
+const formatCurrency = (value: unknown) =>
+  `${Number(value || 0).toLocaleString("pt-AO", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} Kz`;
+
+const formatDate = (value: string) =>
+  new Date(value).toLocaleString("pt-AO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
 export default function AgentCommissions() {
-  const [loading, setLoading] = useState(true)
-  const [summary, setSummary] = useState<any>(null)
-  const [history, setHistory] = useState<any[]>([])
-
-  useEffect(() => {
-    load()
-  }, [])
+  const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [loadError, setLoadError] = useState(false);
 
   async function load() {
     try {
-      setLoading(true)
+      setLoading(true);
+      setLoadError(false);
+
       const [summaryData, historyData] = await Promise.all([
         AgentService.getCommissionSummary(),
-        AgentService.getCommissionHistory()
-      ])
-      setSummary(summaryData)
-      setHistory(historyData)
-    } catch (err) {
-      console.error("Erro ao carregar comissões:", err)
+        AgentService.getCommissionHistory(),
+      ]);
+
+      setSummary(summaryData);
+      setHistory(Array.isArray(historyData) ? historyData : []);
+    } catch (error) {
+      console.error("Erro ao carregar comissões:", error);
+      setLoadError(true);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
-  return (
-    <div className="space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-[#EAECEF]">
-      {/* HEADER */}
-      <div>
-        <h1 className="text-xl font-black tracking-wider text-white uppercase font-mono">Comissões</h1>
-        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
-          Acompanhe todas as comissões geradas pela sua equipa em tempo real.
-        </p>
-      </div>
+  useEffect(() => {
+    void load();
+  }, []);
 
-      {/* CARDS SUMMARY COM SKELETON */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  const filteredHistory = useMemo(() => {
+    const term = search.trim().toLowerCase();
+
+    return history.filter((item) => {
+      const service = item.serviceRequest?.serviceName || "";
+      const reference = item.serviceRequest?.customerReference || "";
+      const matchesSearch =
+        !term ||
+        String(service).toLowerCase().includes(term) ||
+        String(reference).toLowerCase().includes(term);
+
+      const matchesStatus =
+        statusFilter === "ALL" || item.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [history, search, statusFilter]);
+
+  return (
+    <div className="mx-auto max-w-[1600px] space-y-7 p-4 text-[#EAECEF] md:p-8">
+      <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-emerald-400">
+            <Coins size={19} />
+            <span className="text-[10px] font-bold uppercase tracking-[0.22em]">
+              Gestão financeira
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">
+            Comissões
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm text-gray-400">
+            Consulte as comissões geradas pela sua rede, acompanhe os pagamentos
+            e verifique o histórico de cada operação.
+          </p>
+        </div>
+
+        <button
+          onClick={() => void load()}
+          disabled={loading}
+          className="inline-flex min-h-10 items-center justify-center gap-2 self-start rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-gray-200 transition hover:bg-white/[0.08] disabled:opacity-50 sm:self-auto"
+        >
+          <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
+          Atualizar
+        </button>
+      </header>
+
+      {loadError && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-rose-500/20 bg-rose-500/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3 text-sm text-rose-300">
+            <XCircle size={19} />
+            Não foi possível carregar as comissões.
+          </div>
+          <button
+            onClick={() => void load()}
+            className="text-left text-sm font-bold text-white underline underline-offset-4"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
+
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {loading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-[#161A1E] rounded-2xl border border-white/[0.04] p-5 space-y-2">
-              <Skeleton className="w-20 h-3" />
-              <Skeleton className="w-32 h-6" />
+          Array.from({ length: 4 }).map((_, index) => (
+            <div
+              key={index}
+              className="rounded-2xl border border-white/[0.07] bg-[#15191E] p-5"
+            >
+              <Skeleton className="mb-5 h-10 w-10" />
+              <Skeleton className="mb-3 h-3 w-24" />
+              <Skeleton className="mb-3 h-7 w-36" />
+              <Skeleton className="h-3 w-20" />
             </div>
           ))
         ) : (
           <>
-            <Card title="Disponível" value={summary?.availableCommission} icon={<BadgeDollarSign size={18} />} status="available" />
-            <Card title="Total Acumulado" value={summary?.totalCommission} icon={<TrendingUp size={18} />} />
-            <Card title="Pendentes" value={summary?.pending?.amount} subtitle={`${summary?.pending?.count || 0} registos`} icon={<Clock3 size={18} />} status="pending" />
-            <Card title="Pagas" value={summary?.paid?.amount} subtitle={`${summary?.paid?.count || 0} registos`} icon={<CheckCircle2 size={18} />} status="paid" />
+            <SummaryCard
+              title="Disponível"
+              value={summary?.availableCommission}
+              subtitle="Comissão disponível"
+              icon={<BadgeDollarSign size={21} />}
+              accent="emerald"
+            />
+            <SummaryCard
+              title="Total acumulado"
+              value={summary?.totalCommission}
+              subtitle="Total registado"
+              icon={<TrendingUp size={21} />}
+              accent="cyan"
+            />
+            <SummaryCard
+              title="Pendentes"
+              value={summary?.pending?.amount}
+              subtitle={`${summary?.pending?.count || 0} registos`}
+              icon={<Clock3 size={21} />}
+              accent="amber"
+            />
+            <SummaryCard
+              title="Pagas"
+              value={summary?.paid?.amount}
+              subtitle={`${summary?.paid?.count || 0} registos`}
+              icon={<CheckCircle2 size={21} />}
+              accent="blue"
+            />
           </>
         )}
-      </div>
+      </section>
 
-      {/* HISTÓRICO DA TABELA COM SKELETON */}
-      <div className="bg-[#161A1E] rounded-[2rem] border border-white/[0.04] overflow-hidden shadow-2xl">
-        <div className="p-6 border-b border-white/[0.03] bg-[#111418]/40">
-          <h2 className="text-sm font-black text-white font-mono uppercase tracking-wider">Histórico de Comissões</h2>
+      <section className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#15191E]">
+        <div className="border-b border-white/[0.07] p-5 md:p-6">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <ReceiptText size={19} className="text-emerald-400" />
+                <h2 className="text-lg font-bold text-white">
+                  Histórico de comissões
+                </h2>
+              </div>
+              <p className="mt-1 text-sm text-gray-500">
+                Consulte os valores, referências, estados e datas.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="relative min-w-0 sm:min-w-[240px]">
+                <Search
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                />
+                <input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Pesquisar serviço ou referência"
+                  className="h-10 w-full rounded-xl border border-white/10 bg-[#0E1115] pl-9 pr-3 text-sm text-white outline-none placeholder:text-gray-600 focus:border-emerald-500/50"
+                />
+              </div>
+
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                className="h-10 rounded-xl border border-white/10 bg-[#0E1115] px-3 text-sm text-gray-200 outline-none focus:border-emerald-500/50"
+              >
+                <option value="ALL">Todos os estados</option>
+                <option value="PAID">Pagas</option>
+                <option value="PENDING">Pendentes</option>
+                <option value="CANCELLED">Canceladas</option>
+              </select>
+            </div>
+          </div>
         </div>
-        
+
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.05] px-5 py-3 text-xs text-gray-500 md:px-6">
+          <span>
+            {loading
+              ? "A carregar registos..."
+              : `${filteredHistory.length} registo(s) encontrado(s)`}
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <CalendarDays size={13} />
+            Histórico de operações
+          </span>
+        </div>
+
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left">
+          <table className="w-full min-w-[760px] text-left">
             <thead>
-              <tr className="border-b border-white/[0.03] bg-[#111418]/60 text-[10px] font-black uppercase tracking-widest text-gray-500">
-                <th className="px-6 py-4.5">Serviço</th>
-                <th className="px-4 py-4.5">Referência</th>
-                <th className="px-4 py-4.5 text-right font-mono">Comissão</th>
-                <th className="px-4 py-4.5 text-center">Estado</th>
-                <th className="px-6 py-4.5 text-right">Data</th>
+              <tr className="border-b border-white/[0.06] bg-white/[0.02] text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                <th className="px-5 py-4 md:px-6">Serviço</th>
+                <th className="px-4 py-4">Referência</th>
+                <th className="px-4 py-4 text-right">Comissão</th>
+                <th className="px-4 py-4 text-center">Estado</th>
+                <th className="px-5 py-4 text-right md:px-6">Data</th>
               </tr>
             </thead>
-            <tbody className="text-xs font-medium divide-y divide-white/[0.02]">
+            <tbody className="divide-y divide-white/[0.05]">
               {loading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i}>
-                    <td className="px-6 py-4"><Skeleton className="w-32 h-4" /></td>
-                    <td className="px-4 py-4"><Skeleton className="w-24 h-4" /></td>
-                    <td className="px-4 py-4 text-right"><Skeleton className="w-20 h-4 ml-auto" /></td>
-                    <td className="px-4 py-4"><Skeleton className="w-20 h-6 mx-auto" /></td>
-                    <td className="px-6 py-4 text-right"><Skeleton className="w-24 h-4 ml-auto" /></td>
+                Array.from({ length: 5 }).map((_, index) => (
+                  <tr key={index}>
+                    {Array.from({ length: 5 }).map((__, cell) => (
+                      <td key={cell} className="px-5 py-5">
+                        <Skeleton className="h-4 w-24" />
+                      </td>
+                    ))}
                   </tr>
                 ))
-              ) : history.length === 0 ? (
+              ) : filteredHistory.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-16 text-center text-gray-600 font-mono text-[11px] uppercase tracking-wider">
-                    Nenhuma comissão localizada.
+                  <td colSpan={5} className="px-5 py-16 text-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.07] bg-white/[0.03] text-gray-500">
+                      <ReceiptText size={22} />
+                    </div>
+                    <p className="mt-4 font-semibold text-gray-300">
+                      Nenhuma comissão encontrada
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Altere a pesquisa ou selecione outro estado.
+                    </p>
                   </td>
                 </tr>
               ) : (
-                history.map((item: any) => (
-                  <tr key={item.id} className="hover:bg-white/[0.01] transition-colors">
-                    <td className="px-6 py-4 text-white font-bold">{item.serviceRequest?.serviceName || "-"}</td>
-                    <td className="px-4 py-4 font-mono text-gray-400">{item.serviceRequest?.customerReference || "-"}</td>
-                    <td className="px-4 py-4 text-right font-mono font-black text-emerald-400">
-                      {Number(item.amount || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} Kz
+                filteredHistory.map((item: any) => (
+                  <tr
+                    key={item.id}
+                    className="transition-colors hover:bg-white/[0.025]"
+                  >
+                    <td className="px-5 py-4 md:px-6">
+                      <span className="font-semibold text-white">
+                        {item.serviceRequest?.serviceName || "Serviço"}
+                      </span>
                     </td>
-                    <td className="px-4 py-4 text-center"><StatusBadge status={item.status} /></td>
-                    <td className="px-6 py-4 text-right font-mono text-gray-500">{new Date(item.createdAt).toLocaleString("pt-AO")}</td>
+                    <td className="px-4 py-4 font-mono text-xs text-gray-400">
+                      {item.serviceRequest?.customerReference || "—"}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-4 text-right font-semibold text-emerald-400">
+                      {formatCurrency(item.amount)}
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <StatusBadge status={item.status} />
+                    </td>
+                    <td className="whitespace-nowrap px-5 py-4 text-right text-xs text-gray-400 md:px-6">
+                      {formatDate(item.createdAt)}
+                    </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
-  )
+  );
 }
 
-function Card({ title, value, subtitle, icon, status }: any) {
-  const getColors = () => {
-    if (status === "available") return "text-emerald-400 bg-emerald-500/5 border-emerald-500/10"
-    if (status === "pending") return "text-amber-400 bg-amber-500/5 border-amber-500/10"
-    if (status === "paid") return "text-blue-400 bg-blue-500/5 border-blue-500/10"
-    return "text-cyan-400 bg-cyan-500/5 border-cyan-500/10"
-  }
+function SummaryCard({
+  title,
+  value,
+  subtitle,
+  icon,
+  accent,
+}: {
+  title: string;
+  value: unknown;
+  subtitle: string;
+  icon: React.ReactNode;
+  accent: "emerald" | "cyan" | "amber" | "blue";
+}) {
+  const colors = {
+    emerald: {
+      icon: "border-emerald-400/15 bg-emerald-400/[0.08] text-emerald-400",
+      glow: "from-emerald-400/[0.08]",
+      dot: "bg-emerald-400",
+    },
+    cyan: {
+      icon: "border-cyan-400/15 bg-cyan-400/[0.08] text-cyan-400",
+      glow: "from-cyan-400/[0.08]",
+      dot: "bg-cyan-400",
+    },
+    amber: {
+      icon: "border-amber-400/15 bg-amber-400/[0.08] text-amber-400",
+      glow: "from-amber-400/[0.08]",
+      dot: "bg-amber-400",
+    },
+    blue: {
+      icon: "border-blue-400/15 bg-blue-400/[0.08] text-blue-400",
+      glow: "from-blue-400/[0.08]",
+      dot: "bg-blue-400",
+    },
+  }[accent];
+
   return (
-    <div className="bg-[#161A1E] rounded-2xl border border-white/[0.04] p-5 flex items-center justify-between shadow-lg">
-      <div className="space-y-1">
-        <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 block">{title}</span>
-        <h2 className="text-xl font-black text-white font-mono leading-none">
-          {Number(value || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} Kz
-        </h2>
-        {subtitle && <span className="text-[9px] font-mono text-gray-600 block">{subtitle}</span>}
+    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#15191E] p-5 transition duration-200 hover:border-white/[0.14]">
+      <div
+        className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${colors.glow} to-transparent`}
+      />
+      <div className="relative">
+        <div className="flex items-start justify-between gap-3">
+          <div className="text-sm font-medium text-gray-400">{title}</div>
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${colors.icon}`}>
+            {icon}
+          </div>
+        </div>
+        <div className="mt-5 break-words text-2xl font-bold tracking-tight text-white">
+          {formatCurrency(value)}
+        </div>
+        <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
+          <span className={`h-1.5 w-1.5 rounded-full ${colors.dot}`} />
+          {subtitle}
+        </div>
       </div>
-      <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${getColors()}`}>{icon}</div>
     </div>
-  )
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const styles = {
-    PENDING: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    PAID: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-    DEFAULT: "bg-rose-500/10 text-rose-400 border-rose-500/20"
-  }
-  const config = status === "PENDING" ? { style: styles.PENDING, icon: <Clock3 size={10} />, label: "Pendente" } : 
-                 status === "PAID" ? { style: styles.PAID, icon: <CheckCircle2 size={10} />, label: "Paga" } : 
-                 { style: styles.DEFAULT, icon: <XCircle size={10} />, label: "Cancelada" }
-  
+  const config =
+    status === "PENDING"
+      ? {
+          style: "border-amber-400/20 bg-amber-400/[0.08] text-amber-300",
+          icon: <Clock3 size={12} />,
+          label: "Pendente",
+        }
+      : status === "PAID"
+      ? {
+          style: "border-emerald-400/20 bg-emerald-400/[0.08] text-emerald-300",
+          icon: <CheckCircle2 size={12} />,
+          label: "Paga",
+        }
+      : {
+          style: "border-rose-400/20 bg-rose-400/[0.08] text-rose-300",
+          icon: <XCircle size={12} />,
+          label: status === "CANCELLED" ? "Cancelada" : status,
+        };
+
   return (
-    <span className={`inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${config.style}`}>
-      {config.icon} {config.label}
+    <span
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[10px] font-semibold ${config.style}`}
+    >
+      {config.icon}
+      {config.label}
     </span>
-  )
+  );
 }
