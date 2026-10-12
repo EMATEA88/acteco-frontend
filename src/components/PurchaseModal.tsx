@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 import type { CatalogPlan } from "../types/catalog";
 
@@ -1408,13 +1409,13 @@ const normalizedStatus =
 
 
 
-  return (
+  return createPortal((
 
-    <div className="fixed inset-0 bg-[#030712]/85 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
+    <div className="fixed inset-0 bg-[#030712]/85 backdrop-blur-md flex items-center justify-center z-[9999] p-3 sm:p-4 animate-fadeIn">
 
       {!resultData ? (
-          <div className="w-full max-w-lg max-h-[90vh] overflow-hidden rounded-[28px] border border-[#0ea5e9]/30 bg-[#082f49] text-white shadow-2xl">
-            <div className="max-h-[90vh] overflow-y-auto custom-scrollbar">
+          <div className="flex w-full max-w-lg max-h-[calc(100dvh-24px)] flex-col overflow-hidden rounded-[28px] border border-[#0ea5e9]/30 bg-[#082f49] text-white shadow-2xl">
+            <div className="min-h-0 flex-1 overflow-y-auto custom-scrollbar">
               <div className="px-5 pt-5 pb-4 sm:px-6">
                 <div className="flex items-start gap-3.5">
                   <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl bg-white flex items-center justify-center ring-1 ring-[#0ea5e9]/30">
@@ -1654,7 +1655,9 @@ const normalizedStatus =
                 )}
               </div>
 
-              <div className="flex gap-3 border-t border-[#0ea5e9]/20 bg-[#0c4a6e] px-5 py-4 sm:px-6">
+            </div>
+
+            <div className="flex shrink-0 gap-3 border-t border-[#0ea5e9]/20 bg-[#0c4a6e] px-5 py-4 sm:px-6">
                 <button
                   type="button"
                   onClick={onClose}
@@ -1675,7 +1678,6 @@ const normalizedStatus =
                     : `Concluir${payableAmount > 0 ? ` ${Number(payableAmount).toLocaleString("pt-PT")} Kz` : ""}`}
                 </button>
               </div>
-            </div>
           </div>
 ) : (
 
@@ -2185,6 +2187,6 @@ const normalizedStatus =
 
     </div>
 
-  );
+  ), document.body);
 
 }
