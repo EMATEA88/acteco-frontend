@@ -1,7 +1,6 @@
 import {
   ChartBar,
   Users,
-  UserPlus,
   Coins,
   ChartLine,
   User,
@@ -22,11 +21,7 @@ const menus = [
     icon: Users,
     to: "/agent/sub-agents",
   },
-  {
-    title: "Novo Sub-agente",
-    icon: UserPlus,
-    to: "/agent/sub-agents/new",
-  },
+  
   {
     title: "Comissões",
     icon: Coins,
