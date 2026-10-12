@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import {
   Users, DollarSign, Activity, AlertCircle,
-  TrendingUp, ShoppingCart, History, ArrowClockwise
+  TrendingUp, ShoppingCart, History, RefreshCw
 } from "lucide-react";
 import { AgentService } from "../../services/agent.service";
 
@@ -169,7 +169,7 @@ export default function AgentStatistics() {
             loading ? "opacity-70 cursor-not-allowed" : ""
           }`}
         >
-          <ArrowClockwise size={18} className={loading ? "animate-spin" : ""} />
+          <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
           Atualizar
         </button>
       </div>
@@ -429,9 +429,6 @@ export default function AgentStatistics() {
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-gray-500">
-          O histórico apresenta até 100 vendas concluídas, conforme os dados enviados pelo backend.
-        </p>
       </div>
     </div>
   );

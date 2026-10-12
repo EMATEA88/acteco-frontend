@@ -4,7 +4,7 @@ import {
   Clock3, 
   CheckCircle2,  
   TrendingUp, 
-  ArrowClockwise, 
+  RefreshCw, 
   Users 
 } from "lucide-react"
 import { AgentService } from "../../services/agent.service"
@@ -67,7 +67,7 @@ export default function AgentCommissions() {
             loading ? "opacity-70 cursor-not-allowed" : ""
           }`}
         >
-          <ArrowClockwise size={18} className={loading ? "animate-spin" : ""} />
+          <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
           Atualizar
         </button>
       </div>
