@@ -1,241 +1,416 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react"
-import { 
-  BadgeDollarSign, 
-  Clock3, 
-  CheckCircle2,  
-  TrendingUp, 
-  RefreshCw, 
-  Users 
-} from "lucide-react"
-import { AgentService } from "../../services/agent.service"
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import {
+  BadgeDollarSign,
+  Clock3,
+  CheckCircle2,
+  TrendingUp,
+  RefreshCw,
+  AlertCircle,
+  XCircle,
+  CalendarDays,
+  ReceiptText,
+} from "lucide-react";
+import { AgentService } from "../../services/agent.service";
 
-// Componente Skeleton para carregamento fluido idêntico ao Admin
-const Skeleton = ({ className }: { className: string }) => (
-  <div className={`animate-pulse bg-white/5 rounded-lg ${className}`} />
-)
+type CommissionItem = {
+  id: string | number;
+  createdAt?: string;
+  amount?: number | string | null;
+  status?: string;
+  serviceRequest?: {
+    serviceName?: string | null;
+    customerReference?: string | null;
+  } | null;
+};
+
+type CommissionSummary = {
+  availableCommission?: number | null;
+  totalCommission?: number | null;
+  pending?: { amount?: number | null; count?: number | null };
+  paid?: { amount?: number | null; count?: number | null };
+};
+
+const Skeleton = ({ className = "" }: { className?: string }) => (
+  <div className={`animate-pulse rounded-lg bg-white/5 ${className}`} />
+);
+
+const formatMoney = (value: number | string | undefined | null) =>
+  new Intl.NumberFormat("pt-AO", {
+    style: "currency",
+    currency: "AOA",
+    maximumFractionDigits: 2,
+  }).format(Number(value ?? 0));
+
+const formatDate = (value?: string) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleString("pt-AO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 export default function AgentCommissions() {
-  const [loading, setLoading] = useState(true)
-  const [summary, setSummary] = useState<any>(null)
-  const [history, setHistory] = useState<any[]>([])
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [summary, setSummary] = useState<CommissionSummary | null>(null);
+  const [history, setHistory] = useState<CommissionItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (manual = false) => {
     try {
-      setLoading(true)
+      if (manual) setRefreshing(true);
+      else setLoading(true);
+
+      setError(null);
       const [summaryData, historyData] = await Promise.all([
         AgentService.getCommissionSummary(),
-        AgentService.getCommissionHistory()
-      ])
-      setSummary(summaryData)
-      setHistory(Array.isArray(historyData) ? historyData : [])
+        AgentService.getCommissionHistory(),
+      ]);
+
+      setSummary(summaryData as CommissionSummary);
+      setHistory(Array.isArray(historyData) ? historyData : []);
     } catch (err) {
-      console.error("Erro ao carregar comissões:", err)
+      console.error("Erro ao carregar comissões:", err);
+      setError("Não foi possível carregar as comissões. Verifica a ligação e tenta novamente.");
     } finally {
-      setLoading(false)
+      setLoading(false);
+      setRefreshing(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    load()
-    const interval = setInterval(() => {
-      if (document.visibilityState === "visible") {
-        load()
-      }
-    }, 60000)
+    void load();
 
-    return () => clearInterval(interval)
-  }, [load])
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") void load(true);
+    }, 60000);
 
-  const handleRefresh = async () => {
-    await load()
+    return () => window.clearInterval(interval);
+  }, [load]);
+
+  const handleRefresh = () => void load(true);
+
+  if (error && !summary && history.length === 0 && !loading) {
+    return (
+      <div className="w-full min-w-0 bg-[#0B0E11] px-3 py-5 text-white sm:px-6 sm:py-8">
+        <div className="mx-auto flex max-w-xl flex-col items-center gap-4 rounded-2xl border border-red-500/20 bg-[#161A1F] p-6 text-center">
+          <AlertCircle size={30} className="text-red-400" />
+          <p className="text-sm leading-relaxed text-gray-300">{error}</p>
+          <button
+            type="button"
+            onClick={() => void load()}
+            className="flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-black transition hover:bg-emerald-400"
+          >
+            <RefreshCw size={16} />
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-4 md:p-8 bg-[#0B0E11] min-h-screen text-white space-y-8 font-sans antialiased overflow-x-hidden">
-      {/* HEADER */}
-      <div className="flex justify-between items-center">
+    <div className="w-full min-w-0 space-y-5 overflow-x-hidden bg-[#0B0E11] px-2 py-4 font-sans text-white antialiased sm:mx-auto sm:max-w-[1600px] sm:space-y-8 sm:px-6 sm:py-6 lg:p-8">
+      {/* CABEÇALHO */}
+      <header className="flex min-w-0 flex-col gap-4 border-b border-white/5 pb-5 sm:flex-row sm:items-center sm:justify-between sm:pb-6">
+        <div className="min-w-0">
+          <p className="mb-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">
+            EMATEA · Área do Agente
+          </p>
+          <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+            Comissões
+          </h1>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleRefresh}
+          disabled={loading || refreshing}
+          className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#161A1F] px-4 py-3 text-sm font-semibold text-gray-300 transition hover:border-emerald-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+        >
+          <RefreshCw size={17} className={refreshing ? "animate-spin" : ""} />
+          {refreshing ? "A atualizar..." : "Atualizar dados"}
+        </button>
+      </header>
+
+      {error && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-sm text-amber-300 sm:p-4">
+          <AlertCircle size={18} className="mt-0.5 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* RESUMO FINANCEIRO */}
+      <section className="space-y-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Comissões</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Acompanhe todas as comissões geradas pela sua equipa em tempo real.
+          <h2 className="text-sm font-black uppercase tracking-wide text-white sm:text-base">
+            Resumo financeiro
+          </h2>
+          <p className="mt-1 text-xs text-gray-500">
+            Valores atuais da tua conta de agente.
           </p>
         </div>
-        <button
-          onClick={handleRefresh}
-          disabled={loading}
-          className={`flex items-center gap-2 bg-[#161A1F] hover:bg-white/10 border border-white/10 px-4 py-2.5 rounded-xl text-sm font-semibold transition ${
-            loading ? "opacity-70 cursor-not-allowed" : ""
-          }`}
-        >
-          <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-          Atualizar
-        </button>
-      </div>
 
-      {/* CARDS SUMMARY (FAIXA DE RESUMO GERAL) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {loading && !summary ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-[#161A1F] rounded-2xl border border-white/5 p-6 space-y-3">
-              <Skeleton className="w-24 h-3" />
-              <Skeleton className="w-36 h-7" />
-            </div>
-          ))
-        ) : (
-          <>
-            <Card 
-              title="Disponível" 
-              value={summary?.availableCommission} 
-              icon={<BadgeDollarSign size={22} />} 
-              status="available" 
-            />
-            <Card 
-              title="Total Acumulado" 
-              value={summary?.totalCommission} 
-              icon={<TrendingUp size={22} />} 
-              status="total" 
-            />
-            <Card 
-              title="Pendentes" 
-              value={summary?.pending?.amount} 
-              subtitle={`${summary?.pending?.count || 0} registos`} 
-              icon={<Clock3 size={22} />} 
-              status="pending" 
-            />
-            <Card 
-              title="Pagas" 
-              value={summary?.paid?.amount} 
-              subtitle={`${summary?.paid?.count || 0} registos`} 
-              icon={<CheckCircle2 size={22} />} 
-              status="paid" 
-            />
-          </>
-        )}
-      </div>
+        <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 sm:gap-4">
+          {loading && !summary ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={index}
+                className="space-y-4 rounded-2xl border border-white/5 bg-[#161A1F] p-4 sm:p-6"
+              >
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-7 w-36 max-w-full" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            ))
+          ) : (
+            <>
+              <SummaryCard
+                title="Disponível"
+                value={summary?.availableCommission}
+                icon={<BadgeDollarSign size={21} />}
+                status="available"
+                detail="Comissão disponível"
+              />
+              <SummaryCard
+                title="Total acumulado"
+                value={summary?.totalCommission}
+                icon={<TrendingUp size={21} />}
+                status="total"
+                detail="Comissão acumulada"
+              />
+              <SummaryCard
+                title="Pendentes"
+                value={summary?.pending?.amount}
+                subtitle={`${summary?.pending?.count ?? 0} registos`}
+                icon={<Clock3 size={21} />}
+                status="pending"
+                detail="A aguardar processamento"
+              />
+              <SummaryCard
+                title="Pagas"
+                value={summary?.paid?.amount}
+                subtitle={`${summary?.paid?.count ?? 0} registos`}
+                icon={<CheckCircle2 size={21} />}
+                status="paid"
+                detail="Comissões pagas"
+              />
+            </>
+          )}
+        </div>
+      </section>
 
-      {/* HISTÓRICO DA TABELA COM SCROLL HORIZONTAL FLUIDO E PADRÃO ADMIN */}
-      <div className="bg-[#161A1F] rounded-2xl p-6 border border-white/5 space-y-6 shadow-xl">
-        <div className="flex items-center gap-3">
-          <Users size={22} className="text-cyan-400" />
-          <h2 className="text-lg font-bold">Histórico de Comissões</h2>
+      {/* HISTÓRICO */}
+      <section className="min-w-0 space-y-4">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-400">
+            <ReceiptText size={20} />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-base font-black uppercase tracking-wide text-white sm:text-lg">
+              Histórico de comissões
+            </h2>
+            <p className="mt-1 text-xs text-gray-500">
+              Consulta o serviço, a referência, o valor e o estado de cada comissão.
+            </p>
+          </div>
         </div>
 
-        <div className="w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
-          <table className="w-full min-w-[800px] border-collapse text-left">
-            <thead>
-              <tr className="border-b border-white/10 text-left text-gray-400 text-sm">
-                <th className="py-3 px-4">Data</th>
-                <th className="py-3 px-4">Serviço</th>
-                <th className="py-3 px-4">Referência</th>
-                <th className="py-3 px-4 text-right">Comissão</th>
-                <th className="py-3 px-4 text-center">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5 text-sm">
-              {loading && history.length === 0 ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i}>
-                    <td className="py-4 px-4"><Skeleton className="w-28 h-4" /></td>
-                    <td className="py-4 px-4"><Skeleton className="w-36 h-4" /></td>
-                    <td className="py-4 px-4"><Skeleton className="w-24 h-4" /></td>
-                    <td className="py-4 px-4 text-right"><Skeleton className="w-24 h-4 ml-auto" /></td>
-                    <td className="py-4 px-4 text-center"><Skeleton className="w-20 h-6 mx-auto rounded-lg" /></td>
-                  </tr>
-                ))
-              ) : history.length === 0 ? (
+        <div className="min-w-0 overflow-hidden rounded-2xl border border-white/5 bg-[#161A1F] shadow-xl">
+          {/* TELEMÓVEL: REGISTOS EM CARTÕES LARGOS */}
+          <div className="space-y-3 p-2 sm:p-3 md:hidden">
+            {loading && history.length === 0 ? (
+              Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="space-y-4 rounded-xl border border-white/5 bg-[#0F1318] p-4"
+                >
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-5 w-44 max-w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              ))
+            ) : history.length === 0 ? (
+              <EmptyState />
+            ) : (
+              history.map((item) => (
+                <article
+                  key={item.id}
+                  className="w-full min-w-0 rounded-xl border border-white/5 bg-[#0F1318] p-4 sm:p-5"
+                >
+                  <div className="flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="break-words text-sm font-bold text-white">
+                        {item.serviceRequest?.serviceName || "Serviço não identificado"}
+                      </p>
+                      <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
+                        <CalendarDays size={13} className="shrink-0" />
+                        {formatDate(item.createdAt)}
+                      </p>
+                    </div>
+                    <StatusBadge status={item.status || ""} />
+                  </div>
+
+                  <div className="my-4 border-t border-white/5" />
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="min-w-0">
+                      <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                        Comissão
+                      </p>
+                      <p className="break-words text-lg font-black text-emerald-400">
+                        {formatMoney(item.amount)}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                        Referência
+                      </p>
+                      <p className="break-all font-mono text-xs text-gray-300">
+                        {item.serviceRequest?.customerReference || "—"}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
+
+          {/* COMPUTADOR: TABELA COMPLETA */}
+          <div className="hidden overflow-x-auto md:block">
+            <table className="w-full min-w-[800px] border-collapse text-left">
+              <thead className="border-b border-white/5 bg-[#0B0E11] text-[10px] uppercase tracking-wider text-gray-500">
                 <tr>
-                  <td colSpan={5} className="text-center py-12 text-gray-500 font-mono text-xs uppercase tracking-wider">
-                    Nenhuma comissão encontrada.
-                  </td>
+                  <th className="px-4 py-4 lg:px-5">Data</th>
+                  <th className="px-4 py-4 lg:px-5">Serviço</th>
+                  <th className="px-4 py-4 lg:px-5">Referência</th>
+                  <th className="px-4 py-4 text-right lg:px-5">Comissão</th>
+                  <th className="px-4 py-4 text-center lg:px-5">Estado</th>
                 </tr>
-              ) : (
-                history.map((item: any) => (
-                  <tr key={item.id} className="border-b border-white/5 hover:bg-white/5 transition">
-                    <td className="py-4 px-4 text-gray-300 whitespace-nowrap">
-                      {new Date(item.createdAt).toLocaleString("pt-AO")}
-                    </td>
-                    <td className="py-4 px-4 text-white font-medium">
-                      {item.serviceRequest?.serviceName || "-"}
-                    </td>
-                    <td className="py-4 px-4 font-mono text-gray-400">
-                      {item.serviceRequest?.customerReference || "-"}
-                    </td>
-                    <td className="py-4 px-4 text-right font-semibold text-emerald-400 whitespace-nowrap">
-                      {formatMoney(item.amount)}
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      <StatusBadge status={item.status} />
+              </thead>
+              <tbody className="divide-y divide-white/5 text-sm">
+                {loading && history.length === 0 ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <tr key={index}>
+                      <td className="px-4 py-4"><Skeleton className="h-4 w-28" /></td>
+                      <td className="px-4 py-4"><Skeleton className="h-4 w-36" /></td>
+                      <td className="px-4 py-4"><Skeleton className="h-4 w-24" /></td>
+                      <td className="px-4 py-4"><Skeleton className="ml-auto h-4 w-24" /></td>
+                      <td className="px-4 py-4"><Skeleton className="mx-auto h-6 w-20" /></td>
+                    </tr>
+                  ))
+                ) : history.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-12 text-center text-sm text-gray-500">
+                      Nenhuma comissão encontrada.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  history.map((item) => (
+                    <tr key={item.id} className="text-gray-300 transition hover:bg-white/[0.03]">
+                      <td className="whitespace-nowrap px-4 py-4 text-xs text-gray-400 lg:px-5">
+                        {formatDate(item.createdAt)}
+                      </td>
+                      <td className="px-4 py-4 font-semibold text-white lg:px-5">
+                        {item.serviceRequest?.serviceName || "—"}
+                      </td>
+                      <td className="px-4 py-4 font-mono text-xs text-gray-400 lg:px-5">
+                        {item.serviceRequest?.customerReference || "—"}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-4 text-right font-bold text-emerald-400 lg:px-5">
+                        {formatMoney(item.amount)}
+                      </td>
+                      <td className="px-4 py-4 text-center lg:px-5">
+                        <StatusBadge status={item.status || ""} />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
-  )
+  );
 }
 
-/* =======================================================
-   COMPONENTES AUXILIARES
-======================================================= */
-
-interface CardProps {
-  title: string
-  value: number | undefined | null
-  subtitle?: string
-  icon: ReactNode
-  status?: string
-}
-
-function Card({ title, value, subtitle, icon, status }: CardProps) {
-  const getColors = () => {
-    if (status === "available") return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
-    if (status === "pending") return "text-yellow-400 bg-yellow-500/10 border-yellow-500/20"
-    if (status === "paid") return "text-blue-400 bg-blue-500/10 border-blue-500/20"
-    return "text-cyan-400 bg-cyan-500/10 border-cyan-500/20"
-  }
+function SummaryCard({
+  title,
+  value,
+  subtitle,
+  detail,
+  icon,
+  status,
+}: {
+  title: string;
+  value: number | string | null | undefined;
+  subtitle?: string;
+  detail: string;
+  icon: ReactNode;
+  status: "available" | "total" | "pending" | "paid";
+}) {
+  const colors = {
+    available: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10",
+    total: "text-cyan-400 border-cyan-500/20 bg-cyan-500/10",
+    pending: "text-amber-400 border-amber-500/20 bg-amber-500/10",
+    paid: "text-blue-400 border-blue-500/20 bg-blue-500/10",
+  };
 
   return (
-    <div className="bg-[#161A1F] rounded-2xl p-6 border border-white/5 flex flex-col justify-between shadow-lg">
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-xs uppercase text-gray-500 font-semibold">{title}</p>
-          <h2 className="text-2xl font-bold mt-2 break-words">{formatMoney(value)}</h2>
-          {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+    <div className="min-w-0 rounded-2xl border border-white/5 bg-[#161A1F] p-4 shadow-lg transition hover:border-white/10 sm:p-5 lg:p-6">
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">
+            {title}
+          </p>
+          <h3 className="mt-2 break-words text-xl font-black tracking-tight text-white sm:text-2xl">
+            {formatMoney(value)}
+          </h3>
+          <p className="mt-2 text-xs text-gray-500">{subtitle || detail}</p>
         </div>
-        <div className={`p-3 rounded-xl border ${getColors()}`}>{icon}</div>
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border sm:h-11 sm:w-11 ${colors[status]}`}>
+          {icon}
+        </div>
       </div>
     </div>
-  )
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const isPaid = status === "PAID"
-  const isPending = status === "PENDING"
+  const isPaid = status === "PAID";
+  const isPending = status === "PENDING";
 
   const style = isPaid
-    ? "bg-green-500/20 text-green-400"
+    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
     : isPending
-    ? "bg-yellow-500/20 text-yellow-400"
-    : "bg-red-500/20 text-red-400"
+    ? "border-amber-500/20 bg-amber-500/10 text-amber-400"
+    : "border-rose-500/20 bg-rose-500/10 text-rose-400";
 
-  const label = isPaid ? "Paga" : isPending ? "Pendente" : "Cancelada"
-  const icon = isPaid ? "🟢" : isPending ? "🟡" : "🔴"
+  const label = isPaid ? "Paga" : isPending ? "Pendente" : "Cancelada";
+  const icon = isPaid ? <CheckCircle2 size={12} /> : isPending ? <Clock3 size={12} /> : <XCircle size={12} />;
 
   return (
-    <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 whitespace-nowrap ${style}`}>
-      <span>{icon}</span>
-      <span>{label}</span>
+    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border px-2.5 py-1 text-[10px] font-bold ${style}`}>
+      {icon}
+      {label}
     </span>
-  )
+  );
 }
 
-function formatMoney(value: number | undefined | null) {
-  return new Intl.NumberFormat("pt-AO", {
-    style: "currency",
-    currency: "AOA",
-    maximumFractionDigits: 2
-  }).format(Number(value ?? 0))
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/5 text-gray-500">
+        <ReceiptText size={22} />
+      </div>
+      <p className="text-sm text-gray-400">Nenhuma comissão encontrada.</p>
+    </div>
+  );
 }
