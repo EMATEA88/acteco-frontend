@@ -153,7 +153,7 @@ export default function AgentStatistics() {
   return (
     <div className="p-4 md:p-8 bg-[#0B0E11] min-h-screen text-white space-y-8 font-sans antialiased overflow-x-hidden">
       {/* HEADER IDÊNTICO AO ADMIN */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
             Dashboard de Performance
@@ -329,7 +329,7 @@ export default function AgentStatistics() {
         )}
       </div>
 
-      {/* DESEMPENHO DOS SUBAGENTES */}
+      {/* DESEMPENHO DOS SUBAGENTES - COM SCROLL HORIZONTAL FLUIDO */}
       <div className="bg-[#161A1F] rounded-2xl p-6 border border-white/5 space-y-6 shadow-xl">
         <div className="flex items-center gap-3">
           <Users size={22} className="text-purple-400" />
@@ -337,7 +337,7 @@ export default function AgentStatistics() {
         </div>
 
         <div className="w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
-          <table className="w-full min-w-[750px] border-collapse text-left">
+          <table className="w-full min-w-[850px] border-collapse text-left">
             <thead>
               <tr className="border-b border-white/10 text-left text-gray-400 text-sm">
                 <th className="py-3 px-4">Subagente</th>
@@ -358,16 +358,16 @@ export default function AgentStatistics() {
 
               {(data?.teamPerformance ?? []).map((agent) => (
                 <tr key={agent.id} className="border-b border-white/5 hover:bg-white/5 transition">
-                  <td className="py-4 px-4">
+                  <td className="py-4 px-4 whitespace-nowrap">
                     <p className="font-semibold text-white">{agent.name}</p>
                     <p className="text-xs text-gray-500">{agent.email}</p>
                   </td>
-                  <td className="py-4 px-4 font-mono text-gray-400">{agent.code}</td>
-                  <td className="py-4 px-4 text-white font-medium">{formatCurrency(agent[period].sales)}</td>
-                  <td className="py-4 px-4 text-emerald-400 font-semibold">
+                  <td className="py-4 px-4 font-mono text-gray-400 whitespace-nowrap">{agent.code}</td>
+                  <td className="py-4 px-4 text-white font-medium whitespace-nowrap">{formatCurrency(agent[period].sales)}</td>
+                  <td className="py-4 px-4 text-emerald-400 font-semibold whitespace-nowrap">
                     {formatCurrency(agent[period].profit)}
                   </td>
-                  <td className="py-4 px-4 text-center text-gray-300 font-mono">{agent[period].count}</td>
+                  <td className="py-4 px-4 text-center text-gray-300 font-mono whitespace-nowrap">{agent[period].count}</td>
                 </tr>
               ))}
             </tbody>
@@ -375,7 +375,7 @@ export default function AgentStatistics() {
         </div>
       </div>
 
-      {/* HISTÓRICO DE VENDAS */}
+      {/* HISTÓRICO DE VENDAS - COM SCROLL HORIZONTAL FLUIDO */}
       <div className="bg-[#161A1F] rounded-2xl p-6 border border-white/5 space-y-6 shadow-xl">
         <div className="flex items-center gap-3">
           <History size={22} className="text-cyan-400" />
@@ -383,7 +383,7 @@ export default function AgentStatistics() {
         </div>
 
         <div className="w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
-          <table className="w-full min-w-[850px] border-collapse text-left">
+          <table className="w-full min-w-[950px] border-collapse text-left">
             <thead>
               <tr className="border-b border-white/10 text-left text-gray-400 text-sm">
                 <th className="py-3 px-4">Data</th>
@@ -410,31 +410,33 @@ export default function AgentStatistics() {
                   className="border-b border-white/5 hover:bg-white/5 transition"
                 >
                   <td className="py-4 px-4 text-gray-300 whitespace-nowrap">{formatDate(sale.date)}</td>
-                  <td className="py-4 px-4 font-medium text-white">{sale.sellerName}</td>
-                  <td className="py-4 px-4">
+                  <td className="py-4 px-4 font-medium text-white whitespace-nowrap">{sale.sellerName}</td>
+                  <td className="py-4 px-4 whitespace-nowrap">
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${sale.sellerRole === "AGENT" ? "bg-blue-500/20 text-blue-400" : "bg-purple-500/20 text-purple-400"}`}>
                       {sale.sellerRole === "AGENT" ? "Agente" : "Subagente"}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-gray-300">{sale.service || "—"}</td>
+                  <td className="py-4 px-4 text-gray-300 whitespace-nowrap">{sale.service || "—"}</td>
                   <td className="py-4 px-4 text-right font-medium text-white whitespace-nowrap">
                     {formatCurrency(sale.amount)}
                   </td>
                   <td className="py-4 px-4 text-right font-semibold text-emerald-400 whitespace-nowrap">
                     {formatCurrency(sale.profit)}
                   </td>
-                  <td className="py-4 px-4 font-mono text-gray-400">{sale.reference || "—"}</td>
+                  <td className="py-4 px-4 font-mono text-gray-400 whitespace-nowrap">{sale.reference || "—"}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <p className="text-xs text-gray-500">
+          O histórico apresenta até 100 vendas concluídas, conforme os dados enviados pelo backend.
+        </p>
       </div>
     </div>
   );
 }
 
-/* COMPONENTE AUXILIAR STATCARD NO PADRÃO ADMIN */
 function StatCard({
   title,
   value,
@@ -463,13 +465,13 @@ function StatCard({
 
   return (
     <div className="bg-[#161A1F] rounded-2xl p-6 border border-white/5 flex flex-col justify-between shadow-lg">
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-xs uppercase text-gray-500 font-semibold">{title}</p>
-          <h2 className="text-2xl font-bold mt-2 break-words text-white">{value}</h2>
-          <p className="text-xs text-gray-500 mt-1">{detail}</p>
+      <div className="flex justify-between items-start gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs uppercase text-gray-500 font-semibold tracking-wide">{title}</p>
+          <h2 className="text-xl sm:text-2xl font-bold mt-2 truncate text-white">{value}</h2>
+          <p className="text-xs text-gray-500 mt-1 truncate">{detail}</p>
         </div>
-        <div className={`p-3 rounded-xl border ${getColorStyle()}`}>{icon}</div>
+        <div className={`p-3 rounded-xl border shrink-0 ${getColorStyle()}`}>{icon}</div>
       </div>
     </div>
   );
