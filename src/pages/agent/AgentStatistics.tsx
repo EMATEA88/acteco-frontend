@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid
 } from "recharts";
 import {
   Users, DollarSign, Activity, AlertCircle,
-  TrendingUp, ShoppingCart, History
+  TrendingUp, ShoppingCart, History, ArrowClockwise
 } from "lucide-react";
 import { AgentService } from "../../services/agent.service";
 
@@ -77,22 +77,33 @@ export default function AgentStatistics() {
       minute: "2-digit",
     });
 
-  useEffect(() => {
-    async function loadStats() {
-      try {
-        setLoading(true);
-        setError(null);
-        const stats = await AgentService.getPremiumStatistics();
-        setData(stats as StatsData);
-      } catch {
-        setError("Não foi possível carregar os dados de performance.");
-      } finally {
-        setLoading(false);
-      }
+  const loadStats = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const stats = await AgentService.getPremiumStatistics();
+      setData(stats as StatsData);
+    } catch {
+      setError("Não foi possível carregar os dados de performance.");
+    } finally {
+      setLoading(false);
     }
-
-    loadStats();
   }, []);
+
+  useEffect(() => {
+    loadStats();
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        loadStats();
+      }
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [loadStats]);
+
+  const handleRefresh = async () => {
+    await loadStats();
+  };
 
   if (error) {
     return (
@@ -140,26 +151,40 @@ export default function AgentStatistics() {
   ] as const;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-4 md:p-8 overflow-x-hidden">
-      <header>
-        <h1 className="text-2xl md:text-3xl font-bold text-white">
-          Dashboard de Performance
-        </h1>
-        <p className="mt-2 text-gray-400">
-          Acompanhe as vendas, os lucros e o desempenho da sua rede.
-        </p>
-      </header>
+    <div className="p-4 md:p-8 bg-[#0B0E11] min-h-screen text-white space-y-8 font-sans antialiased overflow-x-hidden">
+      {/* HEADER IDÊNTICO AO ADMIN */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
+            Dashboard de Performance
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Acompanhe as vendas, os lucros e o desempenho da sua rede.
+          </p>
+        </div>
+        <button
+          onClick={handleRefresh}
+          disabled={loading}
+          className={`flex items-center gap-2 bg-[#161A1F] hover:bg-white/10 border border-white/10 px-4 py-2.5 rounded-xl text-sm font-semibold transition ${
+            loading ? "opacity-70 cursor-not-allowed" : ""
+          }`}
+        >
+          <ArrowClockwise size={18} className={loading ? "animate-spin" : ""} />
+          Atualizar
+        </button>
+      </div>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {loading ? (
+      {/* FAIXA DE RESUMO GERAL */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {loading && !data ? (
           Array.from({ length: 4 }).map((_, index) => (
             <div
               key={index}
-              className="space-y-3 rounded-2xl border border-white/5 bg-[#161A1E] p-6"
+              className="space-y-3 rounded-2xl border border-white/5 bg-[#161A1F] p-6"
             >
-              <Skeleton className="h-5 w-24" />
-              <Skeleton className="h-8 w-36" />
-              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-7 w-36" />
+              <Skeleton className="h-3 w-20" />
             </div>
           ))
         ) : (
@@ -168,46 +193,47 @@ export default function AgentStatistics() {
               title="Vendas da Rede"
               value={formatCurrency(overview?.total.sales ?? 0)}
               detail={`${overview?.total.count ?? 0} operações concluídas`}
-              icon={<ShoppingCart size={20} />}
-              color="text-emerald-400"
+              icon={<ShoppingCart size={22} />}
+              status="emerald"
             />
             <StatCard
               title="Lucro Total da Rede"
               value={formatCurrency(overview?.total.profit ?? 0)}
               detail="Vendas concluídas"
-              icon={<TrendingUp size={20} />}
-              color="text-green-400"
+              icon={<TrendingUp size={22} />}
+              status="green"
             />
             <StatCard
               title="Comissão Acumulada"
               value={formatCurrency(overview?.totalCommission ?? 0)}
               detail="Valor registado na conta do agente"
-              icon={<Activity size={20} />}
-              color="text-cyan-400"
+              icon={<Activity size={22} />}
+              status="cyan"
             />
             <StatCard
               title="Subagentes"
               value={String(overview?.activeAgentsCount ?? 0)}
               detail="Subagentes associados à rede"
-              icon={<Users size={20} />}
-              color="text-purple-400"
+              icon={<Users size={22} />}
+              status="purple"
             />
           </>
         )}
-      </section>
+      </div>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-bold text-white">Resumo por período</h2>
+      {/* RESUMO POR PERÍODO */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-bold text-white">Resumo por período</h2>
 
         <div className="flex flex-wrap gap-2">
           {periodOptions.map((option) => (
             <button
               key={option.value}
               onClick={() => setPeriod(option.value)}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+              className={`rounded-xl px-4 py-2 text-xs font-semibold transition ${
                 period === option.value
                   ? "bg-cyan-500 text-white"
-                  : "border border-white/10 bg-[#161A1E] text-gray-400 hover:text-white"
+                  : "border border-white/10 bg-[#161A1F] text-gray-400 hover:text-white"
               }`}
             >
               {option.label}
@@ -215,46 +241,47 @@ export default function AgentStatistics() {
           ))}
         </div>
 
-        {loading ? (
-          <Skeleton className="h-40 w-full" />
+        {loading && !data ? (
+          <Skeleton className="h-32 w-full" />
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <StatCard
               title="Volume de Vendas"
               value={formatCurrency(selectedStats?.sales ?? 0)}
               detail={periodOptions.find((p) => p.value === period)?.label ?? ""}
-              icon={<DollarSign size={20} />}
-              color="text-emerald-400"
+              icon={<DollarSign size={22} />}
+              status="emerald"
             />
             <StatCard
               title="Lucro"
               value={formatCurrency(selectedStats?.profit ?? 0)}
               detail="Lucro das operações concluídas"
-              icon={<TrendingUp size={20} />}
-              color="text-green-400"
+              icon={<TrendingUp size={22} />}
+              status="green"
             />
             <StatCard
               title="Operações"
               value={String(selectedStats?.count ?? 0)}
               detail="Transações concluídas"
-              icon={<Activity size={20} />}
-              color="text-cyan-400"
+              icon={<Activity size={22} />}
+              status="cyan"
             />
           </div>
         )}
-      </section>
+      </div>
 
-      <section className="rounded-3xl border border-white/10 bg-[#161A1E] p-5 md:p-8">
-        <h2 className="mb-6 text-lg font-bold text-white">
+      {/* GRÁFICO RECHARTS COM ESTILO DO ADMIN */}
+      <div className="rounded-2xl border border-white/5 bg-[#161A1F] p-6 shadow-xl">
+        <h2 className="mb-6 text-base font-bold text-white">
           Evolução das vendas e do lucro
         </h2>
 
-        {loading ? (
+        {loading && !data ? (
           <Skeleton className="h-72 w-full" />
         ) : chartData.length === 0 ? (
-          <p className="py-16 text-center text-gray-400">
+          <div className="py-16 text-center text-sm text-gray-500 border border-white/5 bg-white/[0.01] rounded-xl">
             Ainda não existem vendas concluídas para apresentar no gráfico.
-          </p>
+          </div>
         ) : (
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -265,20 +292,20 @@ export default function AgentStatistics() {
                     <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2a2e33" />
-                <XAxis dataKey="date" stroke="#9ca3af" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="date" stroke="#6B7280" fontSize={11} />
                 <YAxis
-                  stroke="#9ca3af"
+                  stroke="#6B7280"
                   fontSize={11}
                   tickFormatter={(value) => `${Math.round(value / 1000)}k`}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#1f2937",
-                    border: "1px solid #374151",
+                    backgroundColor: "#161A1F",
+                    borderColor: "rgba(255,255,255,0.1)",
                     borderRadius: "12px",
                   }}
-                  formatter={(value) => formatCurrency(Number(value ?? 0))}
+                  formatter={(value) => [formatCurrency(Number(value ?? 0)), ""]}
                 />
                 <Area
                   type="monotone"
@@ -300,78 +327,78 @@ export default function AgentStatistics() {
             </ResponsiveContainer>
           </div>
         )}
-      </section>
+      </div>
 
-      {/* Seção Desempenho dos Subagentes com scroll horizontal nativo otimizado */}
-      <section className="space-y-4">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-white">
+      {/* DESEMPENHO DOS SUBAGENTES */}
+      <div className="bg-[#161A1F] rounded-2xl p-6 border border-white/5 space-y-6 shadow-xl">
+        <div className="flex items-center gap-3">
           <Users size={22} className="text-purple-400" />
-          Desempenho dos Subagentes
-        </h2>
+          <h2 className="text-lg font-bold">Desempenho dos Subagentes</h2>
+        </div>
 
-        <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#161A1E] shadow-lg [-webkit-overflow-scrolling:touch]">
-          <table className="w-full min-w-[750px] text-left text-sm">
-            <thead className="border-b border-white/10 bg-white/5 text-gray-400">
-              <tr>
-                <th className="p-4">Subagente</th>
-                <th className="p-4">Código</th>
-                <th className="p-4">Vendas</th>
-                <th className="p-4">Lucro</th>
-                <th className="p-4">Operações</th>
+        <div className="w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
+          <table className="w-full min-w-[750px] border-collapse text-left">
+            <thead>
+              <tr className="border-b border-white/10 text-left text-gray-400 text-sm">
+                <th className="py-3 px-4">Subagente</th>
+                <th className="py-3 px-4">Código</th>
+                <th className="py-3 px-4">Vendas</th>
+                <th className="py-3 px-4">Lucro</th>
+                <th className="py-3 px-4 text-center">Operações</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-white/5 text-sm">
               {!loading && (data?.teamPerformance.length ?? 0) === 0 && (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-gray-400">
+                  <td colSpan={5} className="py-12 text-center text-gray-500 font-mono text-xs uppercase tracking-wider">
                     Não existem subagentes associados a esta rede.
                   </td>
                 </tr>
               )}
 
               {(data?.teamPerformance ?? []).map((agent) => (
-                <tr key={agent.id} className="border-b border-white/5 text-gray-300">
-                  <td className="p-4">
+                <tr key={agent.id} className="border-b border-white/5 hover:bg-white/5 transition">
+                  <td className="py-4 px-4">
                     <p className="font-semibold text-white">{agent.name}</p>
                     <p className="text-xs text-gray-500">{agent.email}</p>
                   </td>
-                  <td className="p-4">{agent.code}</td>
-                  <td className="p-4">{formatCurrency(agent[period].sales)}</td>
-                  <td className="p-4 text-emerald-400">
+                  <td className="py-4 px-4 font-mono text-gray-400">{agent.code}</td>
+                  <td className="py-4 px-4 text-white font-medium">{formatCurrency(agent[period].sales)}</td>
+                  <td className="py-4 px-4 text-emerald-400 font-semibold">
                     {formatCurrency(agent[period].profit)}
                   </td>
-                  <td className="p-4">{agent[period].count}</td>
+                  <td className="py-4 px-4 text-center text-gray-300 font-mono">{agent[period].count}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </section>
+      </div>
 
-      {/* Seção Histórico de Vendas com scroll horizontal nativo otimizado */}
-      <section className="space-y-4">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-white">
+      {/* HISTÓRICO DE VENDAS */}
+      <div className="bg-[#161A1F] rounded-2xl p-6 border border-white/5 space-y-6 shadow-xl">
+        <div className="flex items-center gap-3">
           <History size={22} className="text-cyan-400" />
-          Histórico de Vendas
-        </h2>
+          <h2 className="text-lg font-bold">Histórico de Vendas</h2>
+        </div>
 
-        <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#161A1E] shadow-lg [-webkit-overflow-scrolling:touch]">
-          <table className="w-full min-w-[850px] text-left text-sm">
-            <thead className="border-b border-white/10 bg-white/5 text-gray-400">
-              <tr>
-                <th className="p-4">Data</th>
-                <th className="p-4">Vendedor</th>
-                <th className="p-4">Tipo</th>
-                <th className="p-4">Serviço</th>
-                <th className="p-4">Valor</th>
-                <th className="p-4">Lucro</th>
-                <th className="p-4">Referência</th>
+        <div className="w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
+          <table className="w-full min-w-[850px] border-collapse text-left">
+            <thead>
+              <tr className="border-b border-white/10 text-left text-gray-400 text-sm">
+                <th className="py-3 px-4">Data</th>
+                <th className="py-3 px-4">Vendedor</th>
+                <th className="py-3 px-4">Tipo</th>
+                <th className="py-3 px-4">Serviço</th>
+                <th className="py-3 px-4 text-right">Valor</th>
+                <th className="py-3 px-4 text-right">Lucro</th>
+                <th className="py-3 px-4">Referência</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-white/5 text-sm">
               {!loading && (data?.recentSales.length ?? 0) === 0 && (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-gray-400">
+                  <td colSpan={7} className="py-12 text-center text-gray-500 font-mono text-xs uppercase tracking-wider">
                     Ainda não existem vendas concluídas.
                   </td>
                 </tr>
@@ -380,21 +407,23 @@ export default function AgentStatistics() {
               {(data?.recentSales ?? []).map((sale, index) => (
                 <tr
                   key={`${sale.date}-${index}`}
-                  className="border-b border-white/5 text-gray-300"
+                  className="border-b border-white/5 hover:bg-white/5 transition"
                 >
-                  <td className="whitespace-nowrap p-4">{formatDate(sale.date)}</td>
-                  <td className="p-4 font-medium text-white">{sale.sellerName}</td>
-                  <td className="p-4">
-                    {sale.sellerRole === "AGENT" ? "Agente" : "Subagente"}
+                  <td className="py-4 px-4 text-gray-300 whitespace-nowrap">{formatDate(sale.date)}</td>
+                  <td className="py-4 px-4 font-medium text-white">{sale.sellerName}</td>
+                  <td className="py-4 px-4">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${sale.sellerRole === "AGENT" ? "bg-blue-500/20 text-blue-400" : "bg-purple-500/20 text-purple-400"}`}>
+                      {sale.sellerRole === "AGENT" ? "Agente" : "Subagente"}
+                    </span>
                   </td>
-                  <td className="p-4">{sale.service || "—"}</td>
-                  <td className="whitespace-nowrap p-4">
+                  <td className="py-4 px-4 text-gray-300">{sale.service || "—"}</td>
+                  <td className="py-4 px-4 text-right font-medium text-white whitespace-nowrap">
                     {formatCurrency(sale.amount)}
                   </td>
-                  <td className="whitespace-nowrap p-4 text-emerald-400">
+                  <td className="py-4 px-4 text-right font-semibold text-emerald-400 whitespace-nowrap">
                     {formatCurrency(sale.profit)}
                   </td>
-                  <td className="p-4">{sale.reference || "—"}</td>
+                  <td className="py-4 px-4 font-mono text-gray-400">{sale.reference || "—"}</td>
                 </tr>
               ))}
             </tbody>
@@ -403,32 +432,48 @@ export default function AgentStatistics() {
         <p className="text-xs text-gray-500">
           O histórico apresenta até 100 vendas concluídas, conforme os dados enviados pelo backend.
         </p>
-      </section>
+      </div>
     </div>
   );
 }
 
+/* COMPONENTE AUXILIAR STATCARD NO PADRÃO ADMIN */
 function StatCard({
   title,
   value,
   detail,
   icon,
-  color,
+  status,
 }: {
   title: string;
   value: string;
   detail: string;
-  icon: React.ReactNode;
-  color: string;
+  icon: ReactNode;
+  status: "emerald" | "green" | "cyan" | "purple";
 }) {
+  const getColorStyle = () => {
+    switch (status) {
+      case "emerald":
+        return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+      case "green":
+        return "text-green-400 bg-green-500/10 border-green-500/20";
+      case "cyan":
+        return "text-cyan-400 bg-cyan-500/10 border-cyan-500/20";
+      case "purple":
+        return "text-purple-400 bg-purple-500/10 border-purple-500/20";
+    }
+  };
+
   return (
-    <div className="rounded-2xl border border-white/5 bg-[#161A1E] p-5 transition-colors hover:border-white/10">
-      <div className={`mb-3 ${color}`}>{icon}</div>
-      <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
-        {title}
-      </p>
-      <h3 className="mt-2 break-words text-xl font-bold text-white">{value}</h3>
-      <p className="mt-2 text-xs text-gray-500">{detail}</p>
+    <div className="bg-[#161A1F] rounded-2xl p-6 border border-white/5 flex flex-col justify-between shadow-lg">
+      <div className="flex justify-between items-start">
+        <div>
+          <p className="text-xs uppercase text-gray-500 font-semibold">{title}</p>
+          <h2 className="text-2xl font-bold mt-2 break-words text-white">{value}</h2>
+          <p className="text-xs text-gray-500 mt-1">{detail}</p>
+        </div>
+        <div className={`p-3 rounded-xl border ${getColorStyle()}`}>{icon}</div>
+      </div>
     </div>
   );
 }
