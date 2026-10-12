@@ -1,405 +1,155 @@
-import { useCallback, useEffect, useState } from "react";
-import {
-  BadgeDollarSign,
-  Clock3,
-  CheckCircle2,
-  XCircle,
-  TrendingUp,
-  RefreshCw,
-  AlertCircle,
-} from "lucide-react";
-import { AgentService } from "../../services/agent.service";
+import { useEffect, useState } from "react"
+import { BadgeDollarSign, Clock3, CheckCircle2, XCircle, TrendingUp } from "lucide-react"
+import { AgentService } from "../../services/agent.service"
 
-type CommissionSummary = {
-  availableCommission?: number;
-  totalCommission?: number;
-  pending?: {
-    amount?: number;
-    count?: number;
-  };
-  paid?: {
-    amount?: number;
-    count?: number;
-  };
-};
-
-type CommissionItem = {
-  id: string | number;
-  amount: number | string;
-  status: string;
-  createdAt: string;
-  serviceRequest?: {
-    serviceName?: string | null;
-    customerReference?: string | null;
-  } | null;
-};
-
-const Skeleton = ({ className = "" }: { className?: string }) => (
-  <div className={`animate-pulse rounded-xl bg-white/5 ${className}`} />
-);
-
-const formatCurrency = (value: number | string | null | undefined) =>
-  `${Number(value || 0).toLocaleString("pt-AO", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })} Kz`;
-
-const formatDate = (value: string) => {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return "—";
-
-  return date.toLocaleString("pt-AO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+// Componente Skeleton para carregamento fluido
+const Skeleton = ({ className }: { className: string }) => (
+  <div className={`animate-pulse bg-white/5 rounded-lg ${className}`} />
+)
 
 export default function AgentCommissions() {
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [summary, setSummary] = useState<CommissionSummary | null>(null);
-  const [history, setHistory] = useState<CommissionItem[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async (isRefresh = false) => {
-    try {
-      if (isRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-
-      setError(null);
-
-      const [summaryData, historyData] = await Promise.all([
-        AgentService.getCommissionSummary(),
-        AgentService.getCommissionHistory(),
-      ]);
-
-      setSummary(summaryData as CommissionSummary);
-      setHistory(historyData as CommissionItem[]);
-    } catch (err) {
-      console.error("Erro ao carregar comissões:", err);
-      setError("Não foi possível carregar as comissões. Tente novamente.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const [loading, setLoading] = useState(true)
+  const [summary, setSummary] = useState<any>(null)
+  const [history, setHistory] = useState<any[]>([])
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    load()
+  }, [])
+
+  async function load() {
+    try {
+      setLoading(true)
+      const [summaryData, historyData] = await Promise.all([
+        AgentService.getCommissionSummary(),
+        AgentService.getCommissionHistory()
+      ])
+      setSummary(summaryData)
+      setHistory(historyData)
+    } catch (err) {
+      console.error("Erro ao carregar comissões:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="mx-auto max-w-[1600px] space-y-6 p-4 font-sans text-gray-100 sm:p-6 lg:p-8">
-      {/* CABEÇALHO */}
-      <header className="flex flex-col justify-between gap-4 border-b border-white/5 pb-6 sm:flex-row sm:items-center">
-        <div>
-          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400">
-            EMATEA · Área do Agente
-          </p>
-
-          <h1 className="text-2xl font-black uppercase tracking-tight text-white md:text-3xl">
-            Comissões
-          </h1>
-
-          <p className="mt-2 text-sm text-gray-400">
-            Consulte as comissões geradas pela sua equipa e o respetivo estado.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => void load(true)}
-          disabled={loading || refreshing}
-          className="flex shrink-0 items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#161A1F] px-4 py-3 text-sm font-semibold text-gray-300 transition hover:border-emerald-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <RefreshCw
-            size={16}
-            className={refreshing ? "animate-spin" : ""}
-          />
-          Atualizar dados
-        </button>
-      </header>
-
-      {/* ERRO */}
-      {error && (
-        <div className="flex flex-col gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3 text-sm text-amber-300">
-            <AlertCircle size={18} className="shrink-0" />
-            <span>{error}</span>
-          </div>
-
-          {!summary && (
-            <button
-              type="button"
-              onClick={() => void load()}
-              className="self-start rounded-lg bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-500/20 sm:self-auto"
-            >
-              Tentar novamente
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* RESUMO DAS COMISSÕES */}
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-base font-black uppercase tracking-wide text-white">
-            Resumo financeiro
-          </h2>
-          <p className="mt-1 text-xs text-gray-500">
-            Visão geral dos valores das suas comissões.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {loading ? (
-            Array.from({ length: 4 }).map((_, index) => (
-              <div
-                key={index}
-                className="space-y-4 rounded-2xl border border-white/5 border-l-4 border-l-white/10 bg-[#161A1F] p-5"
-              >
-                <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-8 w-36" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-            ))
-          ) : (
-            <>
-              <CommissionCard
-                title="Disponível"
-                value={formatCurrency(summary?.availableCommission)}
-                icon={<BadgeDollarSign size={20} />}
-                color="text-emerald-400"
-                border="border-l-emerald-500"
-                detail="Comissão disponível"
-              />
-
-              <CommissionCard
-                title="Total acumulado"
-                value={formatCurrency(summary?.totalCommission)}
-                icon={<TrendingUp size={20} />}
-                color="text-cyan-400"
-                border="border-l-cyan-500"
-                detail="Total registado"
-              />
-
-              <CommissionCard
-                title="Pendentes"
-                value={formatCurrency(summary?.pending?.amount)}
-                icon={<Clock3 size={20} />}
-                color="text-amber-400"
-                border="border-l-amber-500"
-                detail={`${summary?.pending?.count ?? 0} registos`}
-              />
-
-              <CommissionCard
-                title="Pagas"
-                value={formatCurrency(summary?.paid?.amount)}
-                icon={<CheckCircle2 size={20} />}
-                color="text-green-400"
-                border="border-l-green-500"
-                detail={`${summary?.paid?.count ?? 0} registos`}
-              />
-            </>
-          )}
-        </div>
-      </section>
-
-      {/* HISTÓRICO */}
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-base font-black uppercase tracking-wide text-white">
-            Histórico de comissões
-          </h2>
-          <p className="mt-1 text-xs text-gray-500">
-            Consulte os serviços, referências, valores e estados das comissões.
-          </p>
-        </div>
-
-        <div className="overflow-hidden rounded-2xl border border-white/5 bg-[#161A1F] shadow-xl">
-          <div className="flex items-center justify-between border-b border-white/5 bg-[#0B0E11] px-4 py-4 sm:px-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-500/10 bg-emerald-500/5 text-emerald-400">
-                <BadgeDollarSign size={20} />
-              </div>
-
-              <div>
-                <h3 className="text-sm font-bold text-white">
-                  Registos de comissões
-                </h3>
-                {!loading && (
-                  <p className="mt-1 text-xs text-gray-500">
-                    {history.length} registos carregados
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
-              <thead className="border-b border-white/5 bg-[#0B0E11] text-[10px] uppercase tracking-wider text-gray-500">
-                <tr>
-                  <th className="px-6 py-4">Serviço</th>
-                  <th className="px-4 py-4">Referência</th>
-                  <th className="px-4 py-4 text-right">Comissão</th>
-                  <th className="px-4 py-4 text-center">Estado</th>
-                  <th className="px-6 py-4 text-right">Data</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-white/5">
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, index) => (
-                    <tr key={index}>
-                      <td className="px-6 py-5">
-                        <Skeleton className="h-4 w-32" />
-                      </td>
-                      <td className="px-4 py-5">
-                        <Skeleton className="h-4 w-24" />
-                      </td>
-                      <td className="px-4 py-5">
-                        <Skeleton className="ml-auto h-4 w-24" />
-                      </td>
-                      <td className="px-4 py-5">
-                        <Skeleton className="mx-auto h-6 w-20" />
-                      </td>
-                      <td className="px-6 py-5">
-                        <Skeleton className="ml-auto h-4 w-28" />
-                      </td>
-                    </tr>
-                  ))
-                ) : history.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="p-12 text-center sm:p-16"
-                    >
-                      <div className="mx-auto flex max-w-sm flex-col items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-gray-500">
-                          <BadgeDollarSign size={24} />
-                        </div>
-                        <p className="text-sm font-semibold text-gray-300">
-                          Nenhuma comissão localizada
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Quando existirem registos, serão apresentados aqui.
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  history.map((item) => (
-                    <tr
-                      key={item.id}
-                      className="text-gray-300 transition hover:bg-[#1C2128]"
-                    >
-                      <td className="px-6 py-4">
-                        <span className="font-semibold text-white">
-                          {item.serviceRequest?.serviceName || "—"}
-                        </span>
-                      </td>
-
-                      <td className="px-4 py-4 font-mono text-xs text-gray-400">
-                        {item.serviceRequest?.customerReference || "—"}
-                      </td>
-
-                      <td className="whitespace-nowrap px-4 py-4 text-right font-bold text-emerald-400">
-                        {formatCurrency(item.amount)}
-                      </td>
-
-                      <td className="px-4 py-4 text-center">
-                        <StatusBadge status={item.status} />
-                      </td>
-
-                      <td className="whitespace-nowrap px-6 py-4 text-right text-xs text-gray-400">
-                        {formatDate(item.createdAt)}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function CommissionCard({
-  title,
-  value,
-  detail,
-  icon,
-  color,
-  border,
-}: {
-  title: string;
-  value: string;
-  detail: string;
-  icon: React.ReactNode;
-  color: string;
-  border: string;
-}) {
-  return (
-    <div
-      className={`min-w-0 rounded-2xl border border-white/5 border-l-4 ${border} bg-[#161A1F] p-5 shadow-xl transition hover:bg-[#191E24]`}
-    >
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">
-          {title}
+    <div className="space-y-6 max-w-[1600px] mx-auto font-sans antialiased text-[#EAECEF] p-4 md:p-8 overflow-x-hidden">
+      {/* HEADER */}
+      <div>
+        <h1 className="text-xl font-black tracking-wider text-white uppercase font-mono">Comissões</h1>
+        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
+          Acompanhe todas as comissões geradas pela sua equipa em tempo real.
         </p>
-
-        <div className={color}>{icon}</div>
       </div>
 
-      <h3 className="break-words text-xl font-black tracking-tight text-white sm:text-2xl">
-        {value}
-      </h3>
+      {/* CARDS SUMMARY COM SKELETON */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {loading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-[#161A1E] rounded-2xl border border-white/[0.04] p-5 space-y-2">
+              <Skeleton className="w-20 h-3" />
+              <Skeleton className="w-32 h-6" />
+            </div>
+          ))
+        ) : (
+          <>
+            <Card title="Disponível" value={summary?.availableCommission} icon={<BadgeDollarSign size={18} />} status="available" />
+            <Card title="Total Acumulado" value={summary?.totalCommission} icon={<TrendingUp size={18} />} />
+            <Card title="Pendentes" value={summary?.pending?.amount} subtitle={`${summary?.pending?.count || 0} registos`} icon={<Clock3 size={18} />} status="pending" />
+            <Card title="Pagas" value={summary?.paid?.amount} subtitle={`${summary?.paid?.count || 0} registos`} icon={<CheckCircle2 size={18} />} status="paid" />
+          </>
+        )}
+      </div>
 
-      <p className="mt-2 text-xs text-gray-500">{detail}</p>
+      {/* HISTÓRICO DA TABELA COM SKELETON E SCROLL HORIZONTAL OTIMIZADO */}
+      <div className="bg-[#161A1E] rounded-[2rem] border border-white/[0.04] overflow-hidden shadow-2xl">
+        <div className="p-6 border-b border-white/[0.03] bg-[#111418]/40">
+          <h2 className="text-sm font-black text-white font-mono uppercase tracking-wider">Histórico de Comissões</h2>
+        </div>
+        
+        <div className="w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
+          <table className="w-full min-w-[750px] border-collapse text-left">
+            <thead>
+              <tr className="border-b border-white/[0.03] bg-[#111418]/60 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                <th className="px-6 py-4.5">Serviço</th>
+                <th className="px-4 py-4.5">Referência</th>
+                <th className="px-4 py-4.5 text-right font-mono">Comissão</th>
+                <th className="px-4 py-4.5 text-center">Estado</th>
+                <th className="px-6 py-4.5 text-right">Data</th>
+              </tr>
+            </thead>
+            <tbody className="text-xs font-medium divide-y divide-white/[0.02]">
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i}>
+                    <td className="px-6 py-4"><Skeleton className="w-32 h-4" /></td>
+                    <td className="px-4 py-4"><Skeleton className="w-24 h-4" /></td>
+                    <td className="px-4 py-4 text-right"><Skeleton className="w-20 h-4 ml-auto" /></td>
+                    <td className="px-4 py-4"><Skeleton className="w-20 h-6 mx-auto" /></td>
+                    <td className="px-6 py-4 text-right"><Skeleton className="w-24 h-4 ml-auto" /></td>
+                  </tr>
+                ))
+              ) : history.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-16 text-center text-gray-600 font-mono text-[11px] uppercase tracking-wider">
+                    Nenhuma comissão localizada.
+                  </td>
+                </tr>
+              ) : (
+                history.map((item: any) => (
+                  <tr key={item.id} className="hover:bg-white/[0.01] transition-colors">
+                    <td className="px-6 py-4 text-white font-bold">{item.serviceRequest?.serviceName || "-"}</td>
+                    <td className="px-4 py-4 font-mono text-gray-400">{item.serviceRequest?.customerReference || "-"}</td>
+                    <td className="px-4 py-4 text-right font-mono font-black text-emerald-400 whitespace-nowrap">
+                      {Number(item.amount || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} Kz
+                    </td>
+                    <td className="px-4 py-4 text-center"><StatusBadge status={item.status} /></td>
+                    <td className="px-6 py-4 text-right font-mono text-gray-500 whitespace-nowrap">{new Date(item.createdAt).toLocaleString("pt-AO")}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-  );
+  )
+}
+
+function Card({ title, value, subtitle, icon, status }: any) {
+  const getColors = () => {
+    if (status === "available") return "text-emerald-400 bg-emerald-500/5 border-emerald-500/10"
+    if (status === "pending") return "text-amber-400 bg-amber-500/5 border-amber-500/10"
+    if (status === "paid") return "text-blue-400 bg-blue-500/5 border-blue-500/10"
+    return "text-cyan-400 bg-cyan-500/5 border-cyan-500/10"
+  }
+  return (
+    <div className="bg-[#161A1E] rounded-2xl border border-white/[0.04] p-5 flex items-center justify-between shadow-lg">
+      <div className="space-y-1">
+        <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 block">{title}</span>
+        <h2 className="text-xl font-black text-white font-mono leading-none break-words">
+          {Number(value || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} Kz
+        </h2>
+        {subtitle && <span className="text-[9px] font-mono text-gray-600 block">{subtitle}</span>}
+      </div>
+      <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${getColors()}`}>{icon}</div>
+    </div>
+  )
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const normalizedStatus = status?.toUpperCase();
-
-  const config =
-    normalizedStatus === "PENDING"
-      ? {
-          className:
-            "border-amber-500/20 bg-amber-500/10 text-amber-400",
-          icon: <Clock3 size={12} />,
-          label: "Pendente",
-        }
-      : normalizedStatus === "PAID"
-        ? {
-            className:
-              "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
-            icon: <CheckCircle2 size={12} />,
-            label: "Paga",
-          }
-        : {
-            className: "border-rose-500/20 bg-rose-500/10 text-rose-400",
-            icon: <XCircle size={12} />,
-            label: "Cancelada",
-          };
-
+  const styles = {
+    PENDING: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    PAID: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    DEFAULT: "bg-rose-500/10 text-rose-400 border-rose-500/20"
+  }
+  const config = status === "PENDING" ? { style: styles.PENDING, icon: <Clock3 size={10} />, label: "Pendente" } : 
+                 status === "PAID" ? { style: styles.PAID, icon: <CheckCircle2 size={10} />, label: "Paga" } : 
+                 { style: styles.DEFAULT, icon: <XCircle size={10} />, label: "Cancelada" }
+  
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${config.className}`}
-    >
-      {config.icon}
-      {config.label}
+    <span className={`inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded border whitespace-nowrap ${config.style}`}>
+      {config.icon} {config.label}
     </span>
-  );
+  )
 }
