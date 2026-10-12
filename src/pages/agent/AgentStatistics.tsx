@@ -44,8 +44,6 @@ import {
 
 import { AgentService } from "../../services/agent.service";
 
-
-
 type PeriodStats = {
 
   sales: number;
@@ -56,11 +54,7 @@ type PeriodStats = {
 
 };
 
-
-
 type Period = "today" | "yesterday" | "week" | "month" | "year" | "total";
-
-
 
 interface TeamAgent {
 
@@ -86,8 +80,6 @@ interface TeamAgent {
 
 }
 
-
-
 interface Sale {
 
   date: string;
@@ -105,8 +97,6 @@ interface Sale {
   reference: string | null;
 
 }
-
-
 
 interface StatsData {
 
@@ -136,8 +126,6 @@ interface StatsData {
 
 }
 
-
-
 const periodOptions: { value: Period; label: string }[] = [
 
   { value: "today", label: "Hoje" },
@@ -154,15 +142,11 @@ const periodOptions: { value: Period; label: string }[] = [
 
 ];
 
-
-
 const Skeleton = ({ className = "" }: { className?: string }) => (
 
   <div className={`animate-pulse rounded-xl bg-white/5 ${className}`} />
 
 );
-
-
 
 const formatCurrency = (value: number) =>
 
@@ -176,17 +160,11 @@ const formatCurrency = (value: number) =>
 
   }).format(value || 0);
 
-
-
 const formatDate = (value: string) => {
 
   const date = new Date(value);
 
-
-
   if (Number.isNaN(date.getTime())) return "—";
-
-
 
   return date.toLocaleString("pt-AO", {
 
@@ -204,8 +182,6 @@ const formatDate = (value: string) => {
 
 };
 
-
-
 export default function AgentStatistics() {
 
   const [data, setData] = useState<StatsData | null>(null);
@@ -217,8 +193,16 @@ export default function AgentStatistics() {
   const [error, setError] = useState<string | null>(null);
 
   const [period, setPeriod] = useState<Period>("month");
+  const [teamPage, setTeamPage] = useState(1);
+  const [salesPage, setSalesPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-
+  const teamAgents = data?.teamPerformance ?? [];
+  const salesHistory = data?.recentSales ?? [];
+  const teamPageCount = Math.max(1, Math.ceil(teamAgents.length / pageSize));
+  const salesPageCount = Math.max(1, Math.ceil(salesHistory.length / pageSize));
+  const visibleTeamAgents = teamAgents.slice((teamPage - 1) * pageSize, teamPage * pageSize);
+  const visibleSales = salesHistory.slice((salesPage - 1) * pageSize, salesPage * pageSize);
 
   const loadStats = useCallback(async (isRefresh = false) => {
 
@@ -234,11 +218,7 @@ export default function AgentStatistics() {
 
       }
 
-
-
       setError(null);
-
-
 
       const stats = await AgentService.getPremiumStatistics();
 
@@ -260,13 +240,9 @@ export default function AgentStatistics() {
 
   }, []);
 
-
-
   useEffect(() => {
 
     void loadStats();
-
-
 
     const interval = setInterval(() => {
 
@@ -278,19 +254,13 @@ export default function AgentStatistics() {
 
     }, 60000);
 
-
-
     return () => clearInterval(interval);
 
   }, [loadStats]);
 
-
-
   const overview = data?.overview;
 
   const selectedStats = overview?.[period];
-
-
 
   const chartData = (data?.recentSales ?? [])
 
@@ -305,8 +275,6 @@ export default function AgentStatistics() {
         const date = new Date(sale.date).toLocaleDateString("pt-AO");
 
         const existing = result.find((item) => item.date === date);
-
-
 
         if (existing) {
 
@@ -328,8 +296,6 @@ export default function AgentStatistics() {
 
         }
 
-
-
         return result;
 
       },
@@ -337,8 +303,6 @@ export default function AgentStatistics() {
       []
 
     );
-
-
 
   if (error && !data) {
 
@@ -350,11 +314,7 @@ export default function AgentStatistics() {
 
           <AlertCircle size={30} className="text-red-400" />
 
-
-
           <p className="text-sm text-gray-300">{error}</p>
-
-
 
           <button
 
@@ -380,8 +340,6 @@ export default function AgentStatistics() {
 
   }
 
-
-
   return (
 
     <div className="w-full max-w-none min-w-0 space-y-5 overflow-x-clip bg-[#0B0E11] p-2 font-sans text-white antialiased sm:space-y-7 sm:p-4 lg:space-y-8 lg:p-6">
@@ -398,8 +356,6 @@ export default function AgentStatistics() {
 
           </p>
 
-
-
           <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
 
             Estatísticas
@@ -407,8 +363,6 @@ export default function AgentStatistics() {
           </h1>
 
         </div>
-
-
 
         <button
 
@@ -436,8 +390,6 @@ export default function AgentStatistics() {
 
       </header>
 
-
-
       {error && data && (
 
         <div className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-sm text-amber-300">
@@ -453,8 +405,6 @@ export default function AgentStatistics() {
         </div>
 
       )}
-
-
 
       {/* INDICADORES PRINCIPAIS */}
 
@@ -500,8 +450,6 @@ export default function AgentStatistics() {
 
             />
 
-
-
             <StatCard
 
               title="Lucro Total da Rede"
@@ -516,8 +464,6 @@ export default function AgentStatistics() {
 
             />
 
-
-
             <StatCard
 
               title="Comissão Acumulada"
@@ -531,8 +477,6 @@ export default function AgentStatistics() {
               status="cyan"
 
             />
-
-
 
             <StatCard
 
@@ -554,8 +498,6 @@ export default function AgentStatistics() {
 
       </section>
 
-
-
       {/* RESUMO POR PERÍODO */}
 
       <section className="min-w-0 space-y-4">
@@ -575,8 +517,6 @@ export default function AgentStatistics() {
           </p>
 
         </div>
-
-
 
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2">
 
@@ -610,8 +550,6 @@ export default function AgentStatistics() {
 
         </div>
 
-
-
         {loading && !data ? (
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -642,8 +580,6 @@ export default function AgentStatistics() {
 
             />
 
-
-
             <StatCard
 
               title="Lucro"
@@ -657,8 +593,6 @@ export default function AgentStatistics() {
               status="green"
 
             />
-
-
 
             <StatCard
 
@@ -680,8 +614,6 @@ export default function AgentStatistics() {
 
       </section>
 
-
-
       {/* GRÁFICO */}
 
       <section className="min-w-0 overflow-hidden rounded-2xl border border-white/5 bg-[#161A1F] p-3 shadow-xl sm:p-6">
@@ -695,8 +627,6 @@ export default function AgentStatistics() {
           </h2>
 
         </div>
-
-
 
         {loading && !data ? (
 
@@ -748,8 +678,6 @@ export default function AgentStatistics() {
 
                 </defs>
 
-
-
                 <CartesianGrid
 
                   strokeDasharray="3 3"
@@ -759,8 +687,6 @@ export default function AgentStatistics() {
                   stroke="#2B3139"
 
                 />
-
-
 
                 <XAxis
 
@@ -777,8 +703,6 @@ export default function AgentStatistics() {
                   minTickGap={20}
 
                 />
-
-
 
                 <YAxis
 
@@ -803,8 +727,6 @@ export default function AgentStatistics() {
                   }
 
                 />
-
-
 
                 <Tooltip
 
@@ -832,8 +754,6 @@ export default function AgentStatistics() {
 
                 />
 
-
-
                 <Area
 
                   type="monotone"
@@ -851,8 +771,6 @@ export default function AgentStatistics() {
                   activeDot={{ r: 4 }}
 
                 />
-
-
 
                 <Area
 
@@ -882,8 +800,6 @@ export default function AgentStatistics() {
 
       </section>
 
-
-
       {/* DESEMPENHO DOS SUBAGENTES */}
 
       <section className="min-w-0 space-y-4">
@@ -905,8 +821,6 @@ export default function AgentStatistics() {
           </p>
 
         </div>
-
-
 
         <div className="min-w-0 overflow-hidden rounded-2xl border border-white/5 bg-[#161A1F] shadow-xl">
 
@@ -944,7 +858,7 @@ export default function AgentStatistics() {
 
             ) : (
 
-              (data?.teamPerformance ?? []).map((agent) => (
+              visibleTeamAgents.map((agent) => (
 
                 <article
 
@@ -961,8 +875,6 @@ export default function AgentStatistics() {
                       <Users size={19} />
 
                     </div>
-
-
 
                     <div className="min-w-0 flex-1">
 
@@ -990,11 +902,7 @@ export default function AgentStatistics() {
 
                   </div>
 
-
-
                   <div className="my-4 border-t border-white/5" />
-
-
 
                   <div className="grid grid-cols-2 gap-3">
 
@@ -1042,8 +950,6 @@ export default function AgentStatistics() {
 
           </div>
 
-
-
           {/* COMPUTADOR: TABELA */}
 
           <div className="hidden overflow-x-auto md:block">
@@ -1067,8 +973,6 @@ export default function AgentStatistics() {
                 </tr>
 
               </thead>
-
-
 
               <tbody className="divide-y divide-white/5 text-sm">
 
@@ -1094,9 +998,7 @@ export default function AgentStatistics() {
 
                   )}
 
-
-
-                {(data?.teamPerformance ?? []).map((agent) => (
+                {visibleTeamAgents.map((agent) => (
 
                   <tr
 
@@ -1118,15 +1020,11 @@ export default function AgentStatistics() {
 
                     </td>
 
-
-
                     <td className="px-4 py-4 font-mono text-xs text-gray-400">
 
                       {agent.code}
 
                     </td>
-
-
 
                     <td className="whitespace-nowrap px-4 py-4 font-medium text-white">
 
@@ -1134,15 +1032,11 @@ export default function AgentStatistics() {
 
                     </td>
 
-
-
                     <td className="whitespace-nowrap px-4 py-4 font-semibold text-emerald-400">
 
                       {formatCurrency(agent[period].profit)}
 
                     </td>
-
-
 
                     <td className="px-4 py-4 text-center font-mono text-gray-300">
 
@@ -1162,9 +1056,16 @@ export default function AgentStatistics() {
 
         </div>
 
+        <PaginationControls
+          currentPage={teamPage}
+          pageCount={teamPageCount}
+          pageSize={pageSize}
+          total={teamAgents.length}
+          onPageChange={setTeamPage}
+          onPageSizeChange={(size) => { setPageSize(size); setTeamPage(1); setSalesPage(1); }}
+        />
+
       </section>
-
-
 
       {/* HISTÓRICO DE VENDAS */}
 
@@ -1181,8 +1082,6 @@ export default function AgentStatistics() {
           </h2>
 
         </div>
-
-
 
         <div className="min-w-0 overflow-hidden rounded-2xl border border-white/5 bg-[#161A1F] shadow-xl">
 
@@ -1220,7 +1119,7 @@ export default function AgentStatistics() {
 
             ) : (
 
-              (data?.recentSales ?? []).map((sale, index) => (
+              visibleSales.map((sale, index) => (
 
                 <article
 
@@ -1250,8 +1149,6 @@ export default function AgentStatistics() {
 
                     </div>
 
-
-
                     <span
 
                       className={`shrink-0 rounded-lg border px-2 py-1 text-[10px] font-bold ${
@@ -1272,11 +1169,7 @@ export default function AgentStatistics() {
 
                   </div>
 
-
-
                   <div className="my-4 border-t border-white/5" />
-
-
 
                   <div className="space-y-3">
 
@@ -1295,8 +1188,6 @@ export default function AgentStatistics() {
                       </p>
 
                     </div>
-
-
 
                     <div className="grid grid-cols-2 gap-3">
 
@@ -1319,8 +1210,6 @@ export default function AgentStatistics() {
                       />
 
                     </div>
-
-
 
                     <div className="rounded-lg bg-white/[0.03] p-3">
 
@@ -1347,8 +1236,6 @@ export default function AgentStatistics() {
             )}
 
           </div>
-
-
 
           {/* COMPUTADOR: TABELA */}
 
@@ -1378,8 +1265,6 @@ export default function AgentStatistics() {
 
               </thead>
 
-
-
               <tbody className="divide-y divide-white/5 text-sm">
 
                 {!loading &&
@@ -1404,9 +1289,7 @@ export default function AgentStatistics() {
 
                   )}
 
-
-
-                {(data?.recentSales ?? []).map((sale, index) => (
+                {visibleSales.map((sale, index) => (
 
                   <tr
 
@@ -1422,15 +1305,11 @@ export default function AgentStatistics() {
 
                     </td>
 
-
-
                     <td className="px-4 py-4 font-semibold text-white">
 
                       {sale.sellerName}
 
                     </td>
-
-
 
                     <td className="px-4 py-4">
 
@@ -1454,15 +1333,11 @@ export default function AgentStatistics() {
 
                     </td>
 
-
-
                     <td className="px-4 py-4 text-gray-300">
 
                       {sale.service || "—"}
 
                     </td>
-
-
 
                     <td className="whitespace-nowrap px-4 py-4 text-right font-medium text-white">
 
@@ -1470,15 +1345,11 @@ export default function AgentStatistics() {
 
                     </td>
 
-
-
                     <td className="whitespace-nowrap px-4 py-4 text-right font-semibold text-emerald-400">
 
                       {formatCurrency(sale.profit)}
 
                     </td>
-
-
 
                     <td className="px-4 py-4 font-mono text-xs text-gray-400">
 
@@ -1498,6 +1369,15 @@ export default function AgentStatistics() {
 
         </div>
 
+        <PaginationControls
+          currentPage={salesPage}
+          pageCount={salesPageCount}
+          pageSize={pageSize}
+          total={salesHistory.length}
+          onPageChange={setSalesPage}
+          onPageSizeChange={(size) => { setPageSize(size); setTeamPage(1); setSalesPage(1); }}
+        />
+
       </section>
 
     </div>
@@ -1506,7 +1386,64 @@ export default function AgentStatistics() {
 
 }
 
+function PaginationControls({
+  currentPage,
+  pageCount,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
+}: {
+  currentPage: number;
+  pageCount: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+}) {
+  const start = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const end = Math.min(currentPage * pageSize, total);
 
+  return (
+    <div className="flex flex-col gap-3 border-t border-white/5 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400">
+        <span>Mostrar</span>
+        <select
+          value={pageSize}
+          onChange={(event) => onPageSizeChange(Number(event.target.value))}
+          className="rounded-lg border border-white/10 bg-[#0F1318] px-2 py-2 text-white outline-none focus:border-emerald-500/50"
+          aria-label="Quantidade de registos por página"
+        >
+          {[5, 10, 20, 50].map((size) => (
+            <option key={size} value={size}>{size}</option>
+          ))}
+        </select>
+        <span>registos · {start}–{end} de {total}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+          disabled={currentPage <= 1}
+          className="rounded-lg border border-white/10 bg-[#0F1318] px-3 py-2 text-xs font-semibold text-gray-300 transition hover:border-emerald-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Anterior
+        </button>
+        <span className="min-w-20 text-center text-xs text-gray-400">
+          Página {currentPage} de {pageCount}
+        </span>
+        <button
+          type="button"
+          onClick={() => onPageChange(Math.min(pageCount, currentPage + 1))}
+          disabled={currentPage >= pageCount}
+          className="rounded-lg border border-white/10 bg-[#0F1318] px-3 py-2 text-xs font-semibold text-gray-300 transition hover:border-emerald-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Seguinte
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function StatCard({
 
@@ -1546,8 +1483,6 @@ function StatCard({
 
   };
 
-
-
   return (
 
     <div className="min-w-0 rounded-2xl border border-white/5 bg-[#161A1F] p-4 shadow-lg transition hover:bg-[#191E24] sm:p-6">
@@ -1562,15 +1497,11 @@ function StatCard({
 
           </p>
 
-
-
           <h3 className="mt-2 break-words text-xl font-black tracking-tight text-white sm:text-2xl">
 
             {value}
 
           </h3>
-
-
 
           <p className="mt-2 break-words text-xs leading-relaxed text-gray-500">
 
@@ -1579,8 +1510,6 @@ function StatCard({
           </p>
 
         </div>
-
-
 
         <div
 
@@ -1599,8 +1528,6 @@ function StatCard({
   );
 
 }
-
-
 
 function Metric({
 
@@ -1641,8 +1568,6 @@ function Metric({
   );
 
 }
-
-
 
 function EmptyState({ message }: { message: string }) {
 

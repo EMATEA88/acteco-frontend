@@ -60,6 +60,8 @@ export default function AgentCommissions() {
   const [summary, setSummary] = useState<CommissionSummary | null>(null);
   const [history, setHistory] = useState<CommissionItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const load = useCallback(async (manual = false) => {
     try {
@@ -74,6 +76,7 @@ export default function AgentCommissions() {
 
       setSummary(summaryData as CommissionSummary);
       setHistory(Array.isArray(historyData) ? historyData : []);
+      setCurrentPage(1);
     } catch (err) {
       console.error("Erro ao carregar comissões:", err);
       setError("Não foi possível carregar as comissões. Verifica a ligação e tenta novamente.");
@@ -94,6 +97,14 @@ export default function AgentCommissions() {
   }, [load]);
 
   const handleRefresh = () => void load(true);
+
+  const totalItems = history.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedHistory = history.slice(
+    (safePage - 1) * pageSize,
+    safePage * pageSize
+  );
 
   if (error && !summary && history.length === 0 && !loading) {
     return (
@@ -151,9 +162,6 @@ export default function AgentCommissions() {
           <h2 className="text-sm font-black uppercase tracking-wide text-white sm:text-base">
             Resumo financeiro
           </h2>
-          <p className="mt-1 text-xs text-gray-500">
-            Valores atuais da tua conta de agente.
-          </p>
         </div>
 
         <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 sm:gap-4">
@@ -215,9 +223,6 @@ export default function AgentCommissions() {
             <h2 className="text-base font-black uppercase tracking-wide text-white sm:text-lg">
               Histórico de comissões
             </h2>
-            <p className="mt-1 text-xs text-gray-500">
-              Consulta o serviço, a referência, o valor e o estado de cada comissão.
-            </p>
           </div>
         </div>
 
@@ -239,7 +244,7 @@ export default function AgentCommissions() {
             ) : history.length === 0 ? (
               <EmptyState />
             ) : (
-              history.map((item) => (
+              paginatedHistory.map((item) => (
                 <article
                   key={item.id}
                   className="w-full min-w-0 rounded-xl border border-white/5 bg-[#0F1318] p-4 sm:p-5"
@@ -312,7 +317,7 @@ export default function AgentCommissions() {
                     </td>
                   </tr>
                 ) : (
-                  history.map((item) => (
+                  paginatedHistory.map((item) => (
                     <tr key={item.id} className="text-gray-300 transition hover:bg-white/[0.03]">
                       <td className="whitespace-nowrap px-4 py-4 text-xs text-gray-400 lg:px-5">
                         {formatDate(item.createdAt)}
@@ -335,6 +340,62 @@ export default function AgentCommissions() {
               </tbody>
             </table>
           </div>
+
+          {/* PAGINAÇÃO */}
+          {!loading && history.length > 0 && (
+            <div className="flex flex-col gap-4 border-t border-white/5 bg-[#0F1318] px-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+              <div className="flex flex-col gap-2 text-xs text-gray-400 sm:flex-row sm:items-center sm:gap-4">
+                <span>
+                  A mostrar{" "}
+                  <strong className="text-white">
+                    {(safePage - 1) * pageSize + 1}–{Math.min(safePage * pageSize, totalItems)}
+                  </strong>{" "}
+                  de <strong className="text-white">{totalItems}</strong> comissões
+                </span>
+                <label className="flex items-center gap-2">
+                  Registos por página
+                  <select
+                    value={pageSize}
+                    onChange={(event) => {
+                      setPageSize(Number(event.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="rounded-lg border border-white/10 bg-[#161A1F] px-2 py-1.5 text-xs text-white outline-none focus:border-emerald-500/50"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(Math.max(1, safePage - 1))}
+                  disabled={safePage <= 1}
+                  className="rounded-lg border border-white/10 bg-[#161A1F] px-3 py-2 text-xs font-semibold text-gray-300 transition hover:border-emerald-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Anterior
+                </button>
+
+                <span className="whitespace-nowrap px-2 text-xs text-gray-400">
+                  Página <strong className="text-white">{safePage}</strong> de{" "}
+                  <strong className="text-white">{totalPages}</strong>
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(Math.min(totalPages, safePage + 1))}
+                  disabled={safePage >= totalPages}
+                  className="rounded-lg border border-white/10 bg-[#161A1F] px-3 py-2 text-xs font-semibold text-gray-300 transition hover:border-emerald-500/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Seguinte
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </div>
