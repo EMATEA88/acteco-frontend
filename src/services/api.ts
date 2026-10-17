@@ -48,18 +48,36 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   response => response,
   error => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      localStorage.removeItem("token")
-      localStorage.removeItem("user")
+    const status = error.response?.status;
+    const code = error.response?.data?.code;
 
-      delete api.defaults.headers.common.Authorization
-
-      window.location.href = "/login"
+    // O bloqueio de vendas não termina a sessão.
+    if (code === "SUB_AGENT_SALES_CLOSED") {
+      return Promise.reject(error);
     }
 
-    return Promise.reject(error)
+    // Credenciais inválidas no login: manter a página e mostrar a mensagem.
+    if (
+      error.config?.url?.includes("/auth/login") &&
+      status === 401
+    ) {
+      return Promise.reject(error);
+    }
+
+    // Apenas erros de autenticação/autorização fora do login
+    // seguem o comportamento de sessão já existente.
+    if (status === 401 || status === 403) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      delete api.defaults.headers.common.Authorization;
+
+      window.location.href = "/login";
+    }
+
+    return Promise.reject(error);
   }
-)
+);
 
 /* =========================
    AUTH
