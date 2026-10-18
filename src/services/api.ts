@@ -45,18 +45,29 @@ api.interceptors.request.use(config => {
    INTERCEPTOR RESPONSE
 ========================= */
 
+/* =========================
+   INTERCEPTOR RESPONSE
+========================= */
+
 api.interceptors.response.use(
   response => response,
   error => {
     const status = error.response?.status;
     const code = error.response?.data?.code;
 
-    // O bloqueio de vendas não termina a sessão.
-    if (code === "SUB_AGENT_SALES_CLOSED") {
+    // Regras de negócio: não terminar a sessão.
+    const salesRestrictionCodes = [
+      "SUB_AGENT_SALES_CLOSED",
+      "SUB_AGENT_SALES_DISABLED",
+      "SUB_AGENT_DAILY_LIMIT_EXCEEDED",
+    ];
+
+    if (salesRestrictionCodes.includes(code)) {
       return Promise.reject(error);
     }
 
-    // Credenciais inválidas no login: manter a página e mostrar a mensagem.
+    // Credenciais inválidas no login:
+    // manter a página para apresentar a mensagem.
     if (
       error.config?.url?.includes("/auth/login") &&
       status === 401
@@ -64,8 +75,7 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Apenas erros de autenticação/autorização fora do login
-    // seguem o comportamento de sessão já existente.
+    // Sessão inválida ou acesso não autorizado.
     if (status === 401 || status === 403) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
