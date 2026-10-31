@@ -122,6 +122,7 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="bank" element={<Bank />} />
           <Route path="transactions" element={<Transactions />} />
+          <Route path="/transactions/service/:id" element={<TransactionDetails />} />
           <Route path="/transactions/:id" element={<TransactionDetails />} />
           <Route path="gift" element={<Gift />} />
           <Route path="security" element={<Security />} />

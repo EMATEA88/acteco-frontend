@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
 
 import {
   ArrowLeft,
@@ -14,6 +14,7 @@ import {
   TransactionService,
   type TransactionDetails as BaseTransactionDetails
 } from "../services/transaction.service"
+import { api } from "../services/api"
 
 // Importe a função de impressão e utilitários que criámos (ajuste o caminho se necessário)
 import {
@@ -187,56 +188,25 @@ interface TransactionReceipt {
 // METADATA
 // =====================================================
 
-export interface TransactionDetails
-  extends BaseTransactionDetails {
-  serviceRequest?: {
-    id: number
-    planId: number
-    serviceId?: number | null
-    serviceGroupId?: number | null
-    providerId?: number | null
-    providerName?: string | null
-    amount: number
-    cost?: number | null
-    profit?: number | null
-    customerReference?: string | null
-    customerName?: string | null
-    partnerName?: string | null
-    partnerId?: number | null
-    serviceName?: string | null
-    serviceGroupName?: string | null
-    planName?: string | null
-    status: string
-    transactionId?: number | null
-    externalProviderRef?: string | null
-    externalTransactionId?: string | null
-    providerResponse?:
-      | Record<string, any>
-      | string
-      | null
-    completedAt?: string | null
-    providerFinalBalance?: number | null
-    providerConfirmedAt?: string | null
-    providerReconciledAt?: string | null
-    providerOperationStatus?: string | null
-    providerOperationCode?: number | null
-    createdAt: string
-    updatedAt: string
-  }
-
-  metadata?: {
-    categoryName?: string
-    providerName?: string
-    partnerName?: string
-    planName?: string
-    customerReference?: string
-    amount?: number
-    cost?: number
-    profit?: number
-    aki?: any
-    extraInfo?: any
-    receipt?: TransactionReceipt
-  }
+export type TransactionDetails = Omit<
+  BaseTransactionDetails,
+  "metadata"
+> & {
+  metadata?: (
+    NonNullable<BaseTransactionDetails["metadata"]> & {
+      categoryName?: string
+      providerName?: string
+      partnerName?: string
+      planName?: string
+      customerReference?: string
+      amount?: number
+      cost?: number
+      profit?: number
+      aki?: any
+      extraInfo?: any
+      receipt?: TransactionReceipt
+    }
+  ) | null
 }
 
 // =====================================================
@@ -278,6 +248,7 @@ function parseJsonValue(
 
 export default function TransactionDetails() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { id } = useParams()
 
   const [loading, setLoading] =
@@ -285,6 +256,12 @@ export default function TransactionDetails() {
 
   const [transaction, setTransaction] =
     useState<TransactionDetails | null>(null)
+
+  const [isStandaloneRequest, setIsStandaloneRequest] =
+    useState(false)
+
+  const [loadError, setLoadError] =
+    useState<string | null>(null)
 
   const [copied, setCopied] =
     useState(false)
@@ -312,21 +289,134 @@ export default function TransactionDetails() {
   // ===================================================
 
   useEffect(() => {
-    if (!id) return
+    let mounted = true
 
-    TransactionService.details(Number(id))
-      .then((data: any) => {
-        console.log(
-          "TRANSACTION DETAILS:",
-          data
-        )
-        setTransaction(data)
-      })
-      .catch(console.error)
-      .finally(() =>
+    const loadDetails = async () => {
+      if (!id || !Number.isFinite(Number(id))) {
+        setLoadError("Identificador inválido.")
         setLoading(false)
-      )
-  }, [id])
+        return
+      }
+
+      setLoading(true)
+      setLoadError(null)
+      setTransaction(null)
+      setIsStandaloneRequest(false)
+
+      const isServiceRequestRoute =
+        location.pathname.startsWith("/transactions/service/")
+
+      // A rota específica evita confundir o ID do ServiceRequest
+      // com o ID de outra Transaction.
+      if (!isServiceRequestRoute) {
+        try {
+          const data = await TransactionService.details(Number(id))
+
+          if (!mounted) return
+
+          setTransaction(data)
+          setLoading(false)
+          return
+        } catch (transactionError) {
+          console.warn(
+            "A transação não foi encontrada. A procurar ServiceRequest:",
+            transactionError
+          )
+        }
+      }
+
+      // Para pedidos sem Transaction, procura pelo endpoint autenticado
+      // na listagem autenticada já existente no backend.
+      
+      try {
+        const { data } = await api.get(
+          `/transactions/service/${Number(id)}`
+        )
+
+        if (!mounted) return
+
+        const request = data?.serviceRequest ?? data
+
+        if (!request || Number(request.id) !== Number(id)) {
+          throw new Error("Pedido de serviço não encontrado.")
+        }
+
+        const status = String(
+          data.status ?? request.status ?? "PENDING"
+        ).toUpperCase()
+
+        const providerName =
+          request.providerName ??
+          request.partnerName ??
+          request.serviceName ??
+          "EMATEA"
+
+        const normalized = {
+          ...data,
+          id: Number(request.id),
+          type: "SERVICE_PURCHASE",
+          amount: Number(request.amount ?? data.amount ?? 0),
+          currency: data.currency ?? "AOA",
+          method: data.method ?? "SERVICE",
+          status,
+          description:
+            data.description ??
+            request.planName ??
+            request.serviceName ??
+            request.serviceGroupName ??
+            "Compra de serviço",
+          reference:
+            data.reference ??
+            request.customerReference ??
+            null,
+          relatedPublicId: String(request.id),
+          createdAt: request.createdAt,
+          processedAt:
+            request.completedAt ??
+            data.processedAt ??
+            null,
+          metadata: {
+            ...(data.metadata ?? {}),
+            providerName,
+            partnerName: request.partnerName ?? null,
+            planName: request.planName ?? null,
+            customerReference:
+              request.customerReference ?? null,
+            customerName: request.customerName ?? null,
+          },
+          serviceRequest: request,
+        } as unknown as TransactionDetails
+
+        setTransaction(normalized)
+        setIsStandaloneRequest(true)
+
+      } catch (requestError: any) {
+        console.error(
+          "TRANSACTION_DETAILS_LOAD_ERROR:",
+          requestError
+        )
+
+        if (mounted) {
+          setLoadError(
+            requestError?.response?.data?.error ||
+            requestError?.message ||
+            "Não foi possível carregar os detalhes deste pedido."
+          )
+        }
+      } finally {
+        if (mounted) setLoading(false)
+      }
+ {
+        if (mounted) setLoading(false)
+      }
+    }
+
+    loadDetails()
+
+    return () => {
+      mounted = false
+    }
+  }, [id, location.pathname])
 
   // ===================================================
   // COPIAR ID
@@ -396,7 +486,11 @@ export default function TransactionDetails() {
 
     try {
       await printReceipt(
-  transaction,
+  {
+    ...transaction,
+    serviceRequest: transaction.serviceRequest ?? undefined,
+    metadata: transaction.metadata ?? undefined,
+  },
   printer
 )
 
@@ -631,6 +725,16 @@ export default function TransactionDetails() {
     transaction?.reference ??
     "-"
 
+  const purchaseStatus = String(
+    serviceRequest?.status ?? transaction?.status ?? ""
+  ).toUpperCase()
+
+  const isProviderTimeout = purchaseStatus === "PROVIDER_TIMEOUT"
+  const isRejected = purchaseStatus === "REJECTED"
+  const isProcessing =
+    purchaseStatus === "PENDING" ||
+    purchaseStatus === "IN_PROGRESS"
+
   const isPaid =
     transaction?.status === "PAID" ||
     transaction?.status === "COMPLETED" ||
@@ -741,7 +845,7 @@ export default function TransactionDetails() {
           ) : !transaction ? (
 
             <div className="text-center py-8 text-sm font-bold text-[#7dd3fc] font-mono">
-              Transação não encontrada.
+              {loadError || "Transação ou pedido não encontrado."}
             </div>
 
           ) : (
@@ -901,14 +1005,37 @@ export default function TransactionDetails() {
                     className={`font-black uppercase text-[11px] ${
                       isPaid
                         ? "text-[#38bdf8]"
-                        : "text-amber-400"
+                        : isProviderTimeout
+                          ? "text-orange-300"
+                          : isRejected
+                            ? "text-rose-400"
+                            : "text-amber-400"
                     }`}
                   >
                     {isPaid
                       ? "CONCLUÍDO"
-                      : "PROCESSANDO"}
+                      : isProviderTimeout
+                        ? "EM VERIFICAÇÃO"
+                        : isRejected
+                          ? "REJEITADO"
+                          : isProcessing
+                            ? "EM PROCESSAMENTO"
+                            : purchaseStatus || "POR CONFIRMAR"}
                   </span>
                 </div>
+
+                {isProviderTimeout && (
+                  <div className="rounded-xl border border-orange-400/30 bg-orange-500/10 p-3 text-[11px] leading-relaxed text-orange-200">
+                    O tempo de monitorização foi excedido. A operadora ainda não confirmou o resultado.
+                    Este estado não significa que a compra foi rejeitada ou reembolsada.
+                  </div>
+                )}
+
+                {isRejected && (
+                  <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 p-3 text-[11px] leading-relaxed text-rose-200">
+                    A operação foi confirmada como rejeitada.
+                  </div>
+                )}
 
               </div>
 
@@ -947,7 +1074,8 @@ export default function TransactionDetails() {
                 </div>
               )}
 
-              {/* BOTÃO DE IMPRESSÃO */}
+              {/* IMPRESSÃO: apenas para transações financeiras existentes */}
+              {!isStandaloneRequest && (
               <div className="w-full mt-5">
                 <button
                   type="button"
@@ -959,6 +1087,7 @@ export default function TransactionDetails() {
                   {isPrinting ? "A imprimir..." : "Imprimir Recibo"}
                 </button>
               </div>
+              )}
             </>
           )}
 

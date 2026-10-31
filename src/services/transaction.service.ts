@@ -13,7 +13,7 @@ export interface Transaction {
 
   method?: string | null;
 
-  status: string;
+  status: TransactionStatus;
 
   description?: string | null;
 
@@ -44,6 +44,23 @@ export interface TransactionPagination {
   hasPreviousPage: boolean;
 }
 
+export type PurchaseStatus =
+  | "PENDING"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "REJECTED"
+  | "PROVIDER_TIMEOUT";
+
+export type TransactionStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "PAID"
+  | "FAILED"
+  | "EXPIRED"
+  | "CANCELLED"
+  | "REFUNDED"
+  | PurchaseStatus;
+
 /* ================= PENDING PURCHASE ================= */
 
 export interface PendingPurchase {
@@ -57,7 +74,7 @@ export interface PendingPurchase {
 
   method: string;
 
-  status: string;
+  status: PurchaseStatus;
 
   description: string;
 
@@ -159,7 +176,7 @@ export interface TransactionServiceRequest {
 
   planName?: string | null;
 
-  status: string;
+  status: PurchaseStatus;
 
   transactionId?: number | null;
 
@@ -328,6 +345,29 @@ export const TransactionService = {
 
     }
 
+  },
+
+  
+  /* ================= SERVICE REQUEST DETAILS ================= */
+
+  async serviceDetails(
+    id: number
+  ): Promise<TransactionDetails> {
+
+    try {
+      const { data } =
+        await api.get<TransactionDetails>(
+          `/transactions/service/${id}`
+        );
+
+      return data;
+
+    } catch (err: any) {
+      throw new Error(
+        err?.response?.data?.error ||
+        "Erro ao carregar detalhes do pedido de serviço"
+      );
+    }
   }
 
 };
