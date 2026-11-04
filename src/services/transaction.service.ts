@@ -3,371 +3,371 @@ import { api } from "./api";
 /* ================= TYPES ================= */
 
 export interface Transaction {
-  id: number;
+  id: number;
 
-  type: string;
+  type: string;
 
-  amount: number;
+  amount: number;
 
-  currency: string;
+  currency: string;
 
-  method?: string | null;
+  method?: string | null;
 
-  status: TransactionStatus;
+  status: TransactionStatus;
 
-  description?: string | null;
+  description?: string | null;
 
-  reference?: string | null;
+  reference?: string | null;
 
-  relatedPublicId?: string | null;
+  relatedPublicId?: string | null;
 
-  createdAt: string;
+  createdAt: string;
 
-  processedAt?: string | null;
+  processedAt?: string | null;
 
-  metadata?: Record<string, any> | null;
+  metadata?: Record<string, any> | null;
 }
 
 /* ================= PAGINATION ================= */
 
 export interface TransactionPagination {
-  page: number;
+  page: number;
 
-  limit: number;
+  limit: number;
 
-  total: number;
+  total: number;
 
-  totalPages: number;
+  totalPages: number;
 
-  hasNextPage: boolean;
+  hasNextPage: boolean;
 
-  hasPreviousPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 export type PurchaseStatus =
-  | "PENDING"
-  | "IN_PROGRESS"
-  | "COMPLETED"
-  | "REJECTED"
-  | "PROVIDER_TIMEOUT";
+  | "PENDING"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "REJECTED"
+  | "PROVIDER_TIMEOUT";
 
 export type TransactionStatus =
-  | "PENDING"
-  | "PROCESSING"
-  | "PAID"
-  | "FAILED"
-  | "EXPIRED"
-  | "CANCELLED"
-  | "REFUNDED"
-  | PurchaseStatus;
+  | "PENDING"
+  | "PROCESSING"
+  | "PAID"
+  | "FAILED"
+  | "EXPIRED"
+  | "CANCELLED"
+  | "REFUNDED"
+  | PurchaseStatus;
 
 /* ================= PENDING PURCHASE ================= */
 
 export interface PendingPurchase {
-  id: number;
+  id: number;
 
-  type: "SERVICE_PURCHASE";
+  type: "SERVICE_PURCHASE";
 
-  amount: number;
+  amount: number;
 
-  currency: string;
+  currency: string;
 
-  method: string;
+  method: string;
 
-  status: PurchaseStatus;
+  status: PurchaseStatus;
 
-  description: string;
+  description: string;
 
-  reference: string;
+  reference: string;
 
-  relatedPublicId: string;
+  relatedPublicId: string;
 
-  createdAt: string;
+  createdAt: string;
 
-  processedAt?: string | null;
+  processedAt?: string | null;
 
-  metadata?: {
-    source?: string;
+  metadata?: {
+    source?: string;
 
-    serviceRequestId?: number;
+    serviceRequestId?: number;
 
-    planId?: number;
+    planId?: number;
 
-    serviceId?: number | null;
+    serviceId?: number | null;
 
-    serviceGroupId?: number | null;
+    serviceGroupId?: number | null;
 
-    providerId?: number | null;
+    providerId?: number | null;
 
-    providerName?: string | null;
+    providerName?: string | null;
 
-    customerReference?: string | null;
+    customerReference?: string | null;
 
-    customerName?: string | null;
+    customerName?: string | null;
 
-    partnerName?: string | null;
+    partnerName?: string | null;
 
-    partnerId?: number | null;
+    partnerId?: number | null;
 
-    serviceName?: string | null;
+    serviceName?: string | null;
 
-    serviceGroupName?: string | null;
+    serviceGroupName?: string | null;
 
-    planName?: string | null;
+    planName?: string | null;
 
-    transactionId?: number | null;
+    transactionId?: number | null;
 
-    externalProviderRef?: string | null;
+    externalProviderRef?: string | null;
 
-    externalTransactionId?: string | null;
+    externalTransactionId?: string | null;
 
-    providerResponse?: Record<string, any> | string | null;
+    providerResponse?: Record<string, any> | string | null;
 
-    phone?: string;
+    phone?: string;
 
-    phoneNumber?: string;
+    phoneNumber?: string;
 
-    [key: string]: any;
-  } | null;
+    [key: string]: any;
+  } | null;
 }
 
 /* ================= LIST RESPONSE ================= */
 
 export interface TransactionListResponse {
-  transactions: Transaction[];
+  transactions: Transaction[];
 
-  pendingPurchases: PendingPurchase[];
+  pendingPurchases: PendingPurchase[];
 
-  pagination: TransactionPagination;
+  pagination: TransactionPagination;
 }
 
 /* ================= SERVICE REQUEST ================= */
 
 export interface TransactionServiceRequest {
-  id: number;
+  id: number;
 
-  planId: number;
+  planId: number;
 
-  serviceId?: number | null;
+  serviceId?: number | null;
 
-  serviceGroupId?: number | null;
+  serviceGroupId?: number | null;
 
-  providerId?: number | null;
+  providerId?: number | null;
 
-  providerName?: string | null;
+  providerName?: string | null;
 
-  amount: number;
+  amount: number;
 
-  cost?: number | null;
+  cost?: number | null;
 
-  profit?: number | null;
+  profit?: number | null;
 
-  customerReference?: string | null;
+  customerReference?: string | null;
 
-  customerName?: string | null;
+  customerName?: string | null;
 
-  partnerName?: string | null;
+  partnerName?: string | null;
 
-  partnerId?: number | null;
+  partnerId?: number | null;
 
-  serviceName?: string | null;
+  serviceName?: string | null;
 
-  serviceGroupName?: string | null;
+  serviceGroupName?: string | null;
 
-  planName?: string | null;
+  planName?: string | null;
 
-  status: PurchaseStatus;
+  status: PurchaseStatus;
 
-  transactionId?: number | null;
+  transactionId?: number | null;
 
-  externalProviderRef?: string | null;
+  externalProviderRef?: string | null;
 
-  externalTransactionId?: string | null;
+  externalTransactionId?: string | null;
 
-  providerResponse?: Record<string, any> | string | null;
+  providerResponse?: Record<string, any> | string | null;
 
-  completedAt?: string | null;
+  completedAt?: string | null;
 
-  providerFinalBalance?: number | null;
+  providerFinalBalance?: number | null;
 
-  providerConfirmedAt?: string | null;
+  providerConfirmedAt?: string | null;
 
-  providerReconciledAt?: string | null;
+  providerReconciledAt?: string | null;
 
-  providerOperationStatus?: string | null;
+  providerOperationStatus?: string | null;
 
-  providerOperationCode?: number | null;
+  providerOperationCode?: number | null;
 
-  createdAt: string;
+  createdAt: string;
 
-  updatedAt: string;
+  updatedAt: string;
 }
 
 /* ================= DETAILS ================= */
 
 export interface TransactionDetails
-  extends Transaction {
+  extends Transaction {
 
-  externalId?: string | null;
+  externalId?: string | null;
 
-  gatewayProvider?: string | null;
+  gatewayProvider?: string | null;
 
-  gatewayStatus?: string | null;
+  gatewayStatus?: string | null;
 
-  merchantTransactionId?: string | null;
+  merchantTransactionId?: string | null;
 
-  providerOrderSn?: string | null;
+  providerOrderSn?: string | null;
 
-  serviceRequest?: TransactionServiceRequest | null;
+  serviceRequest?: TransactionServiceRequest | null;
 }
 
 /* ================= FILTER ================= */
 
 export interface TransactionFilter {
-  type?: string;
+  type?: string;
 
-  page?: number;
+  page?: number;
 
-  limit?: number;
+  limit?: number;
 }
 
 /* ================= SERVICE ================= */
 
 export const TransactionService = {
 
-  /* ================= LIST ================= */
+  /* ================= LIST ================= */
 
-  async list(): Promise<Transaction[]> {
+  async list(): Promise<Transaction[]> {
 
-    try {
+    try {
 
-      const { data } =
-        await api.get<TransactionListResponse>(
-          "/transactions"
-        );
+      const { data } =
+        await api.get<TransactionListResponse>(
+          "/transactions"
+        );
 
-      return data.transactions;
+      return data.transactions;
 
-    } catch (err: any) {
+    } catch (err: any) {
 
-      throw new Error(
-        err?.response?.data?.error ||
-        "Erro ao carregar transações"
-      );
+      throw new Error(
+        err?.response?.data?.error ||
+        "Erro ao carregar transações"
+      );
 
-    }
+    }
 
-  },
+  },
 
-  /* ================= FILTER ================= */
+  /* ================= FILTER ================= */
 
-  async listFiltered(
-    params?: TransactionFilter
-  ): Promise<Transaction[]> {
+  async listFiltered(
+    params?: TransactionFilter
+  ): Promise<Transaction[]> {
 
-    try {
+    try {
 
-      const { data } =
-        await api.get<TransactionListResponse>(
-          "/transactions",
-          {
-            params
-          }
-        );
+      const { data } =
+        await api.get<TransactionListResponse>(
+          "/transactions",
+          {
+            params
+          }
+        );
 
-      return data.transactions;
+      return data.transactions;
 
-    } catch (err: any) {
+    } catch (err: any) {
 
-      throw new Error(
-        err?.response?.data?.error ||
-        "Erro ao filtrar transações"
-      );
+      throw new Error(
+        err?.response?.data?.error ||
+        "Erro ao filtrar transações"
+      );
 
-    }
+    }
 
-  },
+  },
 
-  /* ================= PAGINATION ================= */
+  /* ================= PAGINATION ================= */
 
-  async paginate(
-    page = 1,
-    limit = 20
-  ): Promise<TransactionListResponse> {
+  async paginate(
+    page = 1,
+    limit = 20
+  ): Promise<TransactionListResponse> {
 
-    try {
+    try {
 
-      const { data } =
-        await api.get<TransactionListResponse>(
-          "/transactions",
-          {
-            params: {
-              page,
-              limit
-            }
-          }
-        );
+      const { data } =
+        await api.get<TransactionListResponse>(
+          "/transactions",
+          {
+            params: {
+              page,
+              limit
+            }
+          }
+        );
 
-      return data;
+      return data;
 
-    } catch (err: any) {
+    } catch (err: any) {
 
-      throw new Error(
-        err?.response?.data?.error ||
-        "Erro ao carregar transações"
-      );
+      throw new Error(
+        err?.response?.data?.error ||
+        "Erro ao carregar transações"
+      );
 
-    }
+    }
 
-  },
+  },
 
-  /* ================= DETAILS ================= */
+  /* ================= DETAILS ================= */
 
-  async details(
-    id: number
-  ): Promise<TransactionDetails> {
+  async details(
+    id: number
+  ): Promise<TransactionDetails> {
 
-    try {
+    try {
 
-      const { data } =
-        await api.get<TransactionDetails>(
-          `/transactions/${id}`
-        );
+      const { data } =
+        await api.get<TransactionDetails>(
+          `/transactions/${id}`
+        );
 
-      return data;
+      return data;
 
-    } catch (err: any) {
+    } catch (err: any) {
 
-      throw new Error(
-        err?.response?.data?.error ||
-        "Erro ao carregar detalhes da transação"
-      );
+      throw new Error(
+        err?.response?.data?.error ||
+        "Erro ao carregar detalhes da transação"
+      );
 
-    }
+    }
 
-  },
+  },
 
-  
-  /* ================= SERVICE REQUEST DETAILS ================= */
+  
+  /* ================= SERVICE REQUEST DETAILS ================= */
 
-  async serviceDetails(
-    id: number
-  ): Promise<TransactionDetails> {
+  async serviceDetails(
+    id: number
+  ): Promise<TransactionDetails> {
 
-    try {
-      const { data } =
-        await api.get<TransactionDetails>(
-          `/transactions/service/${id}`
-        );
+    try {
+      const { data } =
+        await api.get<TransactionDetails>(
+          `/transactions/service/${id}`
+        );
 
-      return data;
+      return data;
 
-    } catch (err: any) {
-      throw new Error(
-        err?.response?.data?.error ||
-        "Erro ao carregar detalhes do pedido de serviço"
-      );
-    }
-  }
+    } catch (err: any) {
+      throw new Error(
+        err?.response?.data?.error ||
+        "Erro ao carregar detalhes do pedido de serviço"
+      );
+    }
+  }
 
 };

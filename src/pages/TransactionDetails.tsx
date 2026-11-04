@@ -342,7 +342,7 @@ export default function TransactionDetails() {
         }
 
         const status = String(
-          data.status ?? request.status ?? "PENDING"
+          request.status ?? data.status ?? "PENDING"
         ).toUpperCase()
 
         const providerName =
@@ -735,14 +735,14 @@ export default function TransactionDetails() {
     purchaseStatus === "PENDING" ||
     purchaseStatus === "IN_PROGRESS"
 
-  const isPaid =
-    transaction?.status === "PAID" ||
-    transaction?.status === "COMPLETED" ||
-    serviceRequest?.status === "COMPLETED" ||
-    storedReceipt?.status === "SUCCESS" ||
-    storedReceipt?.status === "COMPLETED" ||
-    providerResponse?.Status === "SUCCESS" ||
-    providerResponse?.Status === "COMPLETED"
+  // O estado persistido do ServiceRequest é a fonte de verdade.
+  // Um recibo/providerResponse antigo nunca pode transformar REJECTED em sucesso.
+  const isPaid = serviceRequest
+    ? String(serviceRequest.status ?? "").toUpperCase() === "COMPLETED"
+    : transaction?.status
+      ? ["PAID", "COMPLETED"].includes(String(transaction.status).toUpperCase())
+      : ["SUCCESS", "COMPLETED"].includes(String(storedReceipt?.status ?? "").toUpperCase()) ||
+        ["SUCCESS", "COMPLETED"].includes(String(providerResponse?.Status ?? "").toUpperCase())
 
   // ===================================================
   // RENDER

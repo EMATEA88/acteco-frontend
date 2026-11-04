@@ -1251,27 +1251,54 @@ const response = (await purchaseService.purchase({
 
 
 
+const isRejected =
+  response?.success === false ||
+  purchaseStatus === "FAILED" ||
+  purchaseStatus === "REJECTED";
+
 const pending =
+  !isRejected && (
+    response?.pending === true ||
+    purchaseStatus === "RUNNING" ||
+    purchaseStatus === "PENDING" ||
+    purchaseStatus === "IN_PROGRESS" ||
+    purchaseStatus === "PROVIDER_TIMEOUT"
+  );
 
-  response?.pending === true ||
-
-  purchaseStatus === "RUNNING" ||
-
-  purchaseStatus === "IN_PROGRESS";
-
-
+const isSuccessful =
+  !isRejected &&
+  !pending &&
+  (
+    purchaseStatus === "SUCCESS" ||
+    purchaseStatus === "COMPLETED" ||
+    response?.success === true
+  );
 
 const normalizedStatus =
-
   pending
+    ? (purchaseStatus === "PROVIDER_TIMEOUT" ? "PROVIDER_TIMEOUT" : "IN_PROGRESS")
+    : isRejected
+      ? "REJECTED"
+      : isSuccessful
+        ? "SUCCESS"
+        : "UNKNOWN";
 
-    ? "IN_PROGRESS"
+if (!isSuccessful && !pending) {
+  const rejectionMessage =
+    response?.message ??
+    response?.data?.message ??
+    akiResponse?.Response?.Description ??
+    akiResponse?.response?.Description ??
+    (normalizedStatus === "REJECTED"
+      ? "A operadora rejeitou a operação. O valor não foi confirmado como pago."
+      : "A AKI não confirmou o sucesso da operação. Consulte o histórico antes de tentar novamente.");
 
-    : purchaseStatus === "SUCCESS" || purchaseStatus === "COMPLETED"
-
-      ? "SUCCESS"
-
-      : purchaseStatus || "UNKNOWN";
+  setResultData({
+    success: false,
+    errorMessage: rejectionMessage
+  });
+  return;
+}
 
 
 
@@ -1354,14 +1381,10 @@ const normalizedStatus =
 
 
       setResultData({
-
         success: true,
-
         pending,
-
         transaction
-
-     });
+      });
 
     } catch (error: any) {
 
@@ -2155,7 +2178,9 @@ const normalizedStatus =
 
               <h3 className="text-base font-bold text-red-400">
 
-                Erro na Transação
+                {resultData.errorMessage?.toLowerCase().includes("rejeit") || resultData.errorMessage?.toLowerCase().includes("failed")
+                  ? "Transação Rejeitada"
+                  : "Não foi possível confirmar a transação"}
 
               </h3>
 
