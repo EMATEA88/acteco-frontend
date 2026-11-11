@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -15,7 +16,7 @@ import ProviderGrid from "./ProviderGrid";
 import PlanGrid from "./PlanGrid";
 import PurchaseModal from "./PurchaseModal";
 
-// Mapa global com os nomes completos oficiais para todas as casas de apostas e provedores
+// Nomes oficiais para casas de apostas e provedores.
 const providerFullNameMap: Record<string, string> = {
   PBET: "Premier Bet",
   PREMIERBET: "Premier Bet",
@@ -39,55 +40,78 @@ export const getDisplayProviderName = (codeOrName: string) => {
   return providerFullNameMap[upper] || codeOrName;
 };
 
+/**
+ * Junta os planos dos grupos de um provedor,
+ * preservando a identificação do grupo original.
+ */
+function getProviderPlans(provider: CatalogProvider): CatalogPlan[] {
+  return (provider.groups || []).flatMap((group) =>
+    (group.plans || []).map((plan) => ({
+      ...plan,
+      catalogGroupId: group.id,
+      catalogGroupName: group.name,
+    }))
+  );
+}
+
 export default function CatalogLayout() {
   const { providerCode } = useParams();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [catalog, setCatalog] = useState<CatalogCategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<CatalogCategory | null>(null);
-  const [selectedProvider, setSelectedProvider] = useState<CatalogProvider | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState<CatalogGroup | null>(null);
-  const [selectedPlan, setSelectedPlan] = useState<CatalogPlan | null>(null);
+
+  const [selectedCategory, setSelectedCategory] =
+    useState<CatalogCategory | null>(null);
+
+  const [selectedProvider, setSelectedProvider] =
+    useState<CatalogProvider | null>(null);
+
+  const [selectedGroup, setSelectedGroup] =
+    useState<CatalogGroup | null>(null);
+
+  const [selectedPlan, setSelectedPlan] =
+    useState<CatalogPlan | null>(null);
 
   useEffect(() => {
     loadCatalog();
   }, []);
 
+  // Abre automaticamente o provedor quando existe providerCode na rota.
   useEffect(() => {
     if (!providerCode || catalog.length === 0) {
-        return;
+      return;
     }
 
+    const normalizedCode = providerCode.toLowerCase();
+
     for (const category of catalog) {
-        const provider = category.providers.find(
-            p => p.code?.toLowerCase() === providerCode.toLowerCase()
-        );
+      const provider = category.providers.find(
+        (item) => item.code?.toLowerCase() === normalizedCode
+      );
 
-        if (!provider) {
-            continue;
-        }
+      if (!provider) {
+        continue;
+      }
 
-        setSelectedCategory(category);
+      setSelectedCategory(category);
+      setSelectedProvider(provider);
 
-        const allPlans = provider.groups.flatMap(
-            group => group.plans
-        );
+      const allPlans = getProviderPlans(provider);
 
-        setSelectedProvider(provider);
+      const fullName = getDisplayProviderName(
+        provider.code || provider.name
+      );
 
-        // Substitui pelo nome completo se existir no mapa
-        const fullName = getDisplayProviderName(provider.code || provider.name);
+      setSelectedGroup({
+        id: provider.id,
+        name: fullName,
+        slug: provider.code?.toLowerCase() || "",
+        providerCode: provider.code || "",
+        plans: allPlans,
+      });
 
-        setSelectedGroup({
-            id: provider.id,
-            name: fullName,
-            slug: provider.code?.toLowerCase() || '',
-            providerCode: provider.code || '',
-            plans: allPlans
-        });
-
-        break;
+      break;
     }
   }, [catalog, providerCode]);
 
@@ -97,15 +121,20 @@ export default function CatalogLayout() {
       setError("");
 
       const response = await purchaseService.getCatalog();
-      
-      // Mapeia os dados da API para injetar os nomes completos logo na origem do catálogo
-      const formattedData = (response.data || []).map((category: CatalogCategory) => ({
-        ...category,
-        providers: (category.providers || []).map((provider: CatalogProvider) => ({
-          ...provider,
-          name: getDisplayProviderName(provider.code || provider.name)
-        }))
-      }));
+
+      const formattedData = (response.data || []).map(
+        (category: CatalogCategory) => ({
+          ...category,
+          providers: (category.providers || []).map(
+            (provider: CatalogProvider) => ({
+              ...provider,
+              name: getDisplayProviderName(
+                provider.code || provider.name
+              ),
+            })
+          ),
+        })
+      );
 
       setCatalog(formattedData);
     } catch (error: any) {
@@ -118,20 +147,24 @@ export default function CatalogLayout() {
     }
   }
 
-  // Ao selecionar um provedor, juntamos todos os planos e aplicamos o nome completo amigável
+  // Seleciona um provedor e reúne os seus planos,
+  // preservando o grupo atual de cada produto.
   const handleSelectProvider = (provider: CatalogProvider) => {
     setSelectedProvider(provider);
 
     if (provider.groups && provider.groups.length > 0) {
-      const allPlans = provider.groups.flatMap(g => g.plans || []);
-      const fullName = getDisplayProviderName(provider.code || provider.name);
-      
+      const allPlans = getProviderPlans(provider);
+
+      const fullName = getDisplayProviderName(
+        provider.code || provider.name
+      );
+
       const unifiedGroup: CatalogGroup = {
         id: provider.id,
         name: fullName,
         slug: provider.code?.toLowerCase() || String(provider.id),
-        providerCode: provider.code || '',
-        plans: allPlans
+        providerCode: provider.code || "",
+        plans: allPlans,
       };
 
       setSelectedGroup(unifiedGroup);
@@ -143,20 +176,19 @@ export default function CatalogLayout() {
   if (loading) {
     return (
       <div className="p-5 space-y-6 animate-pulse min-h-screen bg-[#0a2533]">
-        {/* Skeleton para Categorias / Grid */}
         {[1, 2, 3].map((sectionIndex) => (
           <div key={sectionIndex} className="space-y-3">
-            {/* Título Skeleton */}
-            <div className="w-32 h-3.5 bg-[#0e364a] rounded-md border border-cyan-500/10"></div>
+            <div className="w-32 h-3.5 bg-[#0e364a] rounded-md border border-cyan-500/10" />
 
-            {/* Grelha de Provedores Skeleton */}
             <div className="grid grid-cols-4 gap-3 sm:gap-4">
               {[1, 2, 3, 4].map((itemIndex) => (
-                <div key={itemIndex} className="flex flex-col items-center space-y-2">
-                  {/* Círculo do Logo Skeleton */}
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#0e364a] border border-cyan-500/20 shadow-md"></div>
-                  {/* Texto do Nome Skeleton */}
-                  <div className="w-12 h-2.5 bg-[#0e364a] rounded-sm"></div>
+                <div
+                  key={itemIndex}
+                  className="flex flex-col items-center space-y-2"
+                >
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#0e364a] border border-cyan-500/20 shadow-md" />
+
+                  <div className="w-12 h-2.5 bg-[#0e364a] rounded-sm" />
                 </div>
               ))}
             </div>

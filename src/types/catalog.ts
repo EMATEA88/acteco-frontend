@@ -28,6 +28,10 @@ export interface CatalogPlan {
 
   type: string;
 
+  // Grupo atual atribuído ao produto no catálogo.
+  catalogGroupId?: number;
+  catalogGroupName?: string;
+
 }
 
 export interface CatalogGroup {
