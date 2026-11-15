@@ -722,7 +722,7 @@ export default function TransactionDetails() {
 
       {/* Área de conteúdo: começa no topo e ocupa a largura disponível */}
       <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="mx-auto w-full max-w-xl px-3 py-3 sm:px-5 sm:py-5">
+        <div className="mx-auto w-full max-w-lg px-2 py-2 sm:px-4 sm:py-4">
           {loading ? (
             <section className="overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0b3043] p-5 shadow-2xl shadow-black/20 sm:p-7">
               <div className="animate-pulse space-y-6">
@@ -766,248 +766,179 @@ export default function TransactionDetails() {
               </button>
             </section>
           ) : (
-            <section className="overflow-hidden rounded-3xl border border-cyan-300/15 bg-[#0b3043] shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
+            <section className="overflow-hidden rounded-2xl border border-cyan-300/15 bg-[#0b3043] shadow-xl shadow-black/20">
 
-              {/* Identificação do serviço e estado da operação */}
-              <div className="flex flex-col gap-3 border-b border-white/[0.07] p-4 sm:flex-row sm:items-center sm:p-5">
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/70 bg-white p-1.5">
-                    <img
-                      src={operatorLogoSrc}
-                      alt={`Logótipo ${operatorName}`}
-                      className="h-full w-full object-contain"
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-300/75">
-                      Comprovativo de pagamento
-                    </p>
-                    <h2 className="mt-1 truncate text-lg font-extrabold text-white sm:text-xl">
-                      {operatorName}
-                    </h2>
-                    <p className="mt-1 truncate text-xs text-slate-400">
-                      {storedReceipt?.plan ??
-                        serviceRequest?.planName ??
-                        serviceRequest?.serviceName ??
-                        transaction.metadata?.planName ??
-                        transaction.description ??
-                        "Operação EMATEA"}
-                    </p>
-                  </div>
+              {/* Identificação essencial: operador, pacote e estado */}
+              <div className="flex items-center gap-3 border-b border-white/[0.07] p-3 sm:p-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/70 bg-white p-1">
+                  <img
+                    src={operatorLogoSrc}
+                    alt={`Logótipo ${operatorName}`}
+                    className="h-full w-full object-contain"
+                  />
                 </div>
 
-                <div className="flex shrink-0 items-center">
-                  <span
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.08em] ${
-                      isPaid
-                        ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300"
-                        : isProviderTimeout
-                          ? "border-amber-400/25 bg-amber-400/10 text-amber-300"
-                          : isRejected
-                            ? "border-rose-400/25 bg-rose-400/10 text-rose-300"
-                            : "border-cyan-300/20 bg-cyan-300/10 text-cyan-200"
-                    }`}
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full ${
-                      isPaid
-                        ? "bg-emerald-300"
-                        : isProviderTimeout
-                          ? "bg-amber-300"
-                          : isRejected
-                            ? "bg-rose-300"
-                            : "bg-cyan-300"
-                    }`} />
-                    {isPaid
-                      ? "Concluído"
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate text-sm font-extrabold text-white">
+                    {operatorName}
+                  </h2>
+                  <p className="mt-0.5 truncate text-xs text-slate-400">
+                    {storedReceipt?.plan ??
+                      serviceRequest?.planName ??
+                      serviceRequest?.serviceName ??
+                      transaction.metadata?.planName ??
+                      transaction.description ??
+                      "Operação EMATEA"}
+                  </p>
+                </div>
+
+                <span
+                  className={`shrink-0 rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide ${
+                    isPaid
+                      ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300"
                       : isProviderTimeout
-                        ? "Em verificação"
+                        ? "border-amber-400/25 bg-amber-400/10 text-amber-300"
                         : isRejected
-                          ? "Rejeitado"
-                          : isProcessing
-                            ? "Em processamento"
-                            : purchaseStatus || "Por confirmar"}
-                  </span>
-                </div>
+                          ? "border-rose-400/25 bg-rose-400/10 text-rose-300"
+                          : "border-cyan-300/20 bg-cyan-300/10 text-cyan-200"
+                  }`}
+                >
+                  {isPaid
+                    ? "Concluído"
+                    : isProviderTimeout
+                      ? "Em verificação"
+                      : isRejected
+                        ? "Rejeitado"
+                        : isProcessing
+                          ? "Em processamento"
+                          : purchaseStatus || "Por confirmar"}
+                </span>
               </div>
 
-              {/* Valor em destaque */}
-              <div className="border-b border-white/[0.07] bg-gradient-to-br from-[#0d3b50] via-[#0b3549] to-[#0a2d40] px-4 py-4 sm:px-5 sm:py-5">
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-200/65">
-                  Valor da operação
+              {/* Valor, data e identificador principal */}
+              <div className="border-b border-white/[0.07] px-3 py-3 sm:px-4">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-cyan-200/60">
+                  Total
                 </p>
-                <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <span className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+                <div className="mt-0.5 flex items-baseline gap-2">
+                  <span className="text-2xl font-black tracking-tight text-white">
                     {Number(transaction.amount).toLocaleString("pt-AO")}
                   </span>
                   <span className="text-sm font-bold text-cyan-300">
                     {transaction.currency}
                   </span>
                 </div>
-                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-slate-400">
-                  <span className="inline-flex items-center gap-2">
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 text-[10px] text-slate-400">
+                  <span>
                     {new Date(transaction.createdAt).toLocaleString("pt-AO", {
                       day: "2-digit",
-                      month: "long",
+                      month: "short",
                       year: "numeric",
                       hour: "2-digit",
                       minute: "2-digit"
                     })}
                   </span>
-                  <span className="font-mono">
-                    ID #{transaction.id}
-                  </span>
+                  <span className="font-mono">Transação #{transaction.id}</span>
                 </div>
               </div>
 
-              {/* Dados organizados em grelha */}
-              <div className="p-4 sm:p-5">
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-200">
-                    Detalhes da operação
-                  </h3>
-                  <span className="text-[10px] font-medium text-slate-500">
-                    Informação do pagamento
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              {/* Apenas dados complementares; operador e pacote já aparecem acima */}
+              <div className="space-y-2 p-3 sm:p-4">
+                {(customerReference && customerReference !== "-") && (
+                  <div className="flex items-center justify-between gap-3 rounded-xl bg-[#08283a]/75 px-3 py-2.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                       Referência
-                    </p>
-                    <p className="mt-2 break-all font-mono text-sm font-bold text-slate-100">
+                    </span>
+                    <span className="break-all text-right font-mono text-xs font-bold text-slate-100">
                       {customerReference}
-                    </p>
+                    </span>
                   </div>
+                )}
 
-                  <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                {operationId && String(operationId) !== String(transaction.id) && (
+                  <div className="flex items-center justify-between gap-3 rounded-xl bg-[#08283a]/75 px-3 py-2.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                       ID da operação
-                    </p>
+                    </span>
                     <button
                       type="button"
                       onClick={() => navigator.clipboard.writeText(String(operationId))}
-                      className="mt-2 inline-flex max-w-full items-center gap-2 text-left font-mono text-sm font-bold text-cyan-200 transition hover:text-white"
+                      className="inline-flex min-w-0 items-center gap-2 text-right font-mono text-xs font-bold text-cyan-200"
                       title="Copiar identificador da operação"
                     >
                       <span className="truncate">{operationId}</span>
                       <Copy size={13} className="shrink-0" />
                     </button>
                   </div>
+                )}
 
-                  {customerName && (
-                    <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                        Nome do cliente
-                      </p>
-                      <p className="mt-2 break-words text-sm font-bold text-slate-100">
-                        {customerName}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                      Operadora / parceiro
-                    </p>
-                    <p className="mt-2 text-sm font-bold text-slate-100">
-                      {operatorName}
-                    </p>
+                {customerName && (
+                  <div className="flex items-center justify-between gap-3 rounded-xl bg-[#08283a]/75 px-3 py-2.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      Cliente
+                    </span>
+                    <span className="min-w-0 break-words text-right text-xs font-semibold text-slate-100">
+                      {customerName}
+                    </span>
                   </div>
-
-                  {(storedReceipt?.plan ||
-                    serviceRequest?.planName ||
-                    serviceRequest?.serviceName ||
-                    transaction.metadata?.planName) && (
-                    <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-3 sm:col-span-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                        Serviço / pacote
-                      </p>
-                      <p className="mt-2 break-words text-sm font-bold text-slate-100">
-                        {storedReceipt?.plan ??
-                          serviceRequest?.planName ??
-                          serviceRequest?.serviceName ??
-                          transaction.metadata?.planName}
-                      </p>
-                    </div>
-                  )}
-                </div>
+                )}
 
                 {isProviderTimeout && (
-                  <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-400/[0.07] p-4">
-                    <p className="text-xs font-bold text-amber-200">
-                      Operação em verificação
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-amber-100/75">
-                      O tempo de monitorização foi excedido. A operadora ainda não confirmou o resultado. Este estado não significa que a compra foi rejeitada ou reembolsada.
-                    </p>
-                  </div>
+                  <p className="rounded-xl border border-amber-400/20 bg-amber-400/[0.07] px-3 py-2 text-[11px] leading-4 text-amber-100/80">
+                    A operadora ainda não confirmou o resultado. A operação permanece em verificação.
+                  </p>
                 )}
 
                 {isRejected && (
-                  <div className="mt-4 rounded-2xl border border-rose-400/20 bg-rose-400/[0.07] p-4">
-                    <p className="text-xs font-bold text-rose-200">
-                      Operação rejeitada
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-rose-100/75">
-                      A operação foi confirmada como rejeitada.
-                    </p>
-                  </div>
+                  <p className="rounded-xl border border-rose-400/20 bg-rose-400/[0.07] px-3 py-2 text-[11px] text-rose-100/80">
+                    A operação foi rejeitada.
+                  </p>
                 )}
 
                 {voucherPin && (
-                  <div className="mt-4 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.06] p-4 sm:p-5">
+                  <div className="rounded-xl border border-cyan-300/20 bg-cyan-300/[0.06] p-3">
                     <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-cyan-300">
-                          PIN de carregamento
-                        </p>
-                        <p className="mt-1 text-xs text-slate-400">
-                          Código disponibilizado pelo serviço
-                        </p>
-                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-wide text-cyan-300">
+                        PIN de carregamento
+                      </span>
                       <button
                         type="button"
                         onClick={() => navigator.clipboard.writeText(String(voucherPin))}
-                        className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-[11px] font-bold text-cyan-200 transition hover:bg-cyan-300/20"
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1.5 text-[10px] font-bold text-cyan-200"
                       >
-                        <Copy size={13} />
-                        Copiar PIN
+                        <Copy size={12} />
+                        Copiar
                       </button>
                     </div>
-                    <div className="mt-4 rounded-xl border border-white/[0.06] bg-[#061f2e]/80 px-4 py-4 text-center">
-                      <span className="break-all font-mono text-xl font-black tracking-[0.18em] text-white">
-                        {String(voucherPin)}
-                      </span>
-                    </div>
+                    <p className="mt-2 break-all rounded-lg bg-[#061f2e]/80 px-3 py-2 text-center font-mono text-base font-bold tracking-wider text-white">
+                      {String(voucherPin)}
+                    </p>
                     {voucherUnits && (
-                      <p className="mt-3 text-center text-xs text-slate-400">
-                        Unidades: <strong className="text-slate-100">{voucherUnits}</strong>
+                      <p className="mt-1 text-center text-[10px] text-slate-400">
+                        Unidades: {voucherUnits}
                       </p>
                     )}
                   </div>
                 )}
 
                 {!isStandaloneRequest && (
-                  <div className="mt-4 border-t border-white/[0.07] pt-4">
-                    <button
-                      type="button"
-                      onClick={handlePrint}
-                      disabled={isPrinting}
-                      className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#087f9b] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#076b82] disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <Printer size={18} weight="bold" />
-                      {isPrinting ? "A preparar impressão..." : "Imprimir comprovativo"}
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={handlePrint}
+                    disabled={isPrinting}
+                    className="mt-2 flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#087f9b] px-4 py-2 text-xs font-bold text-white transition hover:bg-[#076b82] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Printer size={16} weight="bold" />
+                    {isPrinting ? "A preparar impressão..." : "Imprimir comprovativo"}
+                  </button>
                 )}
 
                 <button
                   type="button"
                   onClick={() => navigate(-1)}
-                  className="mt-2 flex min-h-9 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-transparent px-4 py-2 text-xs font-semibold text-slate-200 transition hover:border-white/30 hover:bg-white/[0.04] hover:text-white"
+                  className="flex min-h-9 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-transparent px-4 py-2 text-xs font-semibold text-slate-300 transition hover:border-white/30 hover:bg-white/[0.04] hover:text-white"
                 >
-                  <ArrowLeft size={17} weight="bold" />
+                  <ArrowLeft size={15} weight="bold" />
                   Voltar
                 </button>
               </div>
