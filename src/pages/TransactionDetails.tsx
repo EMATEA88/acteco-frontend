@@ -722,7 +722,7 @@ export default function TransactionDetails() {
 
       {/* Área de conteúdo: começa no topo e ocupa a largura disponível */}
       <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="mx-auto w-full max-w-2xl px-4 py-5 sm:px-6 sm:py-8">
+        <div className="mx-auto w-full max-w-xl px-3 py-3 sm:px-5 sm:py-5">
           {loading ? (
             <section className="overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0b3043] p-5 shadow-2xl shadow-black/20 sm:p-7">
               <div className="animate-pulse space-y-6">
@@ -769,9 +769,9 @@ export default function TransactionDetails() {
             <section className="overflow-hidden rounded-3xl border border-cyan-300/15 bg-[#0b3043] shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
 
               {/* Identificação do serviço e estado da operação */}
-              <div className="flex flex-col gap-5 border-b border-white/[0.07] p-5 sm:flex-row sm:items-center sm:p-7">
-                <div className="flex min-w-0 flex-1 items-center gap-4">
-                  <div className="flex h-[68px] w-[68px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200/70 bg-white p-2 shadow-lg shadow-black/15">
+              <div className="flex flex-col gap-3 border-b border-white/[0.07] p-4 sm:flex-row sm:items-center sm:p-5">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/70 bg-white p-1.5">
                     <img
                       src={operatorLogoSrc}
                       alt={`Logótipo ${operatorName}`}
@@ -808,6 +808,15 @@ export default function TransactionDetails() {
                             : "border-cyan-300/20 bg-cyan-300/10 text-cyan-200"
                     }`}
                   >
+                    <span className={`h-1.5 w-1.5 rounded-full ${
+                      isPaid
+                        ? "bg-emerald-300"
+                        : isProviderTimeout
+                          ? "bg-amber-300"
+                          : isRejected
+                            ? "bg-rose-300"
+                            : "bg-cyan-300"
+                    }`} />
                     {isPaid
                       ? "Concluído"
                       : isProviderTimeout
@@ -822,19 +831,19 @@ export default function TransactionDetails() {
               </div>
 
               {/* Valor em destaque */}
-              <div className="border-b border-white/[0.07] bg-gradient-to-br from-[#0d3b50] via-[#0b3549] to-[#0a2d40] px-5 py-6 sm:px-7 sm:py-8">
+              <div className="border-b border-white/[0.07] bg-gradient-to-br from-[#0d3b50] via-[#0b3549] to-[#0a2d40] px-4 py-4 sm:px-5 sm:py-5">
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-200/65">
                   Valor da operação
                 </p>
-                <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <span className="text-3xl font-black tracking-tight text-white sm:text-4xl">
+                <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                  <span className="text-2xl font-black tracking-tight text-white sm:text-3xl">
                     {Number(transaction.amount).toLocaleString("pt-AO")}
                   </span>
                   <span className="text-sm font-bold text-cyan-300">
                     {transaction.currency}
                   </span>
                 </div>
-                <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-slate-400">
+                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-slate-400">
                   <span className="inline-flex items-center gap-2">
                     {new Date(transaction.createdAt).toLocaleString("pt-AO", {
                       day: "2-digit",
@@ -851,8 +860,8 @@ export default function TransactionDetails() {
               </div>
 
               {/* Dados organizados em grelha */}
-              <div className="p-5 sm:p-7">
-                <div className="mb-4 flex items-center justify-between">
+              <div className="p-4 sm:p-5">
+                <div className="mb-3 flex items-center justify-between">
                   <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-200">
                     Detalhes da operação
                   </h3>
@@ -861,8 +870,8 @@ export default function TransactionDetails() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-4">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-3">
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                       Referência
                     </p>
@@ -871,7 +880,7 @@ export default function TransactionDetails() {
                     </p>
                   </div>
 
-                  <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-4">
+                  <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-3">
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                       ID da operação
                     </p>
@@ -887,7 +896,7 @@ export default function TransactionDetails() {
                   </div>
 
                   {customerName && (
-                    <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-4">
+                    <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-3">
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                         Nome do cliente
                       </p>
@@ -897,7 +906,7 @@ export default function TransactionDetails() {
                     </div>
                   )}
 
-                  <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-4">
+                  <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-3">
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                       Operadora / parceiro
                     </p>
@@ -910,7 +919,7 @@ export default function TransactionDetails() {
                     serviceRequest?.planName ||
                     serviceRequest?.serviceName ||
                     transaction.metadata?.planName) && (
-                    <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-4 sm:col-span-2">
+                    <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-3 sm:col-span-2">
                       <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                         Serviço / pacote
                       </p>
@@ -980,12 +989,12 @@ export default function TransactionDetails() {
                 )}
 
                 {!isStandaloneRequest && (
-                  <div className="mt-6 border-t border-white/[0.07] pt-5">
+                  <div className="mt-4 border-t border-white/[0.07] pt-4">
                     <button
                       type="button"
                       onClick={handlePrint}
                       disabled={isPrinting}
-                      className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#087f9b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#076b82] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#087f9b] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#076b82] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Printer size={18} weight="bold" />
                       {isPrinting ? "A preparar impressão..." : "Imprimir comprovativo"}
@@ -996,7 +1005,7 @@ export default function TransactionDetails() {
                 <button
                   type="button"
                   onClick={() => navigate(-1)}
-                  className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-transparent px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/30 hover:bg-white/[0.04] hover:text-white"
+                  className="mt-2 flex min-h-9 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-transparent px-4 py-2 text-xs font-semibold text-slate-200 transition hover:border-white/30 hover:bg-white/[0.04] hover:text-white"
                 >
                   <ArrowLeft size={17} weight="bold" />
                   Voltar

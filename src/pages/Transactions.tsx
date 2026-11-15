@@ -703,6 +703,7 @@ export default function Transactions() {
 
                     // Operações próprias da EMATEA mantêm o logótipo institucional.
                     const isEmateaOperation =
+                      typeUpper === 'GIFT' ||
                       typeUpper.includes('DEPOSIT') ||
                       typeUpper.includes('WITHDRAW') ||
                       typeUpper === 'FEE' ||
@@ -736,24 +737,30 @@ export default function Transactions() {
                         }`}
                       >
                         <div className="flex min-w-0 items-center gap-3">
-                          <div className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border ${
-                            logoSrc
-                              ? 'border-white/10 bg-white p-1.5'
-                              : isOut
-                                ? 'border-rose-400/20 bg-rose-500/10 text-rose-300'
-                                : 'border-cyan-400/20 bg-cyan-500/10 text-cyan-300'
-                          }`}>
-                            {logoSrc ? (
-                              <img
-                                src={logoSrc}
-                                alt={isEmateaOperation ? 'EMATEA' : operatorKey ?? 'Operadora'}
-                                className="h-full w-full object-contain"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <Icon size={21} weight="duotone" />
-                            )}
-                          </div>
+                          <div
+  className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden border ${
+    typeUpper === 'GIFT'
+      ? 'rounded-full border-cyan-400/20 bg-transparent p-0'
+      : logoSrc
+        ? 'rounded-2xl border-white/10 bg-white p-1.5'
+        : isOut
+          ? 'rounded-2xl border-rose-400/20 bg-rose-500/10 text-rose-300'
+          : 'rounded-2xl border-cyan-400/20 bg-cyan-500/10 text-cyan-300'
+  }`}
+>
+  {logoSrc ? (
+    <img
+  src={logoSrc}
+  alt="EMATEA"
+  className={`h-full w-full object-cover ${
+    typeUpper === 'GIFT' ? 'rounded-full' : ''
+  }`}
+  loading="lazy"
+/>
+  ) : (
+    <Icon size={21} weight="duotone" />
+  )}
+</div>
 
                           <div className="min-w-0">
                             <p className="truncate text-[13px] font-bold tracking-tight text-white">
