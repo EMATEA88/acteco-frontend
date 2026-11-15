@@ -1,3 +1,4 @@
+
 import { Outlet, useNavigate, useLocation } from "react-router-dom"
 import BottomNav from "../components/BottomNav"
 import { Bell, ArrowLeft } from "lucide-react"
@@ -11,18 +12,23 @@ export default function AppLayout() {
   const pathname = location.pathname || ""
 
   /* ================= ROUTE DETECTION ================= */
+
   const isOtcPage = pathname.startsWith("/otc")
-  // Detecta se o usuário está especificamente na tela de chat
   const isChatting = pathname.includes("/otc/chat")
 
+  // Ocultar navegação nas páginas de detalhe de transações.
+  // Mantém a barra visível na listagem /transactions.
+  const isTransactionDetails =
+    pathname.startsWith("/transactions/")
+
+  const hideBottomNav = isOtcPage || isTransactionDetails
+
   /* ================= UI ================= */
+
   return (
     <div className="min-h-screen w-full bg-[#0B0E11] text-[#EAECEF] flex flex-col">
 
-      {/* TOP BACK BUTTON (OTC)
-          Só renderiza se for uma página OTC, mas NÃO for a tela de chat,
-          pois o componente OtcChat já possui seu próprio Header.
-      */}
+      {/* TOP BACK BUTTON (OTC) */}
       {isOtcPage && !isChatting && (
         <div className="fixed top-0 left-0 right-0 h-14 bg-[#0B0E11] flex items-center px-4 z-50 border-b border-gray-800">
           <button
@@ -31,17 +37,21 @@ export default function AppLayout() {
           >
             <ArrowLeft size={22} />
           </button>
-          <span className="ml-4 font-medium">Voltar</span>
+
+          <span className="ml-4 font-medium">
+            Voltar
+          </span>
         </div>
       )}
 
       {/* ================= MAIN ================= */}
+
       <main
         className={`flex-1 flex flex-col ${
           isOtcPage && !isChatting
             ? "pt-14"
-            : isChatting
-              ? "pt-0"
+            : isChatting || isTransactionDetails
+              ? "pt-0 pb-0 overflow-hidden"
               : "pb-20 overflow-y-auto"
         }`}
       >
@@ -49,15 +59,17 @@ export default function AppLayout() {
       </main>
 
       {/* ================= FOOTER ================= */}
-      {!isOtcPage && <BottomNav />}
+
+      {!hideBottomNav && <BottomNav />}
 
       {/* ================= FLOATING NOTIFICATION ================= */}
+
       {!isOtcPage && (
         <button
           onClick={() => navigate("/notifications")}
-          className="
+          className={`
             fixed
-            bottom-24
+            ${isTransactionDetails ? "bottom-5" : "bottom-24"}
             right-5
             z-40
             w-11
@@ -76,7 +88,7 @@ export default function AppLayout() {
             shadow-[0_0_20px_rgba(14,165,233,0.25)]
             backdrop-blur-lg
             cursor-pointer
-          "
+          `}
         >
           <Bell size={18} strokeWidth={2} />
 

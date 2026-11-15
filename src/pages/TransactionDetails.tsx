@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 
 import {
-  ArrowLeft,
+  CheckCircle,
   Copy,
   X,
   Printer
@@ -400,9 +400,6 @@ export default function TransactionDetails() {
       } finally {
         if (mounted) setLoading(false)
       }
- {
-        if (mounted) setLoading(false)
-      }
     }
 
     loadDetails()
@@ -718,217 +715,161 @@ export default function TransactionDetails() {
   // ===================================================
 
   return (
-    <div className="fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden bg-[#071f2d] text-slate-100 antialiased">
-
-      {/* Área de conteúdo: começa no topo e ocupa a largura disponível */}
+    <div className="fixed inset-0 z-50 flex h-[100dvh] w-screen flex-col overflow-hidden bg-[#06131d] text-slate-100 antialiased">
       <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="mx-auto w-full max-w-lg px-2 py-2 sm:px-4 sm:py-4">
+        <div className="mx-auto flex min-h-full w-full max-w-md items-center justify-center px-3 py-3 sm:px-4 sm:py-5">
           {loading ? (
-            <section className="overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0b3043] p-5 shadow-2xl shadow-black/20 sm:p-7">
+            <section className="w-full rounded-2xl border border-cyan-300/15 bg-[#0b2d40] p-4 shadow-xl shadow-black/25 sm:p-5">
               <div className="animate-pulse space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 rounded-2xl bg-white/10" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-3 w-28 rounded bg-white/10" />
-                    <div className="h-5 w-48 max-w-full rounded bg-white/10" />
-                    <div className="h-3 w-32 rounded bg-white/10" />
-                  </div>
-                </div>
-                <div className="h-28 rounded-2xl bg-white/[0.06]" />
-                <div className="space-y-4 rounded-2xl bg-white/[0.04] p-4">
-                  {[1, 2, 3, 4, 5, 6].map((item) => (
+                <div className="mx-auto h-16 w-16 rounded-full bg-white/10" />
+                <div className="mx-auto h-4 w-44 rounded bg-white/10" />
+                <div className="mx-auto h-7 w-64 max-w-full rounded bg-white/10" />
+                <div className="h-16 rounded-2xl bg-white/[0.06]" />
+                <div className="space-y-3 rounded-xl bg-white/[0.04] p-3">
+                  {[1, 2, 3, 4, 5, 6, 7].map((item) => (
                     <div key={item} className="flex justify-between gap-4">
                       <div className="h-3 w-24 rounded bg-white/10" />
                       <div className="h-3 w-32 rounded bg-white/10" />
                     </div>
                   ))}
                 </div>
-                <div className="h-12 rounded-xl bg-white/10" />
               </div>
             </section>
           ) : !transaction ? (
-            <section className="rounded-3xl border border-rose-400/20 bg-[#0b3043] px-6 py-12 text-center shadow-2xl shadow-black/20">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-400/10 text-rose-300">
+            <section className="w-full rounded-2xl border border-rose-400/20 bg-[#0b2d40] px-5 py-8 text-center shadow-xl shadow-black/25">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-400/10 text-rose-300">
                 <X size={26} weight="bold" />
               </div>
-              <h2 className="text-base font-bold text-white">
-                Não foi possível abrir a operação
-              </h2>
+              <h2 className="text-lg font-bold text-white">Não foi possível abrir a operação</h2>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-400">
                 {loadError || "Transação ou pedido não encontrado."}
               </p>
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-cyan-500 px-5 text-sm font-bold text-[#062331] transition hover:bg-cyan-400"
+                className="mt-7 inline-flex h-12 items-center justify-center rounded-xl bg-cyan-500 px-6 text-sm font-bold text-[#062331] transition hover:bg-cyan-400"
               >
                 Voltar ao histórico
               </button>
             </section>
           ) : (
-            <section className="overflow-hidden rounded-2xl border border-cyan-300/15 bg-[#0b3043] shadow-xl shadow-black/20">
-
-              {/* Identificação essencial: operador, pacote e estado */}
-              <div className="flex items-center gap-3 border-b border-white/[0.07] p-3 sm:p-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/70 bg-white p-1">
+            <section className="w-full max-w-md overflow-hidden rounded-2xl border border-cyan-300/20 bg-[#092b3e] shadow-[0_16px_44px_rgba(0,0,0,0.32)]">
+              {/* Cabeçalho do comprovativo */}
+              <div className="px-4 pb-4 pt-5 text-center sm:px-5 sm:pt-6">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-cyan-200/25 bg-white p-1.5 shadow-[0_5px_16px_rgba(0,0,0,0.2)] sm:h-[72px] sm:w-[72px]">
                   <img
                     src={operatorLogoSrc}
                     alt={`Logótipo ${operatorName}`}
-                    className="h-full w-full object-contain"
+                    className="h-full w-full rounded-full object-contain"
                   />
                 </div>
 
-                <div className="min-w-0 flex-1">
-                  <h2 className="truncate text-sm font-extrabold text-white">
-                    {operatorName}
-                  </h2>
-                  <p className="mt-0.5 truncate text-xs text-slate-400">
-                    {storedReceipt?.plan ??
-                      serviceRequest?.planName ??
-                      serviceRequest?.serviceName ??
-                      transaction.metadata?.planName ??
-                      transaction.description ??
-                      "Operação EMATEA"}
-                  </p>
+                <div className={`mx-auto mt-3 inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] ${
+                  isPaid ? "text-emerald-400" : isProviderTimeout ? "text-amber-300" : isRejected ? "text-rose-300" : "text-cyan-300"
+                }`}>
+                  <CheckCircle size={18} weight="fill" />
+                  {isPaid ? "Transação bem-sucedida" : isProviderTimeout ? "Transação em verificação" : isRejected ? "Transação rejeitada" : isProcessing ? "Transação em processamento" : "Estado da transação"}
                 </div>
-
-                <span
-                  className={`shrink-0 rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide ${
-                    isPaid
-                      ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300"
-                      : isProviderTimeout
-                        ? "border-amber-400/25 bg-amber-400/10 text-amber-300"
-                        : isRejected
-                          ? "border-rose-400/25 bg-rose-400/10 text-rose-300"
-                          : "border-cyan-300/20 bg-cyan-300/10 text-cyan-200"
-                  }`}
-                >
-                  {isPaid
-                    ? "Concluído"
-                    : isProviderTimeout
-                      ? "Em verificação"
-                      : isRejected
-                        ? "Rejeitado"
-                        : isProcessing
-                          ? "Em processamento"
-                          : purchaseStatus || "Por confirmar"}
-                </span>
               </div>
 
-              {/* Valor, data e identificador principal */}
-              <div className="border-b border-white/[0.07] px-3 py-3 sm:px-4">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-cyan-200/60">
-                  Total
-                </p>
-                <div className="mt-0.5 flex items-baseline gap-2">
-                  <span className="text-2xl font-black tracking-tight text-white">
-                    {Number(transaction.amount).toLocaleString("pt-AO")}
-                  </span>
-                  <span className="text-sm font-bold text-cyan-300">
-                    {transaction.currency}
+              {/* Dados essenciais da operação */}
+              <div className="mx-3 rounded-xl border border-cyan-200/15 bg-[#10445f] px-3 sm:mx-4 sm:px-4">
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-white/[0.08] py-2.5">
+                  <span className="shrink-0 text-xs font-medium text-cyan-100/70">ID da operação</span>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(String(operationId))}
+                    className="inline-flex min-w-0 items-center gap-2 text-right font-mono text-sm font-semibold tracking-wide text-white transition hover:text-cyan-200"
+                    title="Copiar ID da operação"
+                  >
+                    <span className="truncate">{operationId}</span>
+                    <Copy size={16} className="shrink-0 text-cyan-200" />
+                  </button>
+                </div>
+
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-white/[0.08] py-2.5">
+                  <span className="shrink-0 text-xs font-medium text-cyan-100/70">Referência</span>
+                  <span className="break-all text-right font-mono text-sm font-semibold text-white">{customerReference}</span>
+                </div>
+
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-white/[0.08] py-2.5">
+                  <span className="shrink-0 text-xs font-medium text-cyan-100/70">Operadora</span>
+                  <span className="text-right text-sm font-bold text-white">{operatorName}</span>
+                </div>
+
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-white/[0.08] py-2.5">
+                  <span className="shrink-0 text-xs font-medium text-cyan-100/70">Serviço</span>
+                  <span className="max-w-[65%] text-right text-sm font-semibold text-white">
+                    {storedReceipt?.plan ?? serviceRequest?.planName ?? serviceRequest?.serviceName ?? transaction.metadata?.planName ?? transaction.description ?? "Operação EMATEA"}
                   </span>
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 text-[10px] text-slate-400">
-                  <span>
+
+                <div className="flex min-h-[54px] items-center justify-between gap-3 border-b border-white/[0.08] py-2.5">
+                  <span className="shrink-0 text-xs font-medium text-cyan-100/70">Montante</span>
+                  <span className="text-right text-xl font-extrabold tracking-tight text-cyan-300 sm:text-2xl">
+                    {Number(transaction.amount).toLocaleString("pt-AO")} <span className="text-sm">{transaction.currency}</span>
+                  </span>
+                </div>
+
+                <div className="flex min-h-11 items-center justify-between gap-3 border-b border-white/[0.08] py-2.5">
+                  <span className="shrink-0 text-xs font-medium text-cyan-100/70">Data</span>
+                  <span className="text-right text-sm font-medium text-white">
                     {new Date(transaction.createdAt).toLocaleString("pt-AO", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit"
+                      day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"
                     })}
                   </span>
-                  <span className="font-mono">Transação #{transaction.id}</span>
+                </div>
+
+                <div className="flex min-h-11 items-center justify-between gap-3 py-2.5">
+                  <span className="shrink-0 text-xs font-medium text-cyan-100/70">Estado</span>
+                  <span className={`text-xs font-extrabold uppercase ${
+                    isPaid ? "text-emerald-400" : isProviderTimeout ? "text-amber-300" : isRejected ? "text-rose-300" : "text-cyan-200"
+                  }`}>
+                    {isPaid ? "Concluído" : isProviderTimeout ? "Em verificação" : isRejected ? "Rejeitado" : isProcessing ? "Em processamento" : purchaseStatus || "Por confirmar"}
+                  </span>
                 </div>
               </div>
 
-              {/* Apenas dados complementares; operador e pacote já aparecem acima */}
-              <div className="space-y-2 p-3 sm:p-4">
-                {(customerReference && customerReference !== "-") && (
-                  <div className="flex items-center justify-between gap-3 rounded-xl bg-[#08283a]/75 px-3 py-2.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                      Referência
-                    </span>
-                    <span className="break-all text-right font-mono text-xs font-bold text-slate-100">
-                      {customerReference}
-                    </span>
-                  </div>
-                )}
-
-                {operationId && String(operationId) !== String(transaction.id) && (
-                  <div className="flex items-center justify-between gap-3 rounded-xl bg-[#08283a]/75 px-3 py-2.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                      ID da operação
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => navigator.clipboard.writeText(String(operationId))}
-                      className="inline-flex min-w-0 items-center gap-2 text-right font-mono text-xs font-bold text-cyan-200"
-                      title="Copiar identificador da operação"
-                    >
-                      <span className="truncate">{operationId}</span>
-                      <Copy size={13} className="shrink-0" />
-                    </button>
-                  </div>
-                )}
-
-                {customerName && (
-                  <div className="flex items-center justify-between gap-3 rounded-xl bg-[#08283a]/75 px-3 py-2.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-                      Cliente
-                    </span>
-                    <span className="min-w-0 break-words text-right text-xs font-semibold text-slate-100">
-                      {customerName}
-                    </span>
-                  </div>
-                )}
-
-                {isProviderTimeout && (
-                  <p className="rounded-xl border border-amber-400/20 bg-amber-400/[0.07] px-3 py-2 text-[11px] leading-4 text-amber-100/80">
-                    A operadora ainda não confirmou o resultado. A operação permanece em verificação.
-                  </p>
-                )}
-
-                {isRejected && (
-                  <p className="rounded-xl border border-rose-400/20 bg-rose-400/[0.07] px-3 py-2 text-[11px] text-rose-100/80">
-                    A operação foi rejeitada.
-                  </p>
-                )}
-
-                {voucherPin && (
-                  <div className="rounded-xl border border-cyan-300/20 bg-cyan-300/[0.06] p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-cyan-300">
-                        PIN de carregamento
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => navigator.clipboard.writeText(String(voucherPin))}
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1.5 text-[10px] font-bold text-cyan-200"
-                      >
-                        <Copy size={12} />
-                        Copiar
-                      </button>
+              {/* Dados adicionais: só aparecem quando a operação os fornece */}
+              {(customerName || voucherPin || isProviderTimeout || isRejected) && (
+                <div className="mx-3 mt-3 space-y-2 sm:mx-4">
+                  {customerName && (
+                    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.07] bg-[#0b354b] px-4 py-3">
+                      <span className="text-xs text-slate-400">Cliente</span>
+                      <span className="text-right text-sm font-semibold text-white">{customerName}</span>
                     </div>
-                    <p className="mt-2 break-all rounded-lg bg-[#061f2e]/80 px-3 py-2 text-center font-mono text-base font-bold tracking-wider text-white">
-                      {String(voucherPin)}
-                    </p>
-                    {voucherUnits && (
-                      <p className="mt-1 text-center text-[10px] text-slate-400">
-                        Unidades: {voucherUnits}
-                      </p>
-                    )}
-                  </div>
-                )}
+                  )}
+                  {voucherPin && (
+                    <div className="rounded-xl border border-cyan-200/15 bg-[#0b354b] p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-xs font-bold text-cyan-200">PIN de carregamento</span>
+                        <button
+                          type="button"
+                          onClick={() => navigator.clipboard.writeText(String(voucherPin))}
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-200 hover:text-white"
+                        >
+                          <Copy size={14} /> Copiar
+                        </button>
+                      </div>
+                      <p className="mt-3 break-all text-center font-mono text-lg font-bold tracking-widest text-white">{String(voucherPin)}</p>
+                      {voucherUnits && <p className="mt-1 text-center text-xs text-slate-400">Unidades: {voucherUnits}</p>}
+                    </div>
+                  )}
+                  {isProviderTimeout && <p className="rounded-xl border border-amber-300/20 bg-amber-300/[0.07] px-4 py-3 text-xs leading-5 text-amber-100">A operadora ainda não confirmou o resultado. A operação permanece em verificação.</p>}
+                  {isRejected && <p className="rounded-xl border border-rose-300/20 bg-rose-300/[0.07] px-4 py-3 text-xs leading-5 text-rose-100">A operação foi rejeitada.</p>}
+                </div>
+              )}
+
+              <div className="px-4 pb-4 pt-3 sm:px-5 sm:pb-5">
 
                 {!isStandaloneRequest && (
                   <button
                     type="button"
                     onClick={handlePrint}
                     disabled={isPrinting}
-                    className="mt-2 flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#087f9b] px-4 py-2 text-xs font-bold text-white transition hover:bg-[#076b82] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#08a9e0] px-5 py-3 text-sm font-extrabold text-white shadow-[0_8px_24px_rgba(8,169,224,0.18)] transition hover:bg-[#0797c9] disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <Printer size={16} weight="bold" />
+                    <Printer size={19} weight="bold" />
                     {isPrinting ? "A preparar impressão..." : "Imprimir comprovativo"}
                   </button>
                 )}
@@ -936,11 +877,10 @@ export default function TransactionDetails() {
                 <button
                   type="button"
                   onClick={() => navigate(-1)}
-                  className="flex min-h-9 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-transparent px-4 py-2 text-xs font-semibold text-slate-300 transition hover:border-white/30 hover:bg-white/[0.04] hover:text-white"
-                >
-                  <ArrowLeft size={15} weight="bold" />
-                  Voltar
-                </button>
+                  className="mt-2 flex min-h-10 w-full items-center justify-center rounded-xl border border-cyan-100/15 bg-white/[0.025] px-5 py-3 text-sm font-semibold text-slate-300 transition hover:border-cyan-100/30 hover:bg-white/[0.06] hover:text-white"
+               >
+                   Voltar
+               </button>
               </div>
             </section>
           )}
