@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { api } from '../services/api'
+
+import { useEffect, useState, type FormEvent, type ReactNode } from "react"
+import { useNavigate } from "react-router-dom"
 import {
-  ArrowLeft,
   CheckCircle,
-  ShieldCheck
-} from '@phosphor-icons/react'
-import { toast } from 'sonner'
+  CreditCard,
+  PencilSimple,
+  User,
+  X,
+} from "@phosphor-icons/react"
+import { api } from "../services/api"
+import Toast from "../components/ui/Toast"
 
 type BankForm = {
   name: string
@@ -14,180 +17,602 @@ type BankForm = {
   iban: string
 }
 
-const CACHE_KEY = 'bank-cache'
+type ToastType = "success" | "error"
+
+type ToastState = {
+  visible: boolean
+  message: string
+  type: ToastType
+}
+
+const CACHE_KEY = "bank-cache"
+
+const EMPTY_BANK: BankForm = {
+  name: "",
+  bank: "",
+  iban: "",
+}
+
+const inputClass =
+  "w-full h-12 rounded-xl bg-[#0A2533] border border-[#24566A] px-4 text-sm text-white outline-none transition-all placeholder:text-[#7696A5] focus:border-[#19C5CE] focus:ring-1 focus:ring-[#19C5CE]"
+
+const primaryButtonClass =
+  "w-full h-12 rounded-xl bg-[#079CB3] text-white text-sm font-semibold transition-all hover:bg-[#0BACC2] active:scale-[0.99] disabled:bg-[#315365] disabled:text-[#91A9B4] disabled:cursor-not-allowed flex items-center justify-center gap-2"
+
+function readCachedBank(): BankForm {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY)
+
+    if (!cached) return { ...EMPTY_BANK }
+
+    const parsed = JSON.parse(cached)
+
+    return {
+      name: parsed?.name ?? "",
+      bank: parsed?.bank ?? "",
+      iban: parsed?.iban ?? "",
+    }
+  } catch {
+    return { ...EMPTY_BANK }
+  }
+}
 
 export default function BankPage() {
   const navigate = useNavigate()
 
-  const cached = localStorage.getItem(CACHE_KEY)
-  const initial = cached
-    ? JSON.parse(cached)
-    : { name: '', bank: '', iban: '' }
-
-  const [form, setForm] = useState<BankForm>(initial)
+  const [form, setForm] = useState<BankForm>(readCachedBank)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [editing, setEditing] = useState(false)
 
+  const [toast, setToast] = useState<ToastState>({
+    visible: false,
+    message: "",
+    type: "success",
+  })
+
+  const hasBankData = Boolean(
+    form.name.trim() || form.bank.trim() || form.iban.trim()
+  )
+
+  // Toast
+  useEffect(() => {
+    if (!toast.visible) return
+
+    const timer = window.setTimeout(() => {
+      setToast(previous => ({
+        ...previous,
+        visible: false,
+      }))
+    }, 3500)
+
+    return () => window.clearTimeout(timer)
+  }, [toast.visible, toast.message])
+
+  // Carregar dados bancários
   useEffect(() => {
     let mounted = true
 
-    api.get('/user-bank')
-      .then(res => {
-        if (!mounted || !res.data) return
-        setForm(res.data)
-        localStorage.setItem(CACHE_KEY, JSON.stringify(res.data))
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    async function loadBankDetails() {
+      try {
+        const response = await api.get("/user-bank")
 
-    return () => { mounted = false }
+        const data = response?.data?.data ?? response?.data
+
+        if (!mounted || !data) return
+
+        const bankData: BankForm = {
+          name: data.name ?? "",
+          bank: data.bank ?? "",
+          iban: data.iban ?? "",
+        }
+
+        setForm(bankData)
+
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify(bankData)
+        )
+      } catch {
+        // Preserva os dados em cache se a API estiver indisponível.
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+
+    void loadBankDetails()
+
+    return () => {
+      mounted = false
+    }
   }, [])
 
-  async function save() {
+  function notify(
+    message: string,
+    type: ToastType = "error"
+  ) {
+    setToast({
+      visible: true,
+      message,
+      type,
+    })
+  }
+
+  function updateField(
+    field: keyof BankForm,
+    value: string
+  ) {
+    setForm(previous => ({
+      ...previous,
+      [field]: value,
+    }))
+  }
+
+  function cancelEditing() {
+    setForm(readCachedBank())
+    setEditing(false)
+  }
+
+  // Guardar dados bancários
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
     if (saving) return
+
+    const payload: BankForm = {
+      name: form.name.trim(),
+      bank: form.bank.trim(),
+      iban: form.iban.replace(/\s+/g, "").toUpperCase(),
+    }
+
+    if (!payload.name || !payload.bank || !payload.iban) {
+      notify("Preencha todos os dados bancários.")
+      return
+    }
 
     try {
       setSaving(true)
-      await api.post('/user-bank', form)
 
-      localStorage.setItem(CACHE_KEY, JSON.stringify(form))
+      await api.post("/user-bank", payload)
 
-      toast.success('Dados bancários atualizados')
-      setTimeout(() => navigate('/profile'), 800)
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || 'Erro ao guardar')
+      setForm(payload)
+
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify(payload)
+      )
+
+      setEditing(false)
+
+      notify(
+        "Dados bancários atualizados com sucesso.",
+        "success"
+      )
+
+      window.setTimeout(() => {
+        navigate("/profile", { replace: true })
+      }, 1200)
+
+    } catch (error: any) {
+      notify(
+        error?.response?.data?.error ??
+        error?.response?.data?.message ??
+        "Não foi possível guardar os dados bancários."
+      )
     } finally {
       setSaving(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe]">
+    <main className="min-h-screen bg-[#0A2533] text-[#E0F2FE]">
 
-      {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-[#0a2533]/90 backdrop-blur border-b border-cyan-500/10">
-        <div className="max-w-xl mx-auto flex items-center gap-4 px-5 py-4">
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onClose={() =>
+          setToast(previous => ({
+            ...previous,
+            visible: false,
+          }))
+        }
+      />
 
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 bg-[#0e364a] border border-cyan-500/20 rounded-full text-cyan-300 hover:bg-[#124158] hover:text-white transition-all shadow-sm cursor-pointer"
-          >
-            <ArrowLeft size={18} />
-          </button>
+      <section className="
+        mx-auto flex min-h-screen w-full max-w-lg
+        flex-col justify-center
+        px-4 py-8
+        sm:px-6
+      ">
 
-          <h1 className="text-base font-bold text-white font-mono uppercase tracking-wider">Conta Bancária</h1>
-        </div>
-      </header>
-
-      <main className="max-w-xl mx-auto px-5 py-6 pb-28">
+        {/* CARD PRINCIPAL */}
 
         {loading ? (
-          <div className="space-y-4 animate-pulse">
 
-            <div className="bg-[#0e364a] border border-cyan-500/15 rounded-2xl p-4 h-16" />
+          <div className="animate-pulse space-y-4">
 
-            <div className="bg-[#0e364a] border border-cyan-500/15 rounded-2xl p-4 space-y-3">
-              <div className="h-11 bg-[#0a2533] border border-cyan-500/10 rounded-xl" />
-              <div className="h-11 bg-[#0a2533] border border-cyan-500/10 rounded-xl" />
-              <div className="h-11 bg-[#0a2533] border border-cyan-500/10 rounded-xl" />
-              <div className="h-12 bg-[#0a2533] border border-cyan-500/10 rounded-xl" />
-            </div>
+            <div className="
+              h-16 rounded-2xl
+              border border-cyan-500/15
+              bg-[#0E364A]
+            " />
+
+            <div className="
+              h-56 rounded-2xl
+              border border-cyan-500/15
+              bg-[#0E364A]
+            " />
 
           </div>
+
         ) : (
-          <div className="space-y-6">
 
-            {/* INFO */}
-            <div className="bg-[#0e364a] border border-cyan-500/20 rounded-2xl p-4 flex gap-3 shadow-lg shadow-cyan-950/20">
-              <ShieldCheck size={18} className="text-cyan-400 mt-0.5 shrink-0" />
+          <div className="
+            overflow-hidden
+            rounded-2xl
+            border border-cyan-500/20
+            bg-[#0E364A]
+            shadow-2xl shadow-black/20
+          ">
 
-              <p className="text-[11px] text-cyan-200/80 font-mono">
-                O IBAN deve coincidir com o titular para evitar rejeições.
-              </p>
-            </div>
+            {/* CARD HEADER */}
 
-            {/* FORM */}
-            <div className="bg-[#0e364a] border border-cyan-500/20 rounded-2xl p-4 space-y-4 shadow-xl shadow-cyan-950/20">
+            <div className="
+              flex items-center justify-between
+              border-b border-cyan-500/10
+              px-4 py-4
+              sm:px-5
+            ">
 
-              <BankInput
-                label="Titular"
-                value={form.name}
-                onChange={v => setForm({ ...form, name: v })}
-              />
+              <div className="flex min-w-0 items-center gap-3">
 
-              <BankInput
-                label="Banco"
-                value={form.bank}
-                onChange={v => setForm({ ...form, bank: v })}
-              />
+                <div className="
+                  flex h-10 w-10 shrink-0
+                  items-center justify-center
+                  rounded-xl
+                  bg-cyan-500/10
+                  text-cyan-300
+                ">
+                  <CreditCard
+                    size={22}
+                    weight="duotone"
+                  />
+                </div>
 
-              <BankInput
-                label="IBAN"
-                value={form.iban}
-                onChange={v => setForm({ ...form, iban: v })}
-              />
+                <div className="min-w-0">
 
-            </div>
+                  <h2 className="text-sm font-bold text-white">
+                    Dados bancários
+                  </h2>
 
-            {/* BUTTON */}
-            <button
-              onClick={save}
-              disabled={saving}
-              className={`w-full h-12 rounded-xl font-mono font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg
-                ${saving
-                  ? 'bg-[#0e364a] border border-cyan-500/20 text-cyan-200/50'
-                  : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-950/20'
-                }
-              `}
-            >
-              {saving ? 'A guardar...' : (
-                <>
-                  Guardar
-                  <CheckCircle size={16} />
-                </>
+                  <p className="mt-0.5 text-[11px] text-cyan-100/50">
+                    {hasBankData
+                      ? "Conta associada"
+                      : "Sem conta registada"}
+                  </p>
+
+                </div>
+
+              </div>
+
+              {hasBankData && !editing && (
+
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className="
+                    inline-flex h-9 shrink-0
+                    items-center justify-center gap-2
+                    rounded-lg
+                    border border-cyan-500/20
+                    bg-[#0A2533]
+                    px-3
+                    text-xs font-semibold
+                    text-cyan-200
+                    transition-all
+                    hover:border-cyan-400/50
+                    hover:bg-[#124158]
+                    active:scale-[0.97]
+                  "
+                >
+                  <PencilSimple
+                    size={15}
+                    weight="bold"
+                  />
+                  Editar
+                </button>
+
               )}
-            </button>
+
+            </div>
+
+            {/* CARD CONTENT */}
+
+            <div className="p-4 sm:p-5">
+
+              {editing ? (
+
+                <form
+                  onSubmit={save}
+                  className="space-y-4"
+                >
+
+                  <BankInput
+                    label="Titular da conta"
+                    value={form.name}
+                    onChange={value =>
+                      updateField("name", value)
+                    }
+                    icon={<User size={17} />}
+                    autoComplete="name"
+                  />
+
+                  <BankInput
+                    label="Banco"
+                    value={form.bank}
+                    onChange={value =>
+                      updateField("bank", value)
+                    }
+                    icon={<CreditCard size={17} />}
+                    autoComplete="off"
+                  />
+
+                  <BankInput
+                    label="IBAN"
+                    value={form.iban}
+                    onChange={value =>
+                      updateField("iban", value)
+                    }
+                    icon={<CreditCard size={17} />}
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+
+                    <button
+                      type="button"
+                      onClick={cancelEditing}
+                      disabled={saving}
+                      className="
+                        flex h-12 items-center justify-center gap-2
+                        rounded-xl
+                        border border-[#315D70]
+                        bg-[#0A2533]
+                        text-sm font-semibold
+                        text-cyan-100/80
+                        transition-all
+                        hover:bg-[#12394B]
+                        disabled:opacity-50
+                      "
+                    >
+                      <X size={17} />
+                      Cancelar
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className={primaryButtonClass}
+                    >
+                      {saving ? (
+
+                        <>
+                          <span className="
+                            h-4 w-4 animate-spin
+                            rounded-full border-2
+                            border-white/25 border-t-white
+                          " />
+                          A guardar...
+                        </>
+
+                      ) : (
+
+                        <>
+                          Guardar
+                          <CheckCircle
+                            size={17}
+                            weight="bold"
+                          />
+                        </>
+
+                      )}
+                    </button>
+
+                  </div>
+
+                </form>
+
+              ) : hasBankData ? (
+
+                <div className="divide-y divide-cyan-500/10">
+
+                  <BankDetail
+                    label="Titular"
+                    value={form.name}
+                    icon={<User size={19} />}
+                  />
+
+                  <BankDetail
+                    label="Banco"
+                    value={form.bank}
+                    icon={<CreditCard size={19} />}
+                  />
+
+                  <BankDetail
+                    label="IBAN"
+                    value={form.iban}
+                    icon={<CreditCard size={19} />}
+                    mono
+                  />
+
+                </div>
+
+              ) : (
+
+                <div className="py-5 text-center">
+
+                  <p className="text-sm font-semibold text-white">
+                    Nenhuma conta bancária registada
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setEditing(true)}
+                    className={`${primaryButtonClass} mt-5`}
+                  >
+                    Adicionar conta bancária
+                  </button>
+
+                </div>
+
+              )}
+
+            </div>
 
           </div>
+
         )}
 
-      </main>
-    </div>
+        {/* BOTÃO VOLTAR */}
+
+        <button
+  type="button"
+  onClick={() => navigate(-1)}
+  className="
+    mt-4
+    flex h-14 w-full
+    items-center justify-center
+    rounded-xl
+    bg-[#079CB3]
+    text-sm font-bold
+    text-white
+    shadow-lg shadow-cyan-950/20
+    transition-all
+    hover:bg-[#0BACC2]
+    active:scale-[0.99]
+  "
+>
+  Voltar
+</button>
+
+      </section>
+
+    </main>
   )
 }
 
-/* INPUT PADRÃO */
+/* =========================================
+   COMPONENTE: DADOS BANCÁRIOS
+========================================= */
+
+function BankDetail({
+  label,
+  value,
+  icon,
+  mono = false,
+}: {
+  label: string
+  value: string
+  icon: ReactNode
+  mono?: boolean
+}) {
+  return (
+
+    <div className="
+      flex items-center gap-3
+      py-4 first:pt-1 last:pb-1
+    ">
+
+      <div className="
+        flex h-10 w-10 shrink-0
+        items-center justify-center
+        rounded-xl
+        bg-[#0A2533]
+        text-cyan-300
+      ">
+        {icon}
+      </div>
+
+      <div className="min-w-0 flex-1">
+
+        <p className="
+          text-[10px] font-semibold
+          uppercase tracking-wider
+          text-cyan-200/50
+        ">
+          {label}
+        </p>
+
+        <p className={`
+          mt-1 break-all text-sm font-semibold text-white
+          ${mono ? "font-mono tracking-wide" : ""}
+        `}>
+          {value || "—"}
+        </p>
+
+      </div>
+
+    </div>
+
+  )
+}
+
+/* =========================================
+   COMPONENTE: INPUT BANCÁRIO
+========================================= */
 
 function BankInput({
   label,
   value,
   onChange,
+  icon,
+  autoComplete,
+  spellCheck,
 }: {
   label: string
   value: string
-  onChange: (v: string) => void
+  onChange: (value: string) => void
+  icon: ReactNode
+  autoComplete: string
+  spellCheck?: boolean
 }) {
   return (
-    <div className="space-y-1">
 
-      <label className="text-[10px] text-cyan-200/70 font-mono uppercase font-bold block">
+    <label className="block space-y-2">
+
+      <span className="
+        text-xs font-semibold
+        text-cyan-100/80
+      ">
         {label}
-      </label>
+      </span>
 
-      <input
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="
-          w-full h-11 rounded-xl
-          bg-[#0a2533]
-          border border-cyan-500/20
-          px-4 text-sm font-mono text-white
-          outline-none
-          focus:border-cyan-400
-          placeholder:text-cyan-200/30
-          transition-all
-        "
-      />
-    </div>
+      <span className="relative block">
+
+        <span className="
+          pointer-events-none
+          absolute left-4 top-1/2
+          -translate-y-1/2
+          text-cyan-200/50
+        ">
+          {icon}
+        </span>
+
+        <input
+          value={value}
+          onChange={event =>
+            onChange(event.target.value)
+          }
+          autoComplete={autoComplete}
+          spellCheck={spellCheck}
+          className={`${inputClass} pl-11`}
+        />
+
+      </span>
+
+    </label>
+
   )
 }
