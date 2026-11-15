@@ -1,122 +1,76 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from "react-router-dom"
 import {
-  ArrowLeft,
   Bank,
-  CaretRight,
-  ClockCounterClockwise
-} from '@phosphor-icons/react'
+  ClockCounterClockwise,
+} from "@phosphor-icons/react"
+
+const methodCardClass =
+  "flex w-full items-center gap-4 rounded-2xl border border-[#24566A] bg-[#103647] p-5 text-left shadow-[0_10px_28px_rgba(0,0,0,0.14)] transition-colors hover:border-[#19C5CE]/60 hover:bg-[#124052] active:bg-[#153F50]"
+
+const actionButtonClass =
+  "flex min-h-14 w-full items-center justify-center rounded-xl border border-[#315365] bg-[#102F3D] px-5 text-[15px] font-semibold text-[#D8E8EE] transition-colors hover:bg-[#153B4B] active:bg-[#1A4658]"
 
 export default function Withdraw() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe] font-sans selection:bg-cyan-500/30">
-
-      {/* BACKGROUND GLOW */}
-
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-cyan-500/[0.06] rounded-full filter blur-[120px] pointer-events-none" />
-
-      {/* HEADER */}
-
-      <div className="flex items-center justify-between px-6 py-5 border-b border-cyan-500/10 bg-[#0a2533]/90 backdrop-blur-xl sticky top-0 z-10">
-
-        <div className="flex items-center gap-4">
-
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2.5 bg-[#0e364a] border border-cyan-500/25 rounded-full text-cyan-300 hover:bg-[#124158] hover:text-white transition-all cursor-pointer shadow-sm"
-          >
-            <ArrowLeft
-              size={20}
-              weight="bold"
-            />
-          </button>
-
-          <h1 className="text-xl font-black tracking-tighter uppercase font-mono text-white">
-            Método de Saque
-          </h1>
-
-        </div>
-
-        <button
-          onClick={() => navigate('/withdraw-history')}
-          className="p-3 bg-[#0e364a] hover:bg-[#124158] rounded-2xl transition-all active:scale-95 border border-cyan-500/25 flex items-center justify-center group shadow-sm cursor-pointer"
-        >
-          <ClockCounterClockwise
-            size={20}
-            weight="bold"
-            className="text-cyan-400 group-hover:text-white transition-colors"
-          />
-        </button>
-
-      </div>
-
-      <div className="px-6 py-8 max-w-md mx-auto relative z-10">
-
-        <h2 className="text-2xl font-black font-mono tracking-tight text-white mb-2">
-          Levantar Fundos
-        </h2>
-
-        <p className="text-cyan-200/70 text-xs font-mono mb-8 leading-relaxed">
-          Selecione o método para retirar fundos da sua conta.
-        </p>
-
-        <div className="grid gap-4">
-
-          {/* OPÇÃO KWANZA */}
-
-          <button
-            onClick={() => navigate('/withdraw/aoa')}
-            className="flex items-center justify-between w-full p-6 bg-[#0e364a] border border-cyan-500/20 rounded-[2rem] hover:bg-[#124158] hover:border-cyan-400/50 transition-all group shadow-xl shadow-cyan-950/20 cursor-pointer"
-          >
-
-            <div className="flex items-center gap-4 text-left">
-
-              <div className="p-3.5 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-2xl group-hover:scale-110 transition-transform shadow-inner">
-
-                <Bank
-                  size={24}
-                  weight="duotone"
-                />
-
-              </div>
-
-              <div>
-
-                <p className="font-bold text-white text-sm font-mono uppercase tracking-wider">
-                  Kwanza (AOA)
-                </p>
-
-                <p className="text-[10px] font-bold font-mono text-cyan-200/70 uppercase tracking-widest mt-0.5">
-                  Levantamento instantâneo
-                </p>
-
-              </div>
-
-            </div>
-
-            <CaretRight
-              size={20}
-              weight="bold"
-              className="text-cyan-500/40 group-hover:text-white transition-colors"
-            />
-
-          </button>
-
-        </div>
-
-        {/* NOTA DE RODAPÉ */}
-
-        <div className="mt-12 p-6 rounded-[2rem] bg-[#0e364a]/50 border border-cyan-500/10 shadow-inner">
-
-          <p className="text-[11px] text-cyan-200/70 font-mono text-center leading-relaxed">
-            Certifique-se de que os seus dados bancários estão atualizados no perfil antes de solicitar o levantamento.
+    <main className="min-h-screen bg-[#0A2533] px-4 py-6 text-white sm:px-6 sm:py-10">
+      <div className="mx-auto w-full max-w-[460px]">
+        <header className="mb-7">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#19C5CE]">
+            Levantamentos
           </p>
 
-        </div>
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <h1 className="text-[25px] font-semibold tracking-tight text-white">
+              Método de levantamento
+            </h1>
 
+            <button
+              type="button"
+              onClick={() => navigate("/withdraw-history")}
+              aria-label="Consultar histórico de levantamentos"
+              title="Histórico"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#24566A] bg-[#103647] text-[#65D5DE] transition-colors hover:border-[#19C5CE]/60 hover:bg-[#124052] hover:text-white"
+            >
+              <ClockCounterClockwise size={21} weight="regular" />
+            </button>
+          </div>
+        </header>
+
+        <section className="space-y-3">
+          <button
+            type="button"
+            onClick={() => navigate("/withdraw/aoa")}
+            className={methodCardClass}
+          >
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#079CB3]/15 text-[#19C5CE]">
+              <Bank size={25} weight="duotone" />
+            </span>
+
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-semibold text-white">
+                Conta bancária
+              </span>
+              <span className="mt-1 block text-[12px] text-[#A9C4CF]">
+                Levantamento em Kwanza (AOA)
+              </span>
+            </span>
+
+            <span className="rounded-full border border-[#1C9DAD]/30 bg-[#079CB3]/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#5DDAE3]">
+              AOA
+            </span>
+          </button>
+        </section>
+
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className={`${actionButtonClass} mt-5`}
+        >
+          Voltar
+        </button>
       </div>
-
-    </div>
+    </main>
   )
 }

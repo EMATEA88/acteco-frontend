@@ -195,11 +195,11 @@ export default function Landing() {
 
       {/* LOGIN CONTENT */}
 
-      <section className="relative z-10 flex w-full max-w-[420px] flex-col items-center">
+      <section className="relative z-10 flex w-full max-w-[360px] flex-col items-center">
 
         {/* BRAND */}
 
-        <div className="mb-5 flex flex-col items-center text-center sm:mb-8">
+        <div className="mb-4 flex flex-col items-center text-center sm:mb-5">
           <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border border-cyan-300/20 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.2)] sm:h-[68px] sm:w-[68px]">
             <img
               src="/logo.png"
@@ -208,7 +208,7 @@ export default function Landing() {
             />
           </div>
 
-          <h1 className="mt-2 text-[21px] font-bold tracking-[0.08em] text-white sm:mt-3 sm:text-[23px]">
+          <h1 className="mt-2 text-[21px] font-bold tracking-[0.08em] text-white">
             EMATEA
           </h1>
 
@@ -216,23 +216,17 @@ export default function Landing() {
 
         {/* LOGIN CARD */}
 
-        <div className="w-full rounded-[22px] border border-cyan-300/15 bg-[#10394B]/95 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:rounded-[24px] sm:p-9 sm:shadow-[0_24px_70px_rgba(0,0,0,0.25)]">
-
-          {/* HEADER */}
-
-          <div className="mb-5 sm:mb-8">
-            <h2 className="text-[22px] font-bold tracking-tight text-white sm:text-[25px]">
-              Bem-vindo de volta
-            </h2>
-
-            <p className="mt-2 text-sm leading-relaxed text-slate-300">
-              Entre na sua conta para continuar.
-            </p>
-          </div>
+        <div className="w-full rounded-[18px] border border-cyan-300/15 bg-[#10394B]/95 p-4 shadow-[0_10px_28px_rgba(0,0,0,0.18)] sm:rounded-[20px] sm:p-5">
 
           {/* FORM */}
 
-          <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
+          <div className="mb-4 text-center">
+            <h2 className="text-[21px] font-bold tracking-tight text-white">
+              Bem-vindo de volta
+            </h2>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-3 sm:space-y-3.5">
 
             {/* IDENTIFICAÇÃO */}
 
@@ -260,7 +254,7 @@ export default function Landing() {
                   autoComplete="username"
                   required
                   disabled={isBusy}
-                  className="h-12 w-full rounded-xl border border-cyan-100/15 bg-[#092B3A] pl-12 pr-4 sm:h-[54px] text-sm text-white outline-none transition-all duration-200 placeholder:text-slate-500 hover:border-cyan-300/30 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="h-11 w-full rounded-xl border border-cyan-100/15 bg-[#092B3A] pl-12 pr-4 sm:h-12 text-sm text-white outline-none transition-all duration-200 placeholder:text-slate-500 hover:border-cyan-300/30 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/10 disabled:cursor-not-allowed disabled:opacity-60"
                 />
               </div>
             </div>
@@ -291,7 +285,7 @@ export default function Landing() {
                   autoComplete="current-password"
                   required
                   disabled={isBusy}
-                  className="h-12 w-full rounded-xl border border-cyan-100/15 bg-[#092B3A] pl-12 pr-12 sm:h-[54px] text-sm text-white outline-none transition-all duration-200 placeholder:text-slate-500 hover:border-cyan-300/30 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="h-11 w-full rounded-xl border border-cyan-100/15 bg-[#092B3A] pl-12 pr-12 sm:h-12 text-sm text-white outline-none transition-all duration-200 placeholder:text-slate-500 hover:border-cyan-300/30 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/10 disabled:cursor-not-allowed disabled:opacity-60"
                 />
 
                 <button
@@ -337,7 +331,7 @@ export default function Landing() {
     !identity.trim() ||
     !password
   }
-  className="w-full h-12 sm:h-14 rounded-xl bg-[#079CB3] hover:bg-[#0BACC2] disabled:bg-[#315365] disabled:text-[#91A9B4] disabled:cursor-not-allowed text-white text-[15px] font-semibold tracking-wide transition-colors flex items-center justify-center"
+  className="w-full h-11 sm:h-12 rounded-xl bg-[#079CB3] hover:bg-[#0BACC2] disabled:bg-[#315365] disabled:text-[#91A9B4] disabled:cursor-not-allowed text-white text-[15px] font-semibold tracking-wide transition-colors flex items-center justify-center"
 >
   {loading ? (
     <>
@@ -357,7 +351,7 @@ export default function Landing() {
 
           {/* REGISTO */}
 
-          <div className="mt-5 border-t border-white/[0.08] pt-5 text-center sm:mt-7 sm:pt-6">
+          <div className="mt-3 border-t border-white/[0.08] pt-3 text-center">
             <p className="text-sm text-slate-300">
               Ainda não tem uma conta?
             </p>
@@ -373,11 +367,6 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* FOOTER */}
-
-        <p className="mt-4 text-center text-[10px] tracking-wide text-slate-500 sm:mt-7 sm:text-[11px]">
-          © {new Date().getFullYear()} EMATEA. Todos os direitos reservados.
-        </p>
       </section>
     </main>
   );

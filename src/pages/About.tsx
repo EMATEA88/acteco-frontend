@@ -1,572 +1,293 @@
+import type { ComponentType } from "react"
 import {
-  Info,
-  Storefront,
+  Briefcase,
+  Buildings,
   Cpu,
   DeviceMobile,
   Globe,
   Megaphone,
-  Briefcase,
-  MapPin,
-  ShieldCheck,
-  ArrowUpRight,
-  Buildings,
   Package,
   PlugsConnected,
-} from '@phosphor-icons/react'
+  ShieldCheck,
+  Storefront,
+} from "@phosphor-icons/react"
 
-const businessAreas = [
+type IconComponent = ComponentType<{
+  size?: number
+  weight?: "regular" | "bold" | "duotone" | "fill" | "light" | "thin"
+  className?: string
+}>
+
+type BusinessArea = {
+  title: string
+  description: string
+  icon: IconComponent
+}
+
+const businessAreas: BusinessArea[] = [
   {
-    title: 'Comércio Geral',
+    title: "Comércio geral",
     description:
-      'Comércio a grosso e a retalho de bens alimentares, bebidas diversas e outros produtos abrangidos pelo objeto social da empresa.',
+      "Comercialização de bens alimentares, bebidas e outros produtos abrangidos pelo objeto social.",
     icon: Storefront,
   },
   {
-    title: 'Tecnologia e Equipamentos',
+    title: "Tecnologia e equipamentos",
     description:
-      'Comércio de equipamentos informáticos e eletrónicos, acessórios tecnológicos, telemóveis, computadores, impressoras, material de escritório e produtos de telecomunicações.',
+      "Equipamentos informáticos e eletrónicos, computadores, telemóveis, acessórios e material de escritório.",
     icon: Cpu,
   },
   {
-    title: 'Software e Plataformas Digitais',
+    title: "Software e plataformas digitais",
     description:
-      'Desenvolvimento de software, aplicações móveis, websites, sistemas informáticos, plataformas digitais e outras soluções tecnológicas e plataformas eletrónicas.',
+      "Desenvolvimento de software, aplicações móveis, websites e sistemas informáticos.",
     icon: DeviceMobile,
   },
   {
-    title: 'Telecomunicações e Serviços Digitais',
+    title: "Telecomunicações e serviços digitais",
     description:
-      'Prestação de serviços de telecomunicações, serviços tecnológicos e digitais, incluindo a comercialização de saldos e recargas eletrónicas.',
+      "Soluções tecnológicas e serviços digitais, incluindo comercialização de saldos e recargas eletrónicas.",
     icon: PlugsConnected,
   },
   {
-    title: 'Marketing, Publicidade e Design',
+    title: "Marketing e comunicação",
     description:
-      'Marketing digital, publicidade, comunicação, design gráfico e produção multimédia para empresas, marcas e projetos.',
+      "Marketing digital, publicidade, comunicação, design gráfico e produção multimédia.",
     icon: Megaphone,
   },
   {
-    title: 'Serviços Empresariais',
+    title: "Serviços empresariais",
     description:
-      'Prestação de serviços administrativos, empresariais e operacionais, apoio ao comércio e consultoria tecnológica.',
+      "Serviços administrativos, apoio operacional e consultoria tecnológica.",
     icon: Briefcase,
   },
   {
-    title: 'Representação e Intermediação',
+    title: "Representação comercial",
     description:
-      'Representação comercial e intermediação comercial a nível nacional e internacional.',
+      "Representação e intermediação comercial a nível nacional e internacional.",
     icon: Globe,
   },
   {
-    title: 'Comércio Internacional',
+    title: "Comércio internacional",
     description:
-      'Importação e exportação de bens e serviços, bem como apoio às operações de comércio nacional e internacional.',
+      "Importação e exportação de bens e serviços, nos termos aplicáveis.",
     icon: Package,
   },
 ]
 
+const companyDetails = [
+  { label: "Firma", value: "EMATEA – Comércio Geral e Prestação de Serviços, (SU), LDA" },
+  { label: "NIF", value: "5002577666" },
+  { label: "Data de constituição", value: "07.07.2025" },
+  { label: "Capital social", value: "1.000.000,00 Kz" },
+  {
+    label: "Sede",
+    value: "Malanje, Município de Malanje, Bairro Cangambo Ocidental",
+  },
+  { label: "Forma de obrigar", value: "Intervenção do gerente único" },
+]
+
 const values = [
-  'Integridade',
-  'Transparência',
-  'Inovação',
-  'Responsabilidade',
-  'Eficiência',
-  'Compromisso',
+  "Integridade",
+  "Transparência",
+  "Inovação",
+  "Responsabilidade",
+  "Eficiência",
+  "Compromisso",
 ]
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe] p-4 md:p-6 space-y-6 md:space-y-8 animate-fadeZoom selection:bg-cyan-500/30 pb-28">
+    <main className="min-h-screen bg-[#0A2533] px-4 py-5 pb-28 text-[#E0F2FE] sm:px-6 sm:py-8">
+      <div className="mx-auto w-full max-w-5xl space-y-5 sm:space-y-6">
+        {/* Identificação institucional */}
+        <section className="overflow-hidden rounded-2xl border border-[#24566A] bg-[#103647] p-5 shadow-[0_14px_36px_rgba(0,0,0,0.16)] sm:p-7">
+          <div className="flex items-center gap-4 sm:gap-5">
+            <img
+              src="/logo.png"
+              alt="EMATEA"
+              className="h-16 w-16 shrink-0 rounded-full border border-[#2B7185] bg-[#0A2533] object-contain p-1 sm:h-20 sm:w-20"
+            />
 
-      {/* =========================================================
-          HEADER INSTITUCIONAL
-      ========================================================== */}
-      <section className="relative overflow-hidden bg-[#0e364a] border border-cyan-500/20 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-2xl shadow-cyan-950/20">
-
-        <div className="absolute -top-32 -right-32 w-80 h-80 bg-cyan-500/[0.07] rounded-full blur-[90px]" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-400/[0.04] rounded-full blur-[100px]" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
-
-          <div className="max-w-3xl">
-
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 mb-5">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300 font-mono">
-                Perfil Institucional
-              </span>
-            </div>
-
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white font-mono">
-              EMATEA
-            </h1>
-
-            <p className="mt-3 text-sm md:text-base text-cyan-200/80 leading-relaxed max-w-2xl">
-              <span className="text-white font-semibold">
-                EMATEA – Comércio Geral e Prestação de Serviços, (SU), LDA
-              </span>{' '}
-              é uma sociedade constituída em Angola, com sede em Malanje,
-              cuja atividade abrange comércio, tecnologia, telecomunicações,
-              serviços digitais e empresariais, comunicação e operações de
-              comércio nacional e internacional.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-7">
-
-              <InstitutionalData
-                label="NIF"
-                value="5002577666"
-              />
-
-              <InstitutionalData
-                label="Fundação"
-                value="07.07.2025"
-              />
-
-              <InstitutionalData
-                label="Capital Social"
-                value="1.000.000 Kz"
-              />
-
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#19C5CE]">
+                Perfil institucional
+              </p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+                EMATEA
+              </h1>
+              <p className="mt-1 text-xs leading-5 text-[#A9C4CF] sm:text-sm">
+                Comércio Geral e Prestação de Serviços, (SU), LDA
+              </p>
             </div>
           </div>
 
-          {/* LOGOTIPO */}
-          <div className="flex justify-center lg:justify-end shrink-0">
+          <p className="mt-5 max-w-3xl text-sm leading-6 text-[#C2D7DF]">
+            Sociedade constituída em Angola, com sede em Malanje. A sua
+            atividade abrange comércio, tecnologia, soluções digitais,
+            telecomunicações, serviços empresariais e operações comerciais
+            nacionais e internacionais, nos termos do seu objeto social.
+          </p>
 
-            <div className="relative group">
-
-              <div className="absolute inset-0 bg-cyan-500 rounded-full blur-2xl opacity-20 group-hover:opacity-35 transition-opacity" />
-
-              <div className="relative w-32 h-32 md:w-36 md:h-36 rounded-full border-2 border-cyan-400/30 overflow-hidden bg-[#0a2533] flex items-center justify-center shadow-2xl">
-
-                <img
-                  src="/logo.png"
-                  alt="Logotipo da EMATEA"
-                  className="w-full h-full object-cover rounded-full"
-                />
-
-              </div>
-
-            </div>
-
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <SummaryItem label="NIF" value="5002577666" />
+            <SummaryItem label="Constituição" value="07.07.2025" />
+            <SummaryItem
+              label="Capital social"
+              value="1.000.000 Kz"
+              className="col-span-2 sm:col-span-1"
+            />
           </div>
+        </section>
 
-        </div>
-      </section>
+        {/* Áreas de atividade */}
+        <section>
+          <SectionTitle
+            eyebrow="Atividade empresarial"
+            title="Áreas de atuação"
+          />
 
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {businessAreas.map(area => {
+              const Icon = area.icon
 
-      {/* =========================================================
-          SOBRE A EMPRESA
-      ========================================================== */}
-      <section className="bg-[#0e364a] border border-cyan-500/20 rounded-[2rem] p-6 md:p-8 shadow-xl shadow-cyan-950/20">
-
-        <SectionHeader
-          icon={<Info size={22} weight="bold" />}
-          eyebrow="Quem somos"
-          title="Uma empresa de comércio, tecnologia e serviços"
-        />
-
-        <div className="mt-6 max-w-4xl space-y-4 text-sm md:text-base text-cyan-100/80 leading-relaxed">
-
-          <p>
-            A <strong className="text-white">EMATEA</strong> atua através de
-            uma estrutura empresarial multidisciplinar, combinando atividades
-            comerciais, tecnológicas e de prestação de serviços.
-          </p>
-
-          <p>
-            O seu objeto social contempla desde o comércio de bens,
-            equipamentos informáticos e eletrónicos até ao desenvolvimento
-            de software, aplicações móveis, websites, sistemas informáticos
-            e plataformas digitais.
-          </p>
-
-          <p>
-            A empresa possui igualmente enquadramento para a prestação de
-            serviços de telecomunicações, serviços tecnológicos e digitais,
-            consultoria tecnológica, marketing, publicidade, comunicação,
-            design gráfico, produção multimédia e serviços empresariais.
-          </p>
-
-          <p>
-            A sua atividade inclui ainda representação e intermediação
-            comercial nacional e internacional, importação e exportação de
-            bens e serviços e apoio às operações de comércio.
-          </p>
-
-        </div>
-      </section>
-
-
-      {/* =========================================================
-          ÁREAS DE ATUAÇÃO
-      ========================================================== */}
-      <section>
-
-        <SectionHeader
-          icon={<Buildings size={22} weight="bold" />}
-          eyebrow="Objeto e áreas de atuação"
-          title="O que a EMATEA faz"
-        />
-
-        <p className="text-sm text-cyan-200/60 mt-2 mb-5 max-w-3xl">
-          As áreas abaixo refletem as atividades previstas no objeto social
-          registado da empresa, incluindo a alteração do objeto social
-          averbada em 2026.
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-
-          {businessAreas.map((area) => {
-            const Icon = area.icon
-
-            return (
-              <div
-                key={area.title}
-                className="group bg-[#0e364a] border border-cyan-500/15 hover:border-cyan-400/40 rounded-2xl p-5 transition-all duration-300 shadow-lg shadow-cyan-950/10"
-              >
-
-                <div className="flex items-start justify-between gap-3">
-
-                  <div className="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-105 transition-transform">
-                    <Icon size={23} weight="duotone" />
+              return (
+                <article
+                  key={area.title}
+                  className="flex gap-3 rounded-xl border border-[#24566A] bg-[#103647] p-4"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#079CB3]/15 text-[#19C5CE]">
+                    <Icon size={21} weight="regular" />
                   </div>
 
-                  <ArrowUpRight
-                    size={17}
-                    className="text-cyan-500/30 group-hover:text-cyan-400 transition-colors"
-                  />
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-white">
+                      {area.title}
+                    </h3>
+                    <p className="mt-1 text-xs leading-5 text-[#A9C4CF]">
+                      {area.description}
+                    </p>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
 
-                </div>
+          <p className="mt-3 text-[11px] leading-5 text-[#7899A7]">
+          </p>
+        </section>
 
-                <h3 className="text-sm font-bold text-white mt-5 font-mono">
-                  {area.title}
-                </h3>
+        {/* Identificação legal */}
+        <section className="rounded-2xl border border-[#24566A] bg-[#103647] p-5 shadow-[0_14px_36px_rgba(0,0,0,0.12)] sm:p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#079CB3]/15 text-[#19C5CE]">
+              <Buildings size={21} weight="regular" />
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#19C5CE]">
+                Registo da sociedade
+              </p>
+              <h2 className="text-lg font-semibold text-white">
+                Dados empresariais
+              </h2>
+            </div>
+          </div>
 
-                <p className="text-xs text-cyan-200/65 leading-relaxed mt-2">
-                  {area.description}
-                </p>
-
+          <dl className="mt-4 divide-y divide-[#24566A]/70">
+            {companyDetails.map(detail => (
+              <div
+                key={detail.label}
+                className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"
+              >
+                <dt className="text-xs font-medium text-[#86AAB8]">
+                  {detail.label}
+                </dt>
+                <dd className="break-words text-sm leading-5 text-[#E0F2FE]">
+                  {detail.value}
+                </dd>
               </div>
-            )
-          })}
+            ))}
+            <div className="grid grid-cols-1 gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4">
+              <dt className="text-xs font-medium text-[#86AAB8]">
+                Endereço
+              </dt>
+              <dd className="break-words text-sm leading-5 text-[#E0F2FE]">
+                Rua Sem Nome, casa s/n.º, junto ao controlo n.º 1
+              </dd>
+            </div>
+          </dl>
+        </section>
 
-        </div>
-      </section>
-
-
-      {/* =========================================================
-          TECNOLOGIA
-      ========================================================== */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#0e364a] to-[#0a2533] border border-cyan-500/20 rounded-[2rem] p-6 md:p-8 shadow-xl shadow-cyan-950/20">
-
-        <div className="absolute right-0 top-0 w-72 h-72 bg-cyan-500/[0.04] rounded-full blur-[90px]" />
-
-        <div className="relative z-10 flex flex-col md:flex-row gap-6 md:items-center">
-
-          <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
-            <Cpu size={29} weight="duotone" />
+        {/* Princípios */}
+        <section className="rounded-2xl border border-[#24566A] bg-[#103647] p-5 sm:p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#079CB3]/15 text-[#19C5CE]">
+              <ShieldCheck size={21} weight="regular" />
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#19C5CE]">
+                Cultura empresarial
+              </p>
+              <h2 className="text-lg font-semibold text-white">
+                Princípios
+              </h2>
+            </div>
           </div>
 
-          <div>
-
-            <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-400 font-bold font-mono">
-              Tecnologia
-            </p>
-
-            <h2 className="text-xl md:text-2xl font-bold text-white mt-1">
-              Desenvolvimento de soluções digitais
-            </h2>
-
-            <p className="text-sm text-cyan-200/70 leading-relaxed mt-2 max-w-4xl">
-              Entre as atividades registadas encontram-se o desenvolvimento
-              de software e aplicações móveis, gestão e exploração de websites,
-              sistemas informáticos e plataformas digitais, além da criação e
-              exploração de soluções tecnológicas e plataformas eletrónicas.
-            </p>
-
+          <div className="mt-4 flex flex-wrap gap-2">
+            {values.map(value => (
+              <span
+                key={value}
+                className="rounded-lg border border-[#2A6073] bg-[#0A2533] px-3 py-2 text-xs font-medium text-[#C2D7DF]"
+              >
+                {value}
+              </span>
+            ))}
           </div>
-
-        </div>
-      </section>
-
-
-      {/* =========================================================
-          POSICIONAMENTO
-      ========================================================== */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-        <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2rem] p-6 md:p-8 shadow-xl shadow-cyan-950/10">
-
-          <div className="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-5">
-            <ShieldCheck size={23} weight="duotone" />
-          </div>
-
-          <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-400 font-bold font-mono">
-            Posicionamento
-          </p>
-
-          <h2 className="text-xl font-bold text-white mt-2">
-            Estrutura multidisciplinar
-          </h2>
-
-          <p className="text-sm text-cyan-200/70 leading-relaxed mt-3">
-            A amplitude do objeto social permite à EMATEA operar em diferentes
-            segmentos de atividade, estabelecendo uma base empresarial para
-            soluções comerciais, tecnológicas, digitais e de apoio empresarial.
-          </p>
-
-        </div>
-
-
-        <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2rem] p-6 md:p-8 shadow-xl shadow-cyan-950/10">
-
-          <div className="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-5">
-            <Globe size={23} weight="duotone" />
-          </div>
-
-          <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-400 font-bold font-mono">
-            Alcance
-          </p>
-
-          <h2 className="text-xl font-bold text-white mt-2">
-            Mercado nacional e internacional
-          </h2>
-
-          <p className="text-sm text-cyan-200/70 leading-relaxed mt-3">
-            O objeto social contempla representação e intermediação comercial
-            nacional e internacional, importação e exportação de bens e
-            serviços e apoio ao comércio nacional e internacional.
-          </p>
-
-        </div>
-
-      </section>
-
-
-      {/* =========================================================
-          VALORES
-      ========================================================== */}
-      <section className="bg-[#0e364a]/70 border border-cyan-500/20 rounded-[2rem] p-6 md:p-8">
-
-        <div className="flex items-center gap-3 mb-5">
-
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-            <ShieldCheck size={21} weight="bold" />
-          </div>
-
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-400 font-bold font-mono">
-              Cultura empresarial
-            </p>
-
-            <h2 className="text-lg font-bold text-white">
-              Princípios
-            </h2>
-          </div>
-
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-
-          {values.map((value) => (
-            <span
-              key={value}
-              className="px-3 py-2 rounded-full bg-[#0a2533] border border-cyan-500/20 text-xs text-cyan-200 font-medium"
-            >
-              {value}
-            </span>
-          ))}
-
-        </div>
-
-        <p className="text-[11px] text-cyan-200/40 mt-4">
-          Estes princípios representam o posicionamento institucional da
-          empresa e não constituem transcrição do objeto social.
-        </p>
-
-      </section>
-
-
-      {/* =========================================================
-          DADOS LEGAIS / EMPRESARIAIS
-      ========================================================== */}
-      <section className="bg-[#0e364a] border border-cyan-500/20 rounded-[2rem] p-6 md:p-8 shadow-xl shadow-cyan-950/20">
-
-        <SectionHeader
-          icon={<Buildings size={22} weight="bold" />}
-          eyebrow="Informação empresarial"
-          title="Dados de identificação"
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-5 mt-6">
-
-          <LegalData
-            label="Firma"
-            value="EMATEA – COMÉRCIO GERAL E PRESTAÇÃO DE SERVIÇOS, (SU), LDA"
-          />
-
-          <LegalData
-            label="NIF"
-            value="5002577666"
-          />
-
-          <LegalData
-            label="Fundação"
-            value="07.07.2025"
-          />
-
-          <LegalData
-            label="Capital social"
-            value="1.000.000,00 Kz"
-          />
-
-          <LegalData
-            label="Sede"
-            value="Malanje, Município de Malanje, Bairro Cangambo Ocidental"
-          />
-
-          <LegalData
-            label="Forma de obrigar"
-            value="Intervenção do gerente único"
-          />
-
-        </div>
-
-      </section>
-
-
-      {/* =========================================================
-          LOCALIZAÇÃO / FOOTER
-      ========================================================== */}
-      <section className="bg-[#0e364a] border border-cyan-500/20 rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 shadow-xl shadow-cyan-950/20">
-
-        <div className="flex items-start gap-4">
-
-          <div className="w-11 h-11 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
-            <MapPin size={22} weight="duotone" />
-          </div>
-
-          <div>
-
-            <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-400 font-bold font-mono">
-              Sede
-            </p>
-
-            <p className="text-sm text-cyan-100 mt-1">
-              Malanje, Município de Malanje, Bairro Cangambo Ocidental
-            </p>
-
-            <p className="text-xs text-cyan-200/50 mt-1">
-              Rua Sem Nome, casa s/nº, junto ao control nº 1
-            </p>
-
-          </div>
-
-        </div>
-
-        <div className="text-left md:text-right">
-
-          <p className="text-[10px] uppercase tracking-[0.25em] text-cyan-200/40 font-mono">
-            EMATEA
-          </p>
-
-          <p className="text-xs text-cyan-200/50 mt-1">
-            Comércio Geral e Prestação de Serviços
-          </p>
-
-          <p className="text-[10px] text-cyan-200/30 mt-2">
-            NIF 5002577666
-          </p>
-
-        </div>
-
-      </section>
-
-    </div>
+        </section>
+      </div>
+    </main>
   )
 }
 
-
-/* =========================================================
-   COMPONENTES AUXILIARES
-========================================================= */
-
-function InstitutionalData({
+function SummaryItem({
   label,
   value,
+  className = "",
 }: {
   label: string
   value: string
+  className?: string
 }) {
   return (
-    <div className="bg-[#0a2533]/60 border border-cyan-500/15 rounded-xl px-4 py-3">
-
-      <p className="text-[9px] uppercase tracking-widest text-cyan-300/50 font-bold font-mono">
+    <div
+      className={`min-w-0 rounded-xl border border-[#24566A] bg-[#0A2533]/70 px-3 py-3 ${className}`}
+    >
+      <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-[#86AAB8]">
         {label}
       </p>
-
-      <p className="text-xs text-cyan-100 font-semibold mt-1 font-mono break-words">
+      <p className="mt-1 break-words text-sm font-semibold text-white">
         {value}
       </p>
-
     </div>
   )
 }
 
-
-function SectionHeader({
-  icon,
+function SectionTitle({
   eyebrow,
   title,
 }: {
-  icon: React.ReactNode
   eyebrow: string
   title: string
 }) {
   return (
-    <div className="flex items-center gap-3">
-
-      <div className="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
-        {icon}
-      </div>
-
-      <div>
-
-        <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-400 font-bold font-mono">
-          {eyebrow}
-        </p>
-
-        <h2 className="text-xl md:text-2xl font-bold text-white mt-0.5">
-          {title}
-        </h2>
-
-      </div>
-
-    </div>
-  )
-}
-
-
-function LegalData({
-  label,
-  value,
-}: {
-  label: string
-  value: string
-}) {
-  return (
-    <div className="border-b border-cyan-500/10 pb-4">
-
-      <p className="text-[9px] uppercase tracking-widest text-cyan-300/50 font-bold font-mono">
-        {label}
+    <div>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#19C5CE]">
+        {eyebrow}
       </p>
-
-      <p className="text-sm text-cyan-100 mt-1 leading-relaxed">
-        {value}
-      </p>
-
+      <h2 className="mt-1 text-xl font-semibold tracking-tight text-white">
+        {title}
+      </h2>
     </div>
   )
 }

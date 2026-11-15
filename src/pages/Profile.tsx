@@ -2,11 +2,11 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-
 import { UserService } from '../services/user.service'
 import { KYCService } from '../services/kyc'
+import { formatCurrencyAOA } from "../utils/formatCurrency"
 import { AgentService } from '../services/agent.service'
-import { formatCurrencyAOA } from '../utils/formatCurrency'
+import { supportSettingsService } from '../services/supportSettings.service'
 
 import {
   ArrowDown,
@@ -22,22 +22,21 @@ import {
   PaperPlaneTilt,
   Gear,
   Info,
-  CheckCircle,
+  ChatCircle,
+  Users,
 } from '@phosphor-icons/react'
 
-import AgentDrawer from '../components/agent/AgentDrawer'
-import AgentSidebar from '../components/agent/AgentSidebar'
-import AgentMenuButton from '../components/agent/AgentMenuButton'
-import Toast from '../components/ui/Toast'
+import AgentDrawer from "../components/agent/AgentDrawer";
+import AgentSidebar from "../components/agent/AgentSidebar";
+import AgentMenuButton from "../components/agent/AgentMenuButton";
 
 type User = {
-  id?: number
   fullName?: string
   phone: string
   email: string
   publicId: string
   balance: number
-  role: 'USER' | 'AGENT' | 'SUB_AGENT' | 'ADMIN' | string
+  role: "USER" | "AGENT" | "SUB_AGENT" | "ADMIN" | string
 }
 
 type KYCState = {
@@ -46,63 +45,24 @@ type KYCState = {
   canSubmit: boolean
 }
 
-type ToastType = 'success' | 'error'
-
-const ROLE_BADGES: Record<string, {
-  label: string
-  className: string
-}> = {
-  USER: {
-    label: 'Cliente',
-    className: 'bg-cyan-400/10 text-cyan-300 border-cyan-400/20',
-  },
-  AGENT: {
-    label: 'Agente',
-    className: 'bg-emerald-400/10 text-emerald-300 border-emerald-400/20',
-  },
-  SUB_AGENT: {
-    label: 'Sub-agente',
-    className: 'bg-amber-400/10 text-amber-300 border-amber-400/20',
-  },
-  ADMIN: {
-    label: 'Administrador',
-    className: 'bg-rose-400/10 text-rose-300 border-rose-400/20',
-  },
+const ROLE_BADGES: Record<string, { label: string; className: string }> = {
+  USER: { label: "Cliente", className: "bg-cyan-500/10 text-cyan-300 border-cyan-500/30" },
+  AGENT: { label: "Agente", className: "bg-emerald-500/10 text-emerald-300 border-emerald-500/30" },
+  SUB_AGENT: { label: "Sub-Agente", className: "bg-amber-500/10 text-amber-300 border-amber-500/30" },
+  ADMIN: { label: "Admin", className: "bg-rose-500/15 text-rose-300 border-rose-500/30" },
 }
 
 export default function Profile() {
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
-
   const [kyc, setKyc] = useState<KYCState | null>(null)
   const [agentMenuOpen, setAgentMenuOpen] = useState(false)
-  const [toastVisible, setToastVisible] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
-  const [toastType, setToastType] = useState<ToastType>('success')
 
   useEffect(() => {
     setAgentMenuOpen(false)
   }, [location.pathname])
 
-  // TOAST
-  useEffect(() => {
-    if (!toastVisible) return
-
-    const timer = setTimeout(() => {
-      setToastVisible(false)
-    }, 3000)
-
-    return () => clearTimeout(timer)
-  }, [toastVisible])
-
-  function showToast(message: string, type: ToastType = 'success') {
-    setToastMessage(message)
-    setToastType(type)
-    setToastVisible(true)
-  }
-
-  // UTILIZADOR
   const { data: user, isLoading } = useQuery<User>({
     queryKey: ['me'],
     queryFn: async () => {
@@ -113,618 +73,443 @@ export default function Profile() {
     gcTime: 0,
   })
 
-  const rawRole = user?.role
-    ? String(user.role).toUpperCase().trim()
-    : 'USER'
-
-  const currentRoleBadge =
-    ROLE_BADGES[rawRole] || ROLE_BADGES.USER
-
-  // ESTATÍSTICAS DO AGENTE
   const { data: agentStats } = useQuery({
     queryKey: ['agent-premium-statistics'],
     queryFn: () => AgentService.getPremiumStatistics(),
-    enabled: rawRole === 'AGENT',
+    enabled: user?.role?.toUpperCase() === 'AGENT',
   })
 
-  // VERIFICAÇÃO KYC
-  useEffect(() => {
-    let mounted = true
+  // CONTACTOS DINÂMICOS DE SUPORTE
+  const { data: supportSettings, isLoading: supportLoading, isError: supportError } = useQuery({
+    queryKey: ['support-settings'],
+    queryFn: async () => {
+      const response = await supportSettingsService.getSettings()
 
+      if (!response.success || !response.settings) {
+        throw new Error("Não foi possível carregar os contactos de suporte.")
+      }
+
+      return response.settings
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
+  })
+
+  useEffect(() => {
     async function loadKYC() {
       try {
         const res = await KYCService.status()
         const data = res.data
 
-        if (!mounted) return
-
-        setKyc({
+        const normalized: KYCState = {
           status: data.status,
-          isVerified: data.isVerified ?? data.status === 'VERIFIED',
+          isVerified: data.isVerified ?? data.status === "VERIFIED",
           canSubmit: data.canSubmit ?? (
-            data.status === 'NOT_SUBMITTED' ||
-            data.status === 'REJECTED'
-          ),
-        })
-      } catch (error) {
-        console.error('KYC ERROR:', error)
+            data.status === "NOT_SUBMITTED" || data.status === "REJECTED"
+          )
+        }
+
+        setKyc(normalized)
+      } catch (err) {
+        console.error("KYC ERROR:", err)
       }
     }
 
     loadKYC()
-
-    return () => {
-      mounted = false
-    }
   }, [])
 
-  // COPIAR IDENTIFICAÇÃO
-  async function copyPublicId() {
-    try {
-      await navigator.clipboard.writeText(user?.publicId ?? '')
-      showToast('Identificação copiada com sucesso')
-    } catch {
-      showToast('Não foi possível copiar a identificação', 'error')
-    }
-  }
+  // Força detecção segura da role em maiúsculas, assumindo USER se não vier nada
+  const rawRole = user?.role ? String(user.role).toUpperCase().trim() : "USER";
+  const currentRoleBadge = ROLE_BADGES[rawRole] || ROLE_BADGES["USER"];
 
-  // TERMINAR SESSÃO
-  function handleLogout() {
-    queryClient.clear()
-    localStorage.clear()
-    navigate('/login', { replace: true })
-  }
+  const whatsappNumber = supportSettings?.whatsappNumber?.replace(/\D/g, '') ?? ''
+  const whatsappUrl = whatsappNumber
+    ? `https://wa.me/${whatsappNumber}`
+    : ''
 
-  const isAgent = rawRole === 'AGENT'
-  const isAdmin = rawRole === 'ADMIN'
+  const whatsappGroupUrl = supportSettings?.whatsappGroupUrl?.trim() ?? ''
 
   return (
-    <div className="
-      fixed inset-0 z-40
-      flex h-screen w-screen flex-col
-      overflow-hidden
-      bg-[#071c29]
-      text-[#e0f2fe]
-      font-sans antialiased
-    ">
+    <div className="min-h-screen w-full bg-[#0a2533] text-[#e0f2fe] flex flex-col font-sans antialiased">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 pt-6 pb-32">
 
-      <Toast
-        visible={toastVisible}
-        message={toastMessage}
-        type={toastType}
-      />
-
-      {/* CONTEÚDO PRINCIPAL */}
-      <main className="
-        flex-1 min-h-0
-        overflow-y-auto overflow-x-hidden
-        px-4 sm:px-6
-        pt-5 pb-28
-        scrollbar-thin
-      ">
-
-        <div className="mx-auto w-full max-w-xl space-y-5">
-
-          {/* CABEÇALHO DO PERFIL */}
-          {isLoading ? (
-            <div className="
-              flex items-center gap-3
-              rounded-2xl border border-white/[0.06]
-              bg-[#0e3041] p-4 animate-pulse
-            ">
-              <div className="h-14 w-14 rounded-full bg-white/10" />
-
+        {/* CABEÇALHO DA CONTA */}
+        {isLoading ? (
+          <div className="py-5 border-b border-cyan-500/10 animate-pulse">
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-full bg-[#144863]" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 w-36 rounded bg-white/10" />
-                <div className="h-3 w-48 rounded bg-white/10" />
+                <div className="h-4 bg-[#144863] rounded w-1/2" />
+                <div className="h-2.5 bg-[#144863]/70 rounded w-1/3" />
               </div>
             </div>
-          ) : (
-            <section className="
-              flex items-center justify-between gap-3
-              rounded-2xl
-              border border-cyan-400/10
-              bg-[#0e3041]
-              p-4
-            ">
 
-              <div className="flex min-w-0 items-center gap-3">
-
-                <div className="
-                  h-14 w-14 shrink-0 overflow-hidden
-                  rounded-full
-                  border border-cyan-400/20
-                  bg-[#123c50] p-1
-                ">
+            <div className="mt-5 pt-4 border-t border-cyan-500/10">
+              <div className="h-2.5 bg-[#144863] rounded w-24 mb-2" />
+              <div className="h-7 bg-[#144863] rounded w-32" />
+            </div>
+          </div>
+        ) : (
+          <section className="border-b border-cyan-500/10 pb-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-14 h-14 rounded-full border border-cyan-500/20 overflow-hidden bg-[#144863] p-1 shrink-0">
                   <img
                     src="/logo.png"
-                    alt="EMATEA"
-                    className="h-full w-full rounded-full object-contain"
+                    className="w-full h-full object-contain rounded-full"
+                    alt="Logo"
                   />
                 </div>
 
                 <div className="min-w-0">
-
                   <div className="flex items-center gap-1.5">
-
-                    <h1 className="
-                      truncate text-sm font-bold
-                      text-white
-                    ">
-                      {user?.fullName || user?.phone}
+                    <h1 className="text-base font-bold text-white uppercase truncate">
+                      {user?.fullName?.toUpperCase() ?? user?.phone}
                     </h1>
 
                     {kyc?.isVerified && (
                       <SealCheck
-                        size={17}
+                        size={15}
                         weight="fill"
-                        className="shrink-0 text-cyan-400"
+                        className="text-cyan-400 shrink-0"
                       />
                     )}
-
                   </div>
 
-                  <p className="
-                    mt-1 truncate text-xs
-                    text-cyan-100/50
-                  ">
-                    {user?.email || user?.phone}
+                  <p className="text-[11px] text-cyan-200/60 truncate mt-0.5">
+                    {user?.email}
                   </p>
 
-                  <button
-                    type="button"
-                    onClick={copyPublicId}
-                    className="
-                      mt-1.5 flex items-center gap-1.5
-                      text-[10px] font-medium
-                      text-cyan-300/70
-                      transition-colors
-                      hover:text-cyan-200
-                    "
-                  >
-                    ID: {user?.publicId || '---'}
-                    <Copy size={12} />
-                  </button>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-[10px] text-cyan-300/60 font-mono">
+                      ID: {user?.publicId}
+                    </span>
 
-                  {!kyc?.isVerified && kyc && (
                     <button
-                      type="button"
-                      onClick={() => navigate('/kyc')}
-                      className="
-                        mt-2 inline-flex items-center gap-1.5
-                        text-[10px] font-medium
-                        text-cyan-300/65
-                        transition-colors
-                        hover:text-cyan-200
-                      "
+                      onClick={() =>
+                        navigator.clipboard.writeText(user?.publicId ?? "")
+                      }
+                      className="text-cyan-300/45 hover:text-cyan-200 transition-colors cursor-pointer"
+                      aria-label="Copiar ID"
                     >
-                      <ShieldCheck size={12} weight="regular" />
-                      {kyc.status === 'PENDING'
-                        ? 'Verificação em análise'
-                        : kyc.status === 'REJECTED'
-                          ? 'Corrigir verificação'
-                          : 'Verificar conta'}
+                      <Copy size={12} weight="bold" />
                     </button>
-                  )}
-
+                  </div>
                 </div>
-
               </div>
 
-              <div className="flex shrink-0 flex-col items-end gap-2">
-
-                {!isAgent && !isAdmin ? (
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                {(rawRole === "USER" ||
+                  rawRole === "SUB_AGENT" ||
+                  !["AGENT", "ADMIN"].includes(rawRole)) && (
                   <button
-                    type="button"
-                    onClick={() => navigate('/settings')}
+                    onClick={() => navigate("/settings")}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-cyan-500/15 text-cyan-300 hover:text-white hover:bg-[#0e364a] transition-colors cursor-pointer"
+                    title="Configurações"
                     aria-label="Configurações"
-                    className="
-                      flex h-9 w-9 items-center justify-center
-                      rounded-xl
-                      border border-white/10
-                      bg-white/[0.04]
-                      text-cyan-200
-                      transition-colors
-                      hover:bg-white/10
-                    "
                   >
-                    <Gear size={19} weight="bold" />
+                    <Gear size={16} weight="bold" />
                   </button>
-                ) : (
-                  <AgentMenuButton
-                    onClick={() => setAgentMenuOpen(true)}
-                  />
                 )}
 
-                <span className={`
-                  rounded-full border px-2.5 py-1
-                  text-[9px] font-bold
-                  ${currentRoleBadge.className}
-                `}>
-                  {currentRoleBadge.label}
-                </span>
-
-              </div>
-
-            </section>
-          )}
-
-          {/* CARTÃO FINANCEIRO */}
-          {!isLoading && (
-            <section className="
-              relative overflow-hidden
-              rounded-2xl
-              border border-cyan-400/15
-              bg-gradient-to-br
-              from-[#12465a]
-              via-[#10374a]
-              to-[#0c293b]
-              p-5
-              shadow-xl shadow-black/10
-            ">
-
-              <div className="
-                pointer-events-none absolute
-                -right-16 -top-20
-                h-52 w-52 rounded-full
-                bg-cyan-400/[0.07] blur-3xl
-              " />
-
-              <div className="relative">
-
-                <div className="flex items-center gap-2">
-                  <Wallet
-                    size={17}
-                    weight="duotone"
-                    className="text-cyan-300"
-                  />
-
-                  <span className="
-                    text-[11px] font-semibold
-                    text-cyan-100/70
-                  ">
-                    Saldo disponível
-                  </span>
-                </div>
-
-                <div className="
-                  mt-3 flex items-center justify-between gap-2
-                ">
-
-                  <h2 className="
-                    text-3xl sm:text-4xl
-                    font-bold tracking-tight
-                    text-white
-                  ">
-                    {formatCurrencyAOA(user?.balance ?? 0)}
-                  </h2>
-
-                  {kyc?.isVerified && (
-                    <span className="
-                      flex items-center gap-1
-                      rounded-full bg-emerald-400/10
-                      px-2 py-1
-                      text-[9px] font-semibold
-                      text-emerald-300
-                    ">
-                      <CheckCircle size={12} weight="fill" />
-                      Verificada
-                    </span>
-                  )}
-
-                </div>
-
-                {/* COMISSÕES DO AGENTE */}
-                {isAgent && (
-                  <div className="
-                    mt-5 rounded-xl
-                    border border-emerald-400/15
-                    bg-emerald-400/[0.06]
-                    p-3
-                  ">
-
-                    <p className="
-                      text-[10px] font-semibold
-                      text-emerald-300/80
-                    ">
-                      Total histórico de comissões
-                    </p>
-
-                    <p className="
-                      mt-0.5 text-[9px]
-                      text-emerald-200/45
-                    ">
-                      Valor registado, não disponível para levantamento.
-                    </p>
-
-                    <p className="
-                      mt-1 text-xl font-bold
-                      text-emerald-300
-                    ">
-                      {formatCurrencyAOA(
-                        agentStats?.overview?.totalCommission ?? 0
-                      )}
-                    </p>
-
+                {(rawRole === "AGENT" || rawRole === "ADMIN") && (
+                  <div className="scale-90 origin-right">
+                    <AgentMenuButton
+                      onClick={() => setAgentMenuOpen(true)}
+                    />
                   </div>
                 )}
 
-                {/* AÇÕES FINANCEIRAS */}
-                <div className="
-                  mt-5 grid grid-cols-2 gap-3
-                ">
-
-                  <button
-                    type="button"
-                    onClick={() => navigate('/deposit')}
-                    className="
-                      flex h-12 items-center justify-center gap-2
-                      rounded-xl
-                      bg-cyan-500
-                      text-sm font-bold text-white
-                      shadow-lg shadow-cyan-950/20
-                      transition-all
-                      hover:bg-cyan-400
-                      active:scale-[0.98]
-                    "
-                  >
-                    <Wallet size={18} weight="bold" />
-                    Depositar
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => navigate('/withdraw')}
-                    className="
-                      flex h-12 items-center justify-center gap-2
-                      rounded-xl
-                      border border-white/15
-                      bg-white/[0.06]
-                      text-sm font-bold text-white
-                      transition-all
-                      hover:bg-white/10
-                      active:scale-[0.98]
-                    "
-                  >
-                    <ArrowDown size={18} weight="bold" />
-                    Levantar
-                  </button>
-
-                </div>
-
+                <span
+                  className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${currentRoleBadge.className}`}
+                >
+                  {currentRoleBadge.label}
+                </span>
               </div>
-
-            </section>
-          )}
-
-          {/* MENU DE OPERAÇÕES */}
-          <section>
-
-            <div className="mb-3 flex items-center justify-between">
-
-              <h2 className="
-                text-base font-bold text-white
-              ">
-                Minha conta
-              </h2>
-
-              <span className="
-                text-[10px] text-cyan-200/40
-              ">
-                EMATEA
-              </span>
-
             </div>
 
-            {isLoading ? (
-              <div className="
-                grid grid-cols-2 gap-3
-              ">
-                {Array.from({ length: 8 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="
-                      h-24 animate-pulse
-                      rounded-2xl
-                      border border-white/[0.05]
-                      bg-[#0e3041]
-                    "
-                  />
-                ))}
+            <div className="mt-5 pt-4 border-t border-cyan-500/10 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[8px] text-cyan-300/55 uppercase tracking-[0.16em] font-bold">
+                  Saldo disponível
+                </p>
+
+                <p className="text-3xl font-bold tracking-tight text-cyan-300 mt-1">
+                  {formatCurrencyAOA(user?.balance ?? 0)}
+                </p>
+
+                {rawRole === "AGENT" && (
+                  <div className="mt-3">
+                    <p className="text-[8px] text-emerald-300/70 uppercase tracking-[0.16em] font-bold">
+                      Comissão Acumulada
+                    </p>
+
+                    <p className="text-xl font-bold tracking-tight text-emerald-300 mt-1">
+                      {formatCurrencyAOA(agentStats?.overview?.totalCommission ?? 0)}
+                    </p>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="
-                grid grid-cols-2 gap-3
-              ">
 
-                <ProfileAction
-                  label="Transferir"
-                  description="Envio interno"
-                  icon={<PaperPlaneTilt size={22} weight="duotone" />}
-                  onClick={() => navigate('/transfer')}
-                  accent="cyan"
-                />
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => navigate("/deposit")}
+                  className="flex flex-col items-center gap-1 text-cyan-300 hover:text-white transition-colors cursor-pointer"
+                >
+                  <Wallet size={20} weight="bold" />
+                  <span className="text-[9px] uppercase tracking-wider">
+                    Depósito
+                  </span>
+                </button>
 
-                <ProfileAction
-                  label="Banco"
-                  description="Dados bancários"
-                  icon={<Bank size={22} weight="duotone" />}
-                  onClick={() => navigate('/bank')}
-                  accent="blue"
-                />
-
-                <ProfileAction
-                  label="Transações"
-                  description="Movimentos"
-                  icon={<ArrowsLeftRight size={22} weight="duotone" />}
-                  onClick={() => navigate('/transactions')}
-                  accent="violet"
-                />
-
-                <ProfileAction
-                  label="Presentes"
-                  description="Bónus"
-                  icon={<Gift size={22} weight="duotone" />}
-                  onClick={() => navigate('/gift')}
-                  accent="amber"
-                />
-
-                <ProfileAction
-                  label="Segurança"
-                  description="Proteção da conta"
-                  icon={<ShieldCheck size={22} weight="duotone" />}
-                  onClick={() => navigate('/security')}
-                  accent="emerald"
-                />
-
-                <ProfileAction
-                  label="Palavra-passe"
-                  description="Alterar senha"
-                  icon={<LockKey size={22} weight="duotone" />}
-                  onClick={() => navigate('/password')}
-                  accent="blue"
-                />
-
-                <ProfileAction
-                  label="EMATEA"
-                  description="Informações"
-                  icon={<Info size={22} weight="duotone" />}
-                  onClick={() => navigate('/about')}
-                  accent="cyan"
-                />
-
-                <ProfileAction
-                  label="Definições"
-                  description="Preferências"
-                  icon={<Gear size={22} weight="duotone" />}
-                  onClick={() => navigate('/settings')}
-                  accent="slate"
-                />
-
+                <button
+                  onClick={() => navigate("/withdraw")}
+                  className="flex flex-col items-center gap-1 text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
+                >
+                  <ArrowDown size={20} weight="bold" />
+                  <span className="text-[9px] uppercase tracking-wider">
+                    Saque
+                  </span>
+                </button>
               </div>
-            )}
+            </div>
 
-          </section>
-
-          {/* TERMINAR SESSÃO */}
-          {!isLoading && (
-            <section className="pt-2 pb-4">
-
+            {!kyc?.isVerified && (
               <button
-                type="button"
-                onClick={handleLogout}
-                className="
-                  flex h-12 w-full
-                  items-center justify-center gap-2
-                  rounded-xl
-                  border border-rose-400/15
-                  bg-rose-400/[0.05]
-                  text-xs font-bold
-                  text-rose-300
-                  transition-all
-                  hover:border-rose-400/30
-                  hover:bg-rose-400/10
-                  active:scale-[0.99]
-                "
+                onClick={() => navigate("/kyc")}
+                className="mt-4 text-[11px] font-bold uppercase tracking-wider text-rose-400 hover:text-rose-300 cursor-pointer"
               >
-                <SignOut size={17} weight="bold" />
-                Terminar sessão
+                {kyc?.status === "PENDING"
+                  ? "Conta em análise"
+                  : "Verificar conta"}
               </button>
+            )}
+          </section>
+        )}
 
-            </section>
+        {/* OPERAÇÕES DA CONTA */}
+        <section className="mt-7">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-400">
+                Conta
+              </p>
+
+              <h2 className="text-base font-semibold text-white mt-1">
+                Operações
+              </h2>
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="divide-y divide-cyan-500/10 border-y border-cyan-500/10">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="py-5 flex items-center gap-4 animate-pulse"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-[#144863]" />
+
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 bg-[#144863] rounded w-1/3" />
+                    <div className="h-2 bg-[#144863]/70 rounded w-1/5" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="divide-y divide-cyan-500/10 border-y border-cyan-500/10">
+              <SessionCard
+                label="Transferir"
+                sub="Envio interno"
+                icon={<PaperPlaneTilt size={19} weight="bold" />}
+                to="/transfer"
+              />
+
+              <SessionCard
+                label="Banco"
+                sub="Conta e dados"
+                icon={<Bank size={19} weight="bold" />}
+                to="/bank"
+              />
+
+              <SessionCard
+                label="Transações"
+                sub="Histórico"
+                icon={<ArrowsLeftRight size={19} weight="bold" />}
+                to="/transactions"
+              />
+
+              <SessionCard
+                label="Presente"
+                sub="Bônus"
+                icon={<Gift size={19} weight="bold" />}
+                to="/gift"
+              />
+
+              <SessionCard
+                label="Segurança"
+                sub="Proteção"
+                icon={<ShieldCheck size={19} weight="bold" />}
+                to="/security"
+              />
+
+              <SessionCard
+                label="Senha"
+                sub="Alterar senha"
+                icon={<LockKey size={19} weight="bold" />}
+                to="/password"
+              />
+
+              <SessionCard
+                label="EMATEA"
+                sub="Informações institucionais"
+                icon={<Info size={19} weight="bold" />}
+                to="/about"
+              />
+            </div>
           )}
+        </section>
 
-        </div>
+        {/* AJUDA E SUPORTE */}
+        <section className="mt-8">
+          <div className="mb-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-400">
+              Atendimento
+            </p>
 
-      </main>
+            <h2 className="text-base font-semibold text-white mt-1">
+              Ajuda e suporte
+            </h2>
 
-      {/* MENU DO AGENTE */}
+            <p className="text-[11px] text-cyan-200/55 mt-1">
+              Entre em contacto com a equipa EMATEA.
+            </p>
+          </div>
+
+          <div className="divide-y divide-cyan-500/10 border-y border-cyan-500/10">
+            {supportLoading ? (
+              <div className="py-5 flex items-center gap-3 text-cyan-200/50 text-xs">
+                <div className="w-4 h-4 rounded-full border-2 border-cyan-400/30 border-t-cyan-400 animate-spin" />
+                A carregar contactos de suporte...
+              </div>
+            ) : supportError ? (
+              <p className="py-5 text-xs text-rose-300">
+                Não foi possível carregar os contactos de suporte.
+              </p>
+            ) : (
+              <>
+                {whatsappUrl && (
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-4 flex items-center gap-4 hover:bg-[#0e364a]/55 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-emerald-400 bg-emerald-500/5 border border-emerald-500/10">
+                      <ChatCircle size={20} weight="bold" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-white">
+                        Atendimento WhatsApp
+                      </p>
+
+                      <p className="text-[10px] text-cyan-200/55 uppercase tracking-wider mt-0.5">
+                        Fale diretamente com o suporte
+                      </p>
+                    </div>
+
+                    <span className="text-cyan-300/35 text-sm">↗</span>
+                  </a>
+                )}
+
+                {whatsappGroupUrl && (
+                  <a
+                    href={whatsappGroupUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-4 flex items-center gap-4 hover:bg-[#0e364a]/55 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-cyan-300 bg-cyan-500/5 border border-cyan-500/10">
+                      <Users size={20} weight="bold" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-white">
+                        Comunidade EMATEA
+                      </p>
+
+                      <p className="text-[10px] text-cyan-200/55 uppercase tracking-wider mt-0.5">
+                        Entre no nosso grupo oficial
+                      </p>
+                    </div>
+
+                    <span className="text-cyan-300/35 text-sm">↗</span>
+                  </a>
+                )}
+
+                {!whatsappUrl && !whatsappGroupUrl && (
+                  <p className="py-5 text-xs text-cyan-200/50">
+                    Os contactos de suporte ainda não estão disponíveis.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        </section>
+
+        {/* TERMINAR SESSÃO */}
+        {!isLoading && (
+          <section className="mt-8 border-t border-cyan-500/10 pt-5">
+            <button
+              onClick={() => {
+                queryClient.clear()
+                localStorage.clear()
+                navigate("/login")
+              }}
+              className="w-full py-4 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-wider text-rose-400 hover:text-white border border-rose-500/20 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+            >
+              <SignOut size={15} weight="bold" />
+              Sair da conta
+            </button>
+          </section>
+        )}
+      </div>
+
       <AgentDrawer
         open={agentMenuOpen}
         onClose={() => setAgentMenuOpen(false)}
       >
-        <AgentSidebar
-          onClose={() => setAgentMenuOpen(false)}
-        />
+        <AgentSidebar onClose={() => setAgentMenuOpen(false)} />
       </AgentDrawer>
-
     </div>
   )
 }
 
-// =====================================================
-// COMPONENTE DE OPERAÇÃO
-// =====================================================
-
-function ProfileAction({
-  label,
-  description,
-  icon,
-  onClick,
-  accent = 'cyan',
-}: {
-  label: string
-  description: string
-  icon: React.ReactNode
-  onClick: () => void
-  accent?: string
-}) {
-
-  const accentClasses: Record<string, string> = {
-    cyan: 'text-cyan-300 bg-cyan-400/10 border-cyan-400/10',
-    blue: 'text-sky-300 bg-sky-400/10 border-sky-400/10',
-    violet: 'text-violet-300 bg-violet-400/10 border-violet-400/10',
-    amber: 'text-amber-300 bg-amber-400/10 border-amber-400/10',
-    emerald: 'text-emerald-300 bg-emerald-400/10 border-emerald-400/10',
-    slate: 'text-slate-300 bg-slate-400/10 border-slate-400/10',
-  }
+function SessionCard({ label, sub, icon, to }: any) {
+  const navigate = useNavigate()
 
   return (
     <button
-      type="button"
-      onClick={onClick}
-      className="
-        flex min-h-[104px] flex-col
-        items-start justify-between
-        rounded-2xl
-        border border-white/[0.07]
-        bg-[#0e3041]
-        p-3.5
-        text-left
-        transition-all
-        hover:border-cyan-400/20
-        hover:bg-[#123b4f]
-        active:scale-[0.98]
-      "
+      onClick={() => navigate(to)}
+      className="w-full py-4 flex items-center gap-4 text-left hover:bg-[#0e364a]/55 transition-colors cursor-pointer"
     >
-
-      <div className={`
-        flex h-10 w-10
-        items-center justify-center
-        rounded-xl border
-        ${accentClasses[accent] || accentClasses.cyan}
-      `}>
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-cyan-300 bg-cyan-500/5 border border-cyan-500/10">
         {icon}
       </div>
 
-      <div className="mt-3 min-w-0">
-
-        <p className="
-          truncate text-xs font-bold
-          text-white
-        ">
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-white">
           {label}
         </p>
 
-        <p className="
-          mt-1 truncate text-[10px]
-          text-cyan-100/45
-        ">
-          {description}
+        <p className="text-[10px] text-cyan-200/55 uppercase tracking-wider mt-0.5">
+          {sub}
         </p>
-
       </div>
 
+      <span className="text-cyan-300/35 text-sm">›</span>
     </button>
   )
 }

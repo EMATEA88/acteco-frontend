@@ -1,188 +1,210 @@
+
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { 
-  ArrowLeft, 
-  ClockCounterClockwise, 
-  CheckCircle, 
-  HourglassMedium, 
-  XCircle, 
-  Bank, 
+import {
+  ClockCounterClockwise,
+  CheckCircle,
+  HourglassMedium,
+  XCircle,
+  Bank,
   CurrencyCircleDollar,
-  CalendarBlank
 } from '@phosphor-icons/react'
+
 import { RechargeService } from '../services/recharge.service'
 import type { RechargeHistory } from '../services/recharge.service'
 
 export default function RechargeHistory() {
+  const navigate = useNavigate()
 
   const [items, setItems] = useState<RechargeHistory[]>([])
   const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
 
   useEffect(() => {
+    let mounted = true
+
     async function load() {
       try {
         const res = await RechargeService.myHistory()
 
-        // Resposta já é array direto
-        setItems(res as RechargeHistory[])
-
+        if (mounted) {
+          setItems(res as RechargeHistory[])
+        }
       } catch (error) {
-        console.error("Erro ao carregar histórico:", error)
+        console.error('Erro ao carregar histórico:', error)
       } finally {
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+        }
       }
     }
 
     load()
+
+    return () => {
+      mounted = false
+    }
   }, [])
 
   function getStatusMeta(status: string) {
     switch (status) {
       case 'APPROVED':
         return {
-          label: 'Sucesso',
+          label: 'Concluído',
           color: 'text-emerald-400',
-          bg: 'bg-emerald-500/10',
+          background: 'bg-emerald-500/10',
           border: 'border-emerald-500/20',
-          icon: <CheckCircle size={16} weight="duotone" />
+          icon: <CheckCircle size={15} weight="fill" />,
         }
+
       case 'PENDING':
         return {
-          label: 'Em análise',
+          label: 'Pendente',
           color: 'text-amber-400',
-          bg: 'bg-amber-500/10',
+          background: 'bg-amber-500/10',
           border: 'border-amber-500/20',
-          icon: <HourglassMedium size={16} weight="duotone" />
+          icon: <HourglassMedium size={15} weight="fill" />,
         }
+
       case 'REJECTED':
         return {
           label: 'Rejeitado',
           color: 'text-red-400',
-          bg: 'bg-red-500/10',
+          background: 'bg-red-500/10',
           border: 'border-red-500/20',
-          icon: <XCircle size={16} weight="duotone" />
+          icon: <XCircle size={15} weight="fill" />,
         }
+
       default:
         return {
           label: status,
-          color: 'text-cyan-200/70',
-          bg: 'bg-cyan-500/5',
-          border: 'border-cyan-500/10',
-          icon: <ClockCounterClockwise size={16} />
+          color: 'text-[#A9C4CF]',
+          background: 'bg-white/5',
+          border: 'border-white/10',
+          icon: <ClockCounterClockwise size={15} />,
         }
     }
   }
 
+  function formatAmount(amount: number | string) {
+    return Number(amount).toLocaleString('pt-AO', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  }
+
+  function formatDate(date: string | Date) {
+    return new Date(date).toLocaleDateString('pt-AO', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
+  }
+
   return (
-    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe] font-sans selection:bg-cyan-500/30">
+    <div className="min-h-screen bg-[#0a2533] px-4 py-6 pb-10 text-[#e0f2fe] font-sans sm:px-6">
 
-      {/* BACKGROUND GLOW */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/[0.06] rounded-full filter blur-[120px] pointer-events-none"></div>
+      <main className="mx-auto w-full max-w-xl">
 
-      {/* HEADER */}
-      <div className="sticky top-0 z-20 bg-[#0a2533]/90 backdrop-blur-xl border-b border-cyan-500/10 px-6 py-5">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => navigate(-1)} 
-            className="p-2.5 bg-[#0e364a] border border-cyan-500/25 rounded-full text-cyan-300 hover:bg-[#124158] hover:text-white transition-all cursor-pointer shadow-sm"
-          >
-            <ArrowLeft size={20} weight="bold" />
-          </button>
-
-          <div>
-            <h1 className="text-xl font-black tracking-tighter uppercase font-mono text-white">Depósitos</h1>
-            <p className="text-[10px] font-mono text-cyan-200/70 uppercase tracking-[0.2em]">
-              Histórico de Recargas
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* CONTENT */}
-      <div className="px-6 py-6 pb-28 max-w-2xl mx-auto relative z-10">
-
+        {/* LOADING */}
         {loading ? (
-          <div className="space-y-4">
+          <div className="space-y-3 animate-pulse">
             {[1, 2, 3].map(i => (
-              <div 
-                key={i} 
-                className="h-24 w-full bg-[#0e364a] rounded-[2rem] animate-pulse border border-cyan-500/10 shadow-xl" 
+              <div
+                key={i}
+                className="h-24 rounded-xl border border-[#24566A] bg-[#103647]"
               />
             ))}
           </div>
-
         ) : items.length === 0 ? (
 
-          <div className="bg-[#0e364a] border border-cyan-500/20 rounded-[2rem] p-12 text-center shadow-xl">
-            <div className="w-14 h-14 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center mx-auto mb-4 text-cyan-400 shadow-inner">
-              <ClockCounterClockwise size={28} weight="duotone" />
+          /* EMPTY STATE */
+          <div className="rounded-2xl border border-[#24566A] bg-[#103647] px-6 py-12 text-center">
+
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#0A2533] text-[#19C5CE]">
+              <ClockCounterClockwise size={25} weight="regular" />
             </div>
 
-            <p className="text-xs font-mono text-cyan-200/70 uppercase tracking-[0.2em] leading-loose">
-              Sem registros de recarga <br/> no momento
+            <h2 className="text-sm font-semibold text-white">
+              Sem movimentos
+            </h2>
+
+            <p className="mt-1 text-xs text-[#A9C4CF]">
+              O seu histórico de depósitos aparecerá aqui.
             </p>
+
           </div>
 
         ) : (
 
-          <div className="space-y-4">
-            {items.map((item) => {
+          /* HISTORY */
+          <div className="space-y-3">
 
+            {items.map(item => {
               const meta = getStatusMeta(item.status)
               const isCrypto = item.currency === 'USDT'
 
               return (
-                <div 
-                  key={item.id} 
-                  className="bg-[#0e364a] hover:bg-[#124158] border border-cyan-500/20 hover:border-cyan-400/50 p-5 rounded-[2rem] flex items-center gap-4 transition-all duration-300 shadow-xl shadow-cyan-950/20"
+                <article
+                  key={item.id}
+                  className="rounded-xl border border-[#24566A] bg-[#103647] p-4 transition-colors hover:border-[#32758A]"
                 >
 
-                  {/* ICON */}
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border shadow-inner ${
-                    isCrypto 
-                      ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30' 
-                      : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                  }`}>
-                    {isCrypto 
-                      ? <CurrencyCircleDollar size={22} weight="duotone" /> 
-                      : <Bank size={22} weight="duotone" />
-                    }
-                  </div>
+                  <div className="flex items-center gap-3">
 
-                  {/* INFO */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
+                    {/* ICON */}
+                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+                      isCrypto
+                        ? 'bg-cyan-500/10 text-cyan-400'
+                        : 'bg-[#0A2533] text-[#19C5CE]'
+                    }`}>
+                      {isCrypto ? (
+                        <CurrencyCircleDollar size={22} weight="regular" />
+                      ) : (
+                        <Bank size={22} weight="regular" />
+                      )}
+                    </div>
 
-                      <div>
-                        <p className={`text-base font-mono font-black tracking-tight ${
-                          isCrypto ? 'text-white' : 'text-emerald-400'
-                        }`}>
-                          {Number(item.amount).toLocaleString()} {item.currency || (isCrypto ? 'USDT' : 'AOA')}
-                        </p>
+                    {/* DETAILS */}
+                    <div className="min-w-0 flex-1">
 
-                        <div className="flex items-center gap-1.5 mt-1 text-cyan-200/70">
-                          <CalendarBlank size={13} weight="duotone" className="text-cyan-300/70" />
-                          <span className="text-[11px] font-mono font-medium uppercase tracking-wider">
-                            {new Date(item.createdAt).toLocaleDateString('pt-AO')}
-                          </span>
-                        </div>
-                      </div>
+                      <p className="text-base font-semibold tracking-tight text-white">
+                        {formatAmount(item.amount)}{' '}
+                        <span className="text-xs font-medium text-[#19C5CE]">
+                          {item.currency || 'AOA'}
+                        </span>
+                      </p>
 
-                      {/* STATUS */}
-                      <div className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-[10px] font-black font-mono uppercase tracking-wider border shadow-sm ${meta.bg} ${meta.color} ${meta.border}`}>
-                        {meta.icon}
-                        {meta.label}
-                      </div>
+                      <p className="mt-1 text-xs text-[#A9C4CF]">
+                        {formatDate(item.createdAt)}
+                      </p>
 
                     </div>
+
+                    {/* STATUS */}
+                    <div className={`flex shrink-0 items-center gap-1.5 rounded-lg border px-2 py-1.5 text-[10px] font-medium ${meta.color} ${meta.background} ${meta.border}`}>
+                      {meta.icon}
+                      <span>{meta.label}</span>
+                    </div>
+
                   </div>
-                </div>
+
+                </article>
               )
             })}
+
           </div>
         )}
-      </div>
+
+        {/* BACK BUTTON */}
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="mt-5 h-12 w-full rounded-xl border border-[#2A6073] bg-[#103647] px-6 text-sm font-semibold text-[#D8EAF0] transition-colors hover:bg-[#16465A] focus:outline-none focus:ring-2 focus:ring-[#19C5CE]/50"
+        >
+          Voltar
+        </button>
+
+      </main>
     </div>
   )
 }

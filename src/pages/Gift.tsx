@@ -1,26 +1,42 @@
-import { useEffect, useState } from 'react'
-import { GiftService } from '../services/gift.service'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import {
   Gift,
+  Info,
   Ticket,
-  ArrowLeft,
-  CheckCircle,
-  WarningCircle
-} from '@phosphor-icons/react'
-import Toast from '../components/ui/Toast'
+} from "@phosphor-icons/react"
+
+import { GiftService } from "../services/gift.service"
+import Toast from "../components/ui/Toast"
+
+type ToastType = "success" | "error"
+
+const primaryButtonClass =
+  "flex min-h-14 w-full items-center justify-center rounded-xl bg-[#079CB3] px-5 text-[15px] font-semibold text-white transition-colors hover:bg-[#0BACC2] active:bg-[#07899D] disabled:cursor-not-allowed disabled:bg-[#315365] disabled:text-[#91A9B4]"
+
+const secondaryButtonClass =
+  "flex min-h-14 w-full items-center justify-center rounded-xl border border-[#315365] bg-[#102F3D] px-5 text-[15px] font-semibold text-[#D8E8EE] transition-colors hover:bg-[#153B4B] active:bg-[#1A4658]"
+
+const inputClass =
+  "h-14 w-full rounded-xl border border-[#24566A] bg-[#0A2533] px-4 pl-12 text-[16px] font-semibold uppercase tracking-[0.08em] text-white outline-none transition-colors placeholder:font-normal placeholder:tracking-normal placeholder:text-[#7696A5] focus:border-[#19C5CE] focus:ring-1 focus:ring-[#19C5CE] disabled:cursor-not-allowed disabled:opacity-60"
 
 export default function GiftPage() {
   const navigate = useNavigate()
 
-  const [code, setCode] = useState('')
+  const [code, setCode] = useState("")
   const [loading, setLoading] = useState(false)
 
   const [toastVisible, setToastVisible] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
-  const [toastType, setToastType] = useState<'success' | 'error'>('error')
+  const [toastMessage, setToastMessage] = useState("")
+  const [toastType, setToastType] = useState<ToastType>("error")
 
   const isValid = code.trim().length > 0
+
+  function showToast(message: string, type: ToastType = "error") {
+    setToastMessage(message)
+    setToastType(type)
+    setToastVisible(true)
+  }
 
   async function redeem() {
     if (!isValid || loading) return
@@ -28,17 +44,20 @@ export default function GiftPage() {
     try {
       setLoading(true)
 
-      const res = await GiftService.redeem(code.trim())
+      const response = await GiftService.redeem(code.trim())
 
-      setToastType('success')
-      setToastMessage(`Recebeu ${res.data.amount} Kz`)
-      setToastVisible(true)
+      showToast(
+        `Código resgatado. Valor recebido: ${response.data.amount} Kz`,
+        "success"
+      )
 
-      setCode('')
-    } catch (e: any) {
-      setToastType('error')
-      setToastMessage(e.response?.data?.error || 'Código inválido')
-      setToastVisible(true)
+      setCode("")
+    } catch (error: any) {
+      showToast(
+        error?.response?.data?.error ??
+          error?.response?.data?.message ??
+          "Não foi possível resgatar o código."
+      )
     } finally {
       setLoading(false)
     }
@@ -46,104 +65,127 @@ export default function GiftPage() {
 
   useEffect(() => {
     if (!toastVisible) return
-    const t = setTimeout(() => setToastVisible(false), 3000)
-    return () => clearTimeout(t)
-  }, [toastVisible])
+
+    const timer = window.setTimeout(() => {
+      setToastVisible(false)
+    }, 3500)
+
+    return () => window.clearTimeout(timer)
+  }, [toastVisible, toastMessage])
+
+  function handleCodeChange(value: string) {
+    // Mantém o formato do código uniforme sem alterar o valor enviado ao serviço.
+    setCode(value.toUpperCase().replace(/\s/g, ""))
+  }
 
   return (
-    <div className="min-h-screen bg-[#0a2533] text-[#e0f2fe]">
+    <main className="min-h-screen bg-[#0A2533] px-4 py-6 text-white sm:px-6 sm:py-10">
+      <Toast
+        visible={toastVisible}
+        message={toastMessage}
+        type={toastType}
+      />
 
-      <Toast visible={toastVisible} message={toastMessage} type={toastType} />
+      <div className="mx-auto w-full max-w-[460px]">
+        <header className="mb-7">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#19C5CE]">
+          </p>
+          <h1 className="mt-2 text-[25px] font-semibold tracking-tight text-white">
+            Resgatar presente
+          </h1>
+        </header>
 
-      {/* HEADER */}
-      <header className="sticky top-0 z-50 bg-[#0a2533]/90 backdrop-blur border-b border-cyan-500/10">
-        <div className="max-w-xl mx-auto flex items-center gap-4 px-5 py-4">
-
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 bg-[#0e364a] border border-cyan-500/20 rounded-full text-cyan-300 hover:bg-[#124158] hover:text-white transition-all cursor-pointer shadow-sm"
-          >
-            <ArrowLeft size={18} />
-          </button>
-
-          <h1 className="text-base font-bold text-white font-mono uppercase tracking-wider">Presentes</h1>
-        </div>
-      </header>
-
-      <main className="max-w-xl mx-auto px-5 py-6 pb-28 space-y-6">
-
-        {/* CARD PRINCIPAL */}
-        <div className="bg-[#0e364a] border border-cyan-500/20 rounded-2xl p-4 space-y-4 shadow-lg shadow-cyan-950/20">
-
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center">
-              <Gift size={18} className="text-cyan-400" />
+        <section className="overflow-hidden rounded-2xl border border-[#24566A] bg-[#103647] shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+          <div className="flex items-center gap-3 border-b border-[#24566A] px-5 py-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#079CB3]/15 text-[#19C5CE]">
+              <Gift size={23} weight="duotone" />
             </div>
 
-            <div>
-              <p className="text-sm font-semibold text-white">Resgatar código</p>
-              <p className="text-[11px] text-cyan-200/70 font-mono">
-                Introduza o código recebido
+            <div className="min-w-0 flex-1">
+              <h2 className="text-[15px] font-semibold text-white">
+                Código de presente
+              </h2>
+              <p className="mt-0.5 text-[12px] text-[#A9C4CF]">
+                Introduza o código para resgatar o valor
               </p>
             </div>
           </div>
 
-          {/* INPUT */}
-          <div className="space-y-1">
-            <label className="text-[10px] text-cyan-200/60 uppercase font-mono">
-              Código
-            </label>
+          <div className="space-y-5 p-5 sm:p-6">
+            <div>
+              <label
+                htmlFor="gift-code"
+                className="mb-2 block text-[14px] font-medium text-[#E5F0F4]"
+              >
+                Código
+              </label>
 
-            <div className="relative">
-              <Ticket size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-cyan-200/60" />
+              <div className="relative">
+                <Ticket
+                  size={19}
+                  weight="regular"
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8FB4C2]"
+                />
 
-              <input
-                value={code}
-                onChange={e => setCode(e.target.value.toUpperCase())}
-                placeholder="EMT-XXXX"
-                className="
-                  w-full h-11 rounded-xl
-                  bg-[#0a2533]
-                  border border-cyan-500/20
-                  pl-9 pr-3 text-sm text-white
-                  outline-none placeholder:text-cyan-200/30
-                  focus:border-cyan-400/50
-                  font-mono
-                "
-              />
+                <input
+                  id="gift-code"
+                  type="text"
+                  autoComplete="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  value={code}
+                  onChange={event => handleCodeChange(event.target.value)}
+                  onKeyDown={event => {
+                    if (event.key === "Enter" && isValid && !loading) {
+                      void redeem()
+                    }
+                  }}
+                  placeholder="EMT-XXXX"
+                  disabled={loading}
+                  className={inputClass}
+                />
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => void redeem()}
+              disabled={!isValid || loading}
+              className={primaryButtonClass}
+            >
+              {loading ? (
+                <>
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  A processar
+                </>
+              ) : (
+                "Resgatar código"
+              )}
+            </button>
           </div>
+        </section>
 
-          {/* BUTTON */}
-          <button
-            onClick={redeem}
-            disabled={!isValid || loading}
-            className={`w-full h-11 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 font-mono uppercase tracking-wider cursor-pointer shadow-md
-              ${!isValid
-                ? 'bg-[#0a2533] border border-cyan-500/10 text-cyan-200/40 cursor-not-allowed'
-                : 'bg-cyan-600 text-white hover:bg-cyan-500 shadow-cyan-950/20'
-              }
-            `}
-          >
-            {loading ? 'Processando...' : (
-              <>
-                Resgatar
-                <CheckCircle size={16} />
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* ALERTA */}
-        <div className="bg-[#0e364a] border border-cyan-500/20 rounded-2xl p-4 flex gap-3 shadow-md shadow-cyan-950/10">
-          <WarningCircle size={16} className="text-cyan-400 mt-0.5 shrink-0" />
-
-          <p className="text-[11px] text-cyan-200/80 font-mono">
-            Código é de uso único. Nunca partilhe com terceiros.
+        <div className="mt-4 flex items-start gap-3 rounded-xl border border-[#24566A] bg-[#103647]/65 px-4 py-3.5">
+          <Info
+            size={19}
+            weight="regular"
+            className="mt-0.5 shrink-0 text-[#19C5CE]"
+          />
+          <p className="text-[12px] leading-5 text-[#A9C4CF]">
+            Cada código pode ser utilizado uma única vez. Mantenha-o privado e
+            não o partilhe com terceiros.
           </p>
         </div>
 
-      </main>
-    </div>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          disabled={loading}
+          className={`${secondaryButtonClass} mt-5`}
+        >
+          Voltar
+        </button>
+      </div>
+    </main>
   )
 }

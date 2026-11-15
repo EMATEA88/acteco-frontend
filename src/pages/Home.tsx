@@ -1,59 +1,50 @@
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Headset, Users, X, MessageCircle } from "lucide-react"
 import Carousel from "./Carousel"
 import { purchaseService } from "../services/purchase.service"
 import type { CatalogCategory, CatalogProvider } from "../types/catalog"
 import { getLogo } from "../utils/getLogo"
 import { providerBranding } from "../config/recharge-branding"
 
-const WHATSAPP_MANAGER = "https://wa.me/244928270636"
-const WHATSAPP_GROUP = "https://chat.whatsapp.com/CaiU4nncaaa7vUnzO6HTzB?mode=gi_t"
-
 const getProviderLogoPath = (provider: CatalogProvider) => {
-  // 1. Procurar pelo código do provedor
   if (provider.code) {
-    const cleanCode = provider.code
-      .toUpperCase()
-      .replace(/\s+/g, "");
+    const cleanCode = provider.code.toUpperCase().replace(/\s+/g, "")
 
     if (providerBranding[cleanCode]) {
-      return providerBranding[cleanCode].logo;
+      return providerBranding[cleanCode].logo
     }
   }
 
-  // 2. Procurar pelo nome sem espaços
   if (provider.name) {
-    const cleanName = provider.name
-      .toUpperCase()
-      .replace(/\s+/g, "");
+    const cleanName = provider.name.toUpperCase().replace(/\s+/g, "")
 
     if (providerBranding[cleanName]) {
-      return providerBranding[cleanName].logo;
+      return providerBranding[cleanName].logo
     }
 
-    // 3. Procurar pelo nome exato
     if (providerBranding[provider.name]) {
-      return providerBranding[provider.name].logo;
+      return providerBranding[provider.name].logo
     }
   }
 
-  return undefined;
-};
+  return undefined
+}
 
-// Função para formatar o nome do provedor de apostas específico para exibição
+// Formata os nomes dos provedores para apresentação no catálogo.
 const getDisplayName = (name: string) => {
-  const upper = name.toUpperCase().trim();
-  if (upper === "AFRIBET" || upper === "ABET") return "Afri Bet";
-  if (upper === "PREMIERBET" || upper === "PBET") return "Premier Bet";
-  if (upper === "BANTUBET" || upper === "BBET") return "Bantu Bet";
-  if (upper === "ELEPHANTBET" || upper === "EBET") return "Elephant Bet";
-  return name;
-};
+  const upper = name.toUpperCase().trim()
+
+  if (upper === "AFRIBET" || upper === "ABET") return "Afri Bet"
+  if (upper === "PREMIERBET" || upper === "PBET") return "Premier Bet"
+  if (upper === "BANTUBET" || upper === "BBET") return "Bantu Bet"
+  if (upper === "ELEPHANTBET" || upper === "EBET") return "Elephant Bet"
+
+  return name
+}
 
 export default function Home() {
-  const navigate = useNavigate();
-  const [supportOpen, setSupportOpen] = useState(false)
+  const navigate = useNavigate()
+
   const [catalog, setCatalog] = useState<CatalogCategory[]>([])
   const [loadingCatalog, setLoadingCatalog] = useState(true)
 
@@ -74,58 +65,30 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#0a2533] text-[#e0f2fe] flex flex-col fixed inset-0 font-sans antialiased selection:bg-cyan-500/20">
-
-      {/* HEADER LIMPO E PROFISSIONAL (FIXO NO TOPO) */}
-      <div className="px-5 pt-4 pb-5 flex items-center justify-between border-b border-cyan-500/10 bg-[#0a2533]/90 backdrop-blur-md shrink-0 z-50">
-        <div>
-          <h1 className="text-xl font-black tracking-wider text-white">
-            EMATEA
-          </h1>
-        </div>
-
-        {/* BOTÃO SUPORTE COM DESIGN PREMIUM */}
-        <button
-          onClick={() => setSupportOpen(true)}
-          className="
-            h-9 px-4 rounded-xl
-            bg-[#0e364a] border border-cyan-500/20
-            text-white text-xs font-bold
-            flex items-center gap-2
-            hover:bg-[#124158] hover:border-cyan-400/50
-            transition-all duration-200 shadow-sm cursor-pointer
-          "
-        >
-          <Headset
-            size={18}
-            className="text-cyan-400"
-            strokeWidth={2.5}
-        />
-        </button>
-      </div>
-
-      {/* ÁREA DE CONTEÚDO COM SCROLL REAL E ESTÁVEL */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 pt-5 pb-32 max-w-4xl mx-auto w-full">
-        
-        {/* CARROSSEL PRINCIPAL */}
-        <div className="mb-8">
+    <div className="fixed inset-0 flex h-screen w-screen flex-col overflow-hidden bg-[#0a2533] font-sans text-[#e0f2fe] antialiased selection:bg-cyan-500/20">
+      {/* Conteúdo principal */}
+      <main className="mx-auto w-full max-w-4xl flex-1 overflow-y-auto overflow-x-hidden px-4 pb-32 pt-3 sm:px-5 sm:pt-4">
+        {/* Carrossel principal */}
+        <div className="mb-7 h-[190px] w-full overflow-hidden rounded-xl [&>*]:!h-full">
           <Carousel />
         </div>
 
-        {/* SECÇÕES DE SERVIÇOS DINÂMICOS */}
+        {/* Catálogo de serviços */}
         <div className="space-y-8">
           {loadingCatalog ? (
-            /* SKELETON LOADER */
-            <div className="space-y-6 animate-pulse">
+            <div className="animate-pulse space-y-6">
               {[1, 2].map((sectionIndex) => (
                 <div key={sectionIndex} className="space-y-3">
-                  <div className="w-28 h-3.5 bg-[#0e364a] rounded-md border border-cyan-500/20"></div>
+                  <div className="h-3.5 w-28 rounded-md border border-cyan-500/20 bg-[#0e364a]" />
 
                   <div className="grid grid-cols-4 gap-3 sm:gap-4">
                     {[1, 2, 3, 4].map((itemIndex) => (
-                      <div key={itemIndex} className="flex flex-col items-center space-y-2">
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#0e364a] border border-cyan-500/20 shadow-md"></div>
-                        <div className="w-12 h-2.5 bg-[#0e364a] rounded-sm"></div>
+                      <div
+                        key={itemIndex}
+                        className="flex flex-col items-center space-y-2"
+                      >
+                        <div className="h-16 w-16 rounded-full border border-cyan-500/20 bg-[#0e364a] shadow-md sm:h-20 sm:w-20" />
+                        <div className="h-2.5 w-12 rounded-sm bg-[#0e364a]" />
                       </div>
                     ))}
                   </div>
@@ -133,112 +96,63 @@ export default function Home() {
               ))}
             </div>
           ) : catalog.length === 0 ? (
-            <div className="text-center py-10 text-cyan-200/70 text-xs font-mono">
+            <div className="py-10 text-center text-xs text-cyan-200/70">
               Nenhum serviço disponível no momento.
             </div>
           ) : (
             catalog.map((category) => (
-              <div key={category.id}>
+              <section key={category.id}>
                 <SectionTitle title={category.name} />
-                
+
                 <div className="grid grid-cols-4 gap-3 sm:gap-4">
-                  {category.providers && category.providers.map((provider) => {
-                    const logoFilename = getProviderLogoPath(provider);
-                    const logo = getLogo(logoFilename);
-                    const displayName = getDisplayName(provider.name);
+                  {category.providers?.map((provider) => {
+                    const logoFilename = getProviderLogoPath(provider)
+                    const logo = getLogo(logoFilename)
+                    const displayName = getDisplayName(provider.name)
 
                     return (
-                      <div 
+                      <button
                         key={provider.id}
-                        onClick={() => {
-                          navigate(`/recharges/${provider.code}`);
-                        }}
-                        className="flex flex-col items-center group cursor-pointer"
+                        type="button"
+                        onClick={() => navigate(`/recharges/${provider.code}`)}
+                        aria-label={`Abrir ${displayName}`}
+                        className="group flex min-w-0 cursor-pointer flex-col items-center"
                       >
-                        {/* Círculo do Logótipo */}
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#0e364a] border border-cyan-500/20 p-1 flex items-center justify-center shadow-lg group-hover:border-cyan-400/50 group-hover:bg-[#124158] group-hover:scale-105 transition-all duration-200">
-                          <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-[#144863] p-1.5 shadow-sm">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-cyan-500/20 bg-[#0e364a] p-1 shadow-lg transition-all duration-200 group-hover:scale-105 group-hover:border-cyan-400/50 group-hover:bg-[#124158] sm:h-20 sm:w-20">
+                          <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#144863] p-1.5 shadow-sm">
                             {logo ? (
-                              <img 
-                                src={logo} 
+                              <img
+                                src={logo}
                                 alt={displayName}
-                                className="w-full h-full object-cover rounded-full opacity-90 group-hover:opacity-100 transition-opacity"
+                                className="h-full w-full rounded-full object-cover opacity-90 transition-opacity group-hover:opacity-100"
                               />
                             ) : (
-                              <span className="text-[10px] font-bold text-white uppercase text-center px-1">
+                              <span className="px-1 text-center text-[10px] font-bold uppercase text-white">
                                 {displayName}
                               </span>
                             )}
                           </div>
                         </div>
-                        {/* Nome do Provedor */}
-                        <span className="text-[11px] sm:text-xs font-medium text-cyan-200/80 mt-2 text-center tracking-wide group-hover:text-white transition-colors truncate w-full">
+
+                        <span className="mt-2 w-full truncate text-center text-[11px] font-medium tracking-wide text-cyan-200/80 transition-colors group-hover:text-white sm:text-xs">
                           {displayName}
                         </span>
-                      </div>
+                      </button>
                     )
                   })}
                 </div>
-              </div>
+              </section>
             ))
           )}
         </div>
-
-      </div>
-
-      {/* MODAL SUPORTE */}
-      {supportOpen && (
-        <div
-          onClick={() => setSupportOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm p-6 rounded-3xl bg-[#0e364a] border border-cyan-500/20 shadow-2xl relative shadow-cyan-950/40"
-          >
-            <button
-              onClick={() => setSupportOpen(false)}
-              className="absolute top-4 right-4 text-cyan-200/70 hover:text-white transition cursor-pointer"
-            >
-              <X size={20}/>
-            </button>
-
-            <h2 className="text-base font-black text-white mb-6 text-center uppercase tracking-widest font-mono">
-              Centro de Apoio
-            </h2>
-
-            <div className="space-y-4">
-              <a
-                href={WHATSAPP_MANAGER}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full h-12 rounded-xl bg-cyan-600 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-cyan-500 transition-all shadow-md shadow-cyan-950/20 cursor-pointer"
-              >
-                <MessageCircle size={18} strokeWidth={2.5} />
-                Falar com Operadora
-              </a>
-
-              <a
-                href={WHATSAPP_GROUP}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full h-12 rounded-xl bg-[#0a2533] border border-cyan-500/20 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#124158] hover:border-cyan-400/50 transition-all shadow-md shadow-cyan-950/20 cursor-pointer"
-              >
-                <Users size={18} strokeWidth={2.5} />
-                Entrar no Grupo
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-
+      </main>
     </div>
   )
 }
 
 function SectionTitle({ title }: { title: string }) {
   return (
-    <h2 className="text-xs tracking-widest text-cyan-200/80 mb-4 uppercase font-mono font-black border-l-2 border-cyan-400 pl-3">
+    <h2 className="mb-4 border-l-2 border-cyan-400 pl-3 text-xs font-black uppercase tracking-widest text-cyan-200/80">
       {title}
     </h2>
   )

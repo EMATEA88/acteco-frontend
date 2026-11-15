@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import {
-  ArrowLeft,
   BriefcaseBusiness,
   Check,
   Eye,
@@ -271,22 +270,13 @@ export default function Register() {
     }
   }
   const titles = [
-    "Selecione o tipo de conta que deseja criar.",
+    "Deseja ser um Agente ou Cliente?",
     "Qual é o seu nome completo?",
     "Qual é o seu número de telefone?",
     "Crie a sua palavra-passe.",
     "Confirme a sua palavra-passe.",
     "Qual é o seu endereço de email?",
     "Verificação de email",
-  ]
-  const descriptions = [
-    "Escolha como pretende utilizar a plataforma EMATEA.",
-    "Introduza o nome que será associado à sua conta.",
-    "Introduza o seu número de telemóvel.",
-    "Defina uma palavra-passe para proteger a sua conta.",
-    "Introduza novamente a palavra-passe.",
-    "Utilizaremos este endereço para confirmar a sua conta.",
-    "Introduza o código de seis dígitos que enviámos para o seu email.",
   ]
   const isPasswordStep = step === 3 || step === 4
   return (
@@ -310,13 +300,17 @@ export default function Register() {
           <h1 className="mt-3 text-xl font-bold tracking-wide text-white">
             EMATEA
           </h1>
-          <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-[#8BDCE8]">
-          </p>
         </header>
-        {/* CARTÃO PRINCIPAL */}
-        <section className="w-full rounded-[22px] sm:rounded-[26px] border border-[#24566A] bg-[#0E364A] px-4 py-5 sm:px-8 sm:py-8 shadow-xl shadow-black/10">
+        {/* TÍTULO DA ETAPA — SEM SUBTÍTULO */}
+        <div className="mb-4 px-1">
+          <h2 className="text-center text-[22px] leading-snug font-semibold tracking-tight text-white sm:text-[24px]">
+            {titles[step]}
+          </h2>
+        </div>
+        {/* CARTÃO COMPACTO */}
+        <section className="flex min-h-[250px] w-full flex-col rounded-2xl border border-[#24566A] bg-[#0E364A] px-4 py-4 shadow-lg shadow-black/10 sm:rounded-[22px] sm:px-6 sm:py-5">
           {/* PROGRESSO */}
-          <div className="mb-5 sm:mb-8">
+          <div className="mb-4">
             <div className="flex items-center justify-between gap-3 mb-3">
               <span className="text-sm font-medium text-[#D8E8EE]">
                 Passo {step + 1} de {TOTAL_STEPS}
@@ -338,46 +332,27 @@ export default function Register() {
               />
             </div>
           </div>
-          {/* NAVEGAÇÃO */}
-          <button
-            type="button"
-            onClick={goBack}
-            disabled={otpLoading || resendLoading || registerLoading}
-            aria-label="Voltar"
-            className="mb-4 sm:mb-6 flex h-10 w-10 items-center justify-center rounded-lg text-[#D8E8EE] transition-colors hover:bg-[#19475A] hover:text-white disabled:opacity-40"
-          >
-            <ArrowLeft size={25} strokeWidth={2} />
-          </button>
-          {/* TÍTULO */}
-          <div className="mb-5 sm:mb-8">
-            <h2 className="text-[23px] leading-snug font-semibold text-white tracking-tight">
-              {titles[step]}
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-[#A9C9D5]">
-              {descriptions[step]}
-            </p>
-          </div>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="flex flex-1 flex-col">
             {/* ETAPA 1 — TIPO DE CONTA */}
             {step === 0 && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5">
                 <button
                   type="button"
                   onClick={() => setRole("CLIENT")}
                   aria-pressed={role === "CLIENT"}
-                  className={`min-h-[125px] sm:min-h-[155px] rounded-2xl border p-4 flex flex-col items-center justify-center gap-4 transition-colors ${
+                  className={`min-h-[112px] rounded-xl border px-3 py-3 flex flex-col items-center justify-center gap-2.5 transition-colors ${
                     role === "CLIENT"
                       ? "border-[#19C5CE] bg-[#17485B]"
                       : "border-[#31576A] bg-[#0A2533] hover:border-[#547A8C]"
                   }`}
                 >
-                  <div className={`flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-xl ${
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${
                     role === "CLIENT"
                       ? "bg-[#0B6479]"
                       : "bg-[#163C4D]"
                   }`}>
                     <Wallet
-                      size={34}
+                      size={29}
                       strokeWidth={1.7}
                       className="text-[#8BDCE8]"
                     />
@@ -401,19 +376,19 @@ export default function Register() {
                   type="button"
                   onClick={() => setRole("AGENT")}
                   aria-pressed={role === "AGENT"}
-                  className={`min-h-[125px] sm:min-h-[155px] rounded-2xl border p-4 flex flex-col items-center justify-center gap-4 transition-colors ${
+                  className={`min-h-[112px] rounded-xl border px-3 py-3 flex flex-col items-center justify-center gap-2.5 transition-colors ${
                     role === "AGENT"
                       ? "border-[#19C5CE] bg-[#17485B]"
                       : "border-[#31576A] bg-[#0A2533] hover:border-[#547A8C]"
                   }`}
                 >
-                  <div className={`flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-xl ${
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${
                     role === "AGENT"
                       ? "bg-[#0B6479]"
                       : "bg-[#163C4D]"
                   }`}>
                     <BriefcaseBusiness
-                      size={34}
+                      size={29}
                       strokeWidth={1.7}
                       className="text-[#8BDCE8]"
                     />
@@ -582,8 +557,8 @@ export default function Register() {
             )}
             {/* ETAPA 7 — CONFIRMAÇÃO OTP */}
             {step === 6 && (
-              <div className="space-y-6">
-                <div className="flex items-center gap-3 rounded-xl border border-[#24566A] bg-[#0A2533] p-4">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 rounded-xl border border-[#24566A] bg-[#0A2533] p-3">
                   <Mail
                     size={20}
                     className="shrink-0 text-[#19C5CE]"
@@ -621,7 +596,7 @@ export default function Register() {
                         }
                         onPaste={handleCodePaste}
                         aria-label={`Dígito ${index + 1}`}
-                        className="h-[54px] min-w-0 rounded-xl border border-[#456B7D] bg-[#0A2533] text-center text-xl font-semibold text-white outline-none transition-colors focus:border-[#19C5CE] focus:ring-1 focus:ring-[#19C5CE]"
+                        className="h-12 min-w-0 rounded-lg border border-[#456B7D] bg-[#0A2533] text-center text-xl font-semibold text-white outline-none transition-colors focus:border-[#19C5CE] focus:ring-1 focus:ring-[#19C5CE]"
                       />
                     ))}
                   </div>
@@ -674,7 +649,7 @@ export default function Register() {
                     password !== confirmPassword)) ||
                 (step === 6 && code.length !== 6)
               }
-              className={`${primaryButtonClass} mt-5 sm:mt-8`}
+              className={`${primaryButtonClass} mt-4 sm:mt-5`}
             >
               {otpLoading ? (
                 "A enviar código..."
@@ -687,19 +662,23 @@ export default function Register() {
               )}
             </button>
           </form>
-          {/* INFORMAÇÃO DE LOGIN */}
-          {step === 0 && (
-            <div className="mt-7 border-t border-[#24566A] pt-6 text-center">
-              <p className="text-sm text-[#A9C9D5]">
-                Já possui uma conta?
-              </p>
-              <Link
-                to="/login"
-                className="mt-2 inline-block text-sm font-semibold text-[#19C5CE] hover:text-[#75E3E9]"
-              >
-                Entrar na plataforma
-              </Link>
-            </div>
+          {/* AÇÃO SECUNDÁRIA — SEM BOTÃO COM COR */}
+          {step === 0 ? (
+            <Link
+              to="/login"
+              className="mt-2 flex min-h-10 w-full items-center justify-center rounded-xl bg-transparent px-4 text-sm font-medium text-[#A9C9D5] transition-colors hover:text-white"
+            >
+              Já possui uma conta? Entrar
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={goBack}
+              disabled={otpLoading || resendLoading || registerLoading}
+              className="mt-2 flex min-h-10 w-full items-center justify-center rounded-xl bg-transparent px-4 text-sm font-medium text-[#A9C9D5] transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Voltar
+            </button>
           )}
         </section>
       </div>

@@ -4,8 +4,6 @@ import { useLocation, useNavigate, useParams } from "react-router-dom"
 import {
   ArrowLeft,
   Copy,
-  Check,
-  ShareNetwork,
   X,
   Printer
 } from "@phosphor-icons/react"
@@ -262,10 +260,6 @@ export default function TransactionDetails() {
 
   const [loadError, setLoadError] =
     useState<string | null>(null)
-
-  const [copied, setCopied] =
-    useState(false)
-
   const [isPrinting, setIsPrinting] =
     useState(false)
 
@@ -417,25 +411,6 @@ export default function TransactionDetails() {
       mounted = false
     }
   }, [id, location.pathname])
-
-  // ===================================================
-  // COPIAR ID
-  // ===================================================
-
-  const handleCopyId = () => {
-    if (!transaction) return
-
-    navigator.clipboard.writeText(
-      String(transaction.id)
-    )
-
-    setCopied(true)
-
-    setTimeout(
-      () => setCopied(false),
-      2000
-    )
-  }
 
   // ===================================================
   // IMPRESSÃO BLUETOOTH
@@ -698,12 +673,6 @@ export default function TransactionDetails() {
     extraInfo?.voucherUnits ??
     null
 
-  const formattedAmount = transaction ? `${Number(
-    transaction.amount
-  ).toLocaleString(
-    "pt-AO"
-  )} ${transaction.currency}` : ""
-
   const operatorName =
     getOperatorName()
 
@@ -749,355 +718,294 @@ export default function TransactionDetails() {
   // ===================================================
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#082f49] text-gray-100 antialiased flex flex-col fixed inset-0">
+    <div className="fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden bg-[#071f2d] text-slate-100 antialiased">
 
-      {/* ============================================
-          HEADER FIXO NO TOPO
-      ============================================ */}
-
-      <div className="px-5 py-4 flex items-center justify-between border-b border-[#0ea5e9]/20 bg-[#0c4a6e]/95 backdrop-blur-md shrink-0 z-50">
-
-        <button
-          onClick={() =>
-            navigate(-1)
-          }
-          className="p-2 bg-[#0ea5e9]/10 border border-[#0ea5e9]/30 text-[#7dd3fc] rounded-xl hover:bg-[#0ea5e9]/25 hover:text-white cursor-pointer transition"
-          title="Voltar"
-        >
-          <ArrowLeft
-            size={16}
-            weight="bold"
-          />
-        </button>
-
-        <h1 className="text-xs font-black uppercase tracking-wider text-white">
-          Comprovativo de Venda
-        </h1>
-
-        <div className="flex items-center gap-2">
-
-          <button
-            onClick={handleCopyId}
-            className="p-2 text-[#7dd3fc] hover:text-white relative cursor-pointer"
-            title="Copiar ID"
-          >
-            {copied ? (
-              <Check
-                size={16}
-                className="text-[#38bdf8]"
-              />
-            ) : (
-              <ShareNetwork
-                size={16}
-              />
-            )}
-          </button>
-
-          {/* BOTÃO X PARA FECHAR IMEDIATAMENTE (COM UM CLIQUE) */}
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 bg-[#0ea5e9]/10 border border-[#0ea5e9]/30 text-[#7dd3fc] hover:text-white rounded-xl hover:bg-[#0ea5e9]/25 cursor-pointer transition"
-            title="Fechar"
-          >
-            <X
-              size={16}
-              weight="bold"
-            />
-          </button>
-
-        </div>
-
-      </div>
-
-      {/* ============================================
-          ÁREA DE CONTEÚDO COM SCROLL SEGURO E ESTÁVEL
-      ============================================ */}
-
-      <div
-        onClick={() => navigate(-1)}
-        className="flex-1 overflow-y-auto overflow-x-hidden flex items-center justify-center p-4 sm:p-6 bg-[#082f49]/80 backdrop-blur-sm cursor-pointer"
-      >
-
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-sm bg-[#082f49] border border-[#0ea5e9]/30 rounded-3xl p-5 shadow-2xl flex flex-col items-center relative cursor-default my-auto text-gray-100"
-        >
-
+      {/* Área de conteúdo: começa no topo e ocupa a largura disponível */}
+      <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="mx-auto w-full max-w-2xl px-4 py-5 sm:px-6 sm:py-8">
           {loading ? (
-
-            /* SKELETON LOADER MODERNO E COMPACTO */
-            <div className="w-full space-y-4 animate-pulse py-2">
-              <div className="w-16 h-16 rounded-full bg-[#0c4a6e] mx-auto border border-[#0ea5e9]/30"></div>
-              <div className="w-36 h-4 bg-[#0c4a6e] rounded-md mx-auto"></div>
-              
-              <div className="w-full space-y-3 border-t border-b border-[#0ea5e9]/20 py-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex justify-between items-center">
-                    <div className="w-20 h-3 bg-[#0c4a6e] rounded-sm"></div>
-                    <div className="w-28 h-3 bg-[#0c4a6e] rounded-sm"></div>
+            <section className="overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0b3043] p-5 shadow-2xl shadow-black/20 sm:p-7">
+              <div className="animate-pulse space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 rounded-2xl bg-white/10" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 w-28 rounded bg-white/10" />
+                    <div className="h-5 w-48 max-w-full rounded bg-white/10" />
+                    <div className="h-3 w-32 rounded bg-white/10" />
                   </div>
-                ))}
+                </div>
+                <div className="h-28 rounded-2xl bg-white/[0.06]" />
+                <div className="space-y-4 rounded-2xl bg-white/[0.04] p-4">
+                  {[1, 2, 3, 4, 5, 6].map((item) => (
+                    <div key={item} className="flex justify-between gap-4">
+                      <div className="h-3 w-24 rounded bg-white/10" />
+                      <div className="h-3 w-32 rounded bg-white/10" />
+                    </div>
+                  ))}
+                </div>
+                <div className="h-12 rounded-xl bg-white/10" />
               </div>
-
-              <div className="w-full h-10 bg-[#0c4a6e] rounded-xl"></div>
-            </div>
-
+            </section>
           ) : !transaction ? (
-
-            <div className="text-center py-8 text-sm font-bold text-[#7dd3fc] font-mono">
-              {loadError || "Transação ou pedido não encontrado."}
-            </div>
-
-          ) : (
-
-            <>
-              {/* ========================================
-                  LOGO
-              ======================================== */}
-
-              <div className="w-16 h-16 rounded-full bg-white shadow-lg mb-4 overflow-hidden flex items-center justify-center border border-[#0ea5e9]/30 shrink-0">
-                <img
-                  src={operatorLogoSrc}
-                  alt={operatorName}
-                  className="w-full h-full object-cover p-0"
-                />
+            <section className="rounded-3xl border border-rose-400/20 bg-[#0b3043] px-6 py-12 text-center shadow-2xl shadow-black/20">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-400/10 text-rose-300">
+                <X size={26} weight="bold" />
               </div>
-
-              {/* ========================================
-                  SUCESSO
-              ======================================== */}
-
-              {isPaid && (
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-[#38bdf8] text-xs font-black">
-                    ✓
-                  </span>
-                  <span className="text-[#38bdf8] text-[11px] font-black uppercase tracking-wide">
-                    Transação Bem-Sucedida
-                  </span>
-                </div>
-              )}
-
-              {/* ========================================
-                  TÍTULO
-              ======================================== */}
-
-              <h2 className="text-base font-black text-white mb-4">
-                Comprovativo de Pagamento
+              <h2 className="text-base font-bold text-white">
+                Não foi possível abrir a operação
               </h2>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-400">
+                {loadError || "Transação ou pedido não encontrado."}
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="mt-6 inline-flex h-11 items-center justify-center rounded-xl bg-cyan-500 px-5 text-sm font-bold text-[#062331] transition hover:bg-cyan-400"
+              >
+                Voltar ao histórico
+              </button>
+            </section>
+          ) : (
+            <section className="overflow-hidden rounded-3xl border border-cyan-300/15 bg-[#0b3043] shadow-[0_24px_70px_rgba(0,0,0,0.28)]">
 
-              {/* ========================================
-                  DADOS PRINCIPAIS
-              ======================================== */}
-
-              <div className="w-full space-y-3 border-t border-b border-[#0ea5e9]/20 py-4 text-xs">
-
-                {/* ID OPERAÇÃO */}
-                <div className="flex justify-between items-center gap-4">
-                  <span className="text-[#7dd3fc] font-medium">
-                    ID Operação:
-                  </span>
-                  <button
-                    onClick={() =>
-                      navigator.clipboard.writeText(
-                        String(operationId)
-                      )
-                    }
-                    className="flex items-center gap-1.5 font-mono font-bold text-white text-right hover:text-[#38bdf8] transition cursor-pointer"
-                  >
-                    {operationId}
-                    <Copy
-                      size={12}
-                      className="text-[#7dd3fc]/70"
+              {/* Identificação do serviço e estado da operação */}
+              <div className="flex flex-col gap-5 border-b border-white/[0.07] p-5 sm:flex-row sm:items-center sm:p-7">
+                <div className="flex min-w-0 flex-1 items-center gap-4">
+                  <div className="flex h-[68px] w-[68px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200/70 bg-white p-2 shadow-lg shadow-black/15">
+                    <img
+                      src={operatorLogoSrc}
+                      alt={`Logótipo ${operatorName}`}
+                      className="h-full w-full object-contain"
                     />
-                  </button>
-                </div>
-
-                {/* REFERÊNCIA */}
-                <div className="flex justify-between items-center gap-4">
-                  <span className="text-[#7dd3fc] font-medium">
-                    Referência:
-                  </span>
-                  <span className="font-mono font-bold text-white text-right">
-                    {customerReference}
-                  </span>
-                </div>
-
-                {/* NOME DO CLIENTE */}
-                {customerName && (
-                  <div className="flex justify-between items-center gap-4">
-                    <span className="text-[#7dd3fc] font-medium">
-                      Nome Cliente:
-                    </span>
-                    <span className="font-bold text-white text-right max-w-[180px] truncate">
-                      {customerName}
-                    </span>
                   </div>
-                )}
-
-                {/* OPERADORA */}
-                <div className="flex justify-between items-center gap-4">
-                  <span className="text-[#7dd3fc] font-medium">
-                    Operadora:
-                  </span>
-                  <span className="font-bold text-white uppercase">
-                    {operatorName}
-                  </span>
-                </div>
-
-                {/* SERVIÇO / PLANO */}
-                {(
-                  storedReceipt?.plan ||
-                  serviceRequest?.planName ||
-                  serviceRequest?.serviceName ||
-                  transaction.metadata?.planName
-                ) && (
-                  <div className="flex justify-between items-center gap-4">
-                    <span className="text-[#7dd3fc] font-medium">
-                      Serviço:
-                    </span>
-                    <span className="font-bold text-white text-right max-w-[180px] truncate">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-300/75">
+                      Comprovativo de pagamento
+                    </p>
+                    <h2 className="mt-1 truncate text-lg font-extrabold text-white sm:text-xl">
+                      {operatorName}
+                    </h2>
+                    <p className="mt-1 truncate text-xs text-slate-400">
                       {storedReceipt?.plan ??
                         serviceRequest?.planName ??
                         serviceRequest?.serviceName ??
-                        transaction.metadata?.planName}
-                    </span>
+                        transaction.metadata?.planName ??
+                        transaction.description ??
+                        "Operação EMATEA"}
+                    </p>
                   </div>
-                )}
-
-                {/* VALOR */}
-                <div className="flex justify-between items-center gap-4">
-                  <span className="text-[#7dd3fc] font-medium">
-                    Montante:
-                  </span>
-                  <span className="text-[#38bdf8] font-black text-sm">
-                    {formattedAmount}
-                  </span>
                 </div>
 
-                {/* DATA */}
-                <div className="flex justify-between items-center gap-4">
-                  <span className="text-[#7dd3fc] font-medium">
-                    Data:
-                  </span>
-                  <span className="font-mono text-[#7dd3fc] text-right text-[11px]">
-                    {new Date(
-                      transaction.createdAt
-                    ).toLocaleString(
-                      "pt-AO",
-                      {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit"
-                      }
-                    )}
-                  </span>
-                </div>
-
-                {/* STATUS */}
-                <div className="flex justify-between items-center">
-                  <span className="text-[#7dd3fc] font-medium">
-                    Estado:
-                  </span>
+                <div className="flex shrink-0 items-center">
                   <span
-                    className={`font-black uppercase text-[11px] ${
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.08em] ${
                       isPaid
-                        ? "text-[#38bdf8]"
+                        ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-300"
                         : isProviderTimeout
-                          ? "text-orange-300"
+                          ? "border-amber-400/25 bg-amber-400/10 text-amber-300"
                           : isRejected
-                            ? "text-rose-400"
-                            : "text-amber-400"
+                            ? "border-rose-400/25 bg-rose-400/10 text-rose-300"
+                            : "border-cyan-300/20 bg-cyan-300/10 text-cyan-200"
                     }`}
                   >
                     {isPaid
-                      ? "CONCLUÍDO"
+                      ? "Concluído"
                       : isProviderTimeout
-                        ? "EM VERIFICAÇÃO"
+                        ? "Em verificação"
                         : isRejected
-                          ? "REJEITADO"
+                          ? "Rejeitado"
                           : isProcessing
-                            ? "EM PROCESSAMENTO"
-                            : purchaseStatus || "POR CONFIRMAR"}
+                            ? "Em processamento"
+                            : purchaseStatus || "Por confirmar"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Valor em destaque */}
+              <div className="border-b border-white/[0.07] bg-gradient-to-br from-[#0d3b50] via-[#0b3549] to-[#0a2d40] px-5 py-6 sm:px-7 sm:py-8">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-200/65">
+                  Valor da operação
+                </p>
+                <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                  <span className="text-3xl font-black tracking-tight text-white sm:text-4xl">
+                    {Number(transaction.amount).toLocaleString("pt-AO")}
+                  </span>
+                  <span className="text-sm font-bold text-cyan-300">
+                    {transaction.currency}
+                  </span>
+                </div>
+                <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-slate-400">
+                  <span className="inline-flex items-center gap-2">
+                    {new Date(transaction.createdAt).toLocaleString("pt-AO", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    })}
+                  </span>
+                  <span className="font-mono">
+                    ID #{transaction.id}
+                  </span>
+                </div>
+              </div>
+
+              {/* Dados organizados em grelha */}
+              <div className="p-5 sm:p-7">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-200">
+                    Detalhes da operação
+                  </h3>
+                  <span className="text-[10px] font-medium text-slate-500">
+                    Informação do pagamento
                   </span>
                 </div>
 
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                      Referência
+                    </p>
+                    <p className="mt-2 break-all font-mono text-sm font-bold text-slate-100">
+                      {customerReference}
+                    </p>
+                  </div>
+
+                  <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                      ID da operação
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard.writeText(String(operationId))}
+                      className="mt-2 inline-flex max-w-full items-center gap-2 text-left font-mono text-sm font-bold text-cyan-200 transition hover:text-white"
+                      title="Copiar identificador da operação"
+                    >
+                      <span className="truncate">{operationId}</span>
+                      <Copy size={13} className="shrink-0" />
+                    </button>
+                  </div>
+
+                  {customerName && (
+                    <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-4">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        Nome do cliente
+                      </p>
+                      <p className="mt-2 break-words text-sm font-bold text-slate-100">
+                        {customerName}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                      Operadora / parceiro
+                    </p>
+                    <p className="mt-2 text-sm font-bold text-slate-100">
+                      {operatorName}
+                    </p>
+                  </div>
+
+                  {(storedReceipt?.plan ||
+                    serviceRequest?.planName ||
+                    serviceRequest?.serviceName ||
+                    transaction.metadata?.planName) && (
+                    <div className="min-w-0 rounded-2xl border border-white/[0.06] bg-[#08283a]/75 p-4 sm:col-span-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                        Serviço / pacote
+                      </p>
+                      <p className="mt-2 break-words text-sm font-bold text-slate-100">
+                        {storedReceipt?.plan ??
+                          serviceRequest?.planName ??
+                          serviceRequest?.serviceName ??
+                          transaction.metadata?.planName}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 {isProviderTimeout && (
-                  <div className="rounded-xl border border-orange-400/30 bg-orange-500/10 p-3 text-[11px] leading-relaxed text-orange-200">
-                    O tempo de monitorização foi excedido. A operadora ainda não confirmou o resultado.
-                    Este estado não significa que a compra foi rejeitada ou reembolsada.
+                  <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-400/[0.07] p-4">
+                    <p className="text-xs font-bold text-amber-200">
+                      Operação em verificação
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-amber-100/75">
+                      O tempo de monitorização foi excedido. A operadora ainda não confirmou o resultado. Este estado não significa que a compra foi rejeitada ou reembolsada.
+                    </p>
                   </div>
                 )}
 
                 {isRejected && (
-                  <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 p-3 text-[11px] leading-relaxed text-rose-200">
-                    A operação foi confirmada como rejeitada.
+                  <div className="mt-4 rounded-2xl border border-rose-400/20 bg-rose-400/[0.07] p-4">
+                    <p className="text-xs font-bold text-rose-200">
+                      Operação rejeitada
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-rose-100/75">
+                      A operação foi confirmada como rejeitada.
+                    </p>
                   </div>
                 )}
 
-              </div>
+                {voucherPin && (
+                  <div className="mt-4 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.06] p-4 sm:p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-cyan-300">
+                          PIN de carregamento
+                        </p>
+                        <p className="mt-1 text-xs text-slate-400">
+                          Código disponibilizado pelo serviço
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => navigator.clipboard.writeText(String(voucherPin))}
+                        className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-cyan-300/20 bg-cyan-300/10 px-3 py-2 text-[11px] font-bold text-cyan-200 transition hover:bg-cyan-300/20"
+                      >
+                        <Copy size={13} />
+                        Copiar PIN
+                      </button>
+                    </div>
+                    <div className="mt-4 rounded-xl border border-white/[0.06] bg-[#061f2e]/80 px-4 py-4 text-center">
+                      <span className="break-all font-mono text-xl font-black tracking-[0.18em] text-white">
+                        {String(voucherPin)}
+                      </span>
+                    </div>
+                    {voucherUnits && (
+                      <p className="mt-3 text-center text-xs text-slate-400">
+                        Unidades: <strong className="text-slate-100">{voucherUnits}</strong>
+                      </p>
+                    )}
+                  </div>
+                )}
 
-              {/* ========================================
-                  PIN DE CARREGAMENTO
-              ======================================== */}
-
-              {voucherPin && (
-                <div className="w-full mt-4 bg-[#0c4a6e] border border-[#0ea5e9]/40 rounded-2xl p-4 shadow-inner">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[#38bdf8] text-[10px] font-black uppercase tracking-wider">
-                      PIN DE CARREGAMENTO
-                    </span>
+                {!isStandaloneRequest && (
+                  <div className="mt-6 border-t border-white/[0.07] pt-5">
                     <button
-                      onClick={() =>
-                        navigator.clipboard.writeText(
-                          String(voucherPin)
-                        )
-                      }
-                      className="text-[#7dd3fc] hover:text-white cursor-pointer text-xs flex items-center gap-1 font-mono"
+                      type="button"
+                      onClick={handlePrint}
+                      disabled={isPrinting}
+                      className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#087f9b] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#076b82] disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      Copiar PIN
-                      <Copy size={12} />
+                      <Printer size={18} weight="bold" />
+                      {isPrinting ? "A preparar impressão..." : "Imprimir comprovativo"}
                     </button>
                   </div>
-                  <div className="bg-[#082f49] border border-[#0ea5e9]/20 rounded-xl p-3 text-center">
-                    <span className="font-mono font-black text-white text-base tracking-widest">
-                      {String(voucherPin)}
-                    </span>
-                  </div>
-                  {voucherUnits && (
-                    <div className="mt-2 text-center text-[11px] text-[#7dd3fc]">
-                      Unidades: <span className="font-bold text-white">{voucherUnits}</span>
-                    </div>
-                  )}
-                </div>
-              )}
+                )}
 
-              {/* IMPRESSÃO: apenas para transações financeiras existentes */}
-              {!isStandaloneRequest && (
-              <div className="w-full mt-5">
                 <button
                   type="button"
-                  onClick={handlePrint}
-                  disabled={isPrinting}
-                  className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white text-xs font-black uppercase tracking-wider shadow-lg hover:from-[#0369a1] hover:to-[#075985] transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                  onClick={() => navigate(-1)}
+                  className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-transparent px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-white/30 hover:bg-white/[0.04] hover:text-white"
                 >
-                  <Printer size={18} weight="bold" />
-                  {isPrinting ? "A imprimir..." : "Imprimir Recibo"}
+                  <ArrowLeft size={17} weight="bold" />
+                  Voltar
                 </button>
               </div>
-              )}
-            </>
+            </section>
           )}
-
         </div>
-
-      </div>
-
-      {/* ============================================
-          MODAL DE SELEÇÃO DE IMPRESSORA BLUETOOTH
-      ============================================ */}
+      </main>
 
       {showPrinterModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
