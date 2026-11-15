@@ -286,6 +286,27 @@ export default function Profile() {
                     <Copy size={12} />
                   </button>
 
+                  {!kyc?.isVerified && kyc && (
+                    <button
+                      type="button"
+                      onClick={() => navigate('/kyc')}
+                      className="
+                        mt-2 inline-flex items-center gap-1.5
+                        text-[10px] font-medium
+                        text-cyan-300/65
+                        transition-colors
+                        hover:text-cyan-200
+                      "
+                    >
+                      <ShieldCheck size={12} weight="regular" />
+                      {kyc.status === 'PENDING'
+                        ? 'Verificação em análise'
+                        : kyc.status === 'REJECTED'
+                          ? 'Corrigir verificação'
+                          : 'Verificar conta'}
+                    </button>
+                  )}
+
                 </div>
 
               </div>
@@ -406,7 +427,14 @@ export default function Profile() {
                       text-[10px] font-semibold
                       text-emerald-300/80
                     ">
-                      Comissão acumulada
+                      Total histórico de comissões
+                    </p>
+
+                    <p className="
+                      mt-0.5 text-[9px]
+                      text-emerald-200/45
+                    ">
+                      Valor registado, não disponível para levantamento.
                     </p>
 
                     <p className="
@@ -467,61 +495,6 @@ export default function Profile() {
               </div>
 
             </section>
-          )}
-
-          {/* VERIFICAÇÃO DE CONTA */}
-          {!isLoading && !kyc?.isVerified && (
-            <button
-              type="button"
-              onClick={() => navigate('/kyc')}
-              className="
-                flex w-full items-center gap-3
-                rounded-xl
-                border border-amber-400/20
-                bg-amber-400/[0.06]
-                p-3.5
-                text-left
-                transition-colors
-                hover:bg-amber-400/10
-              "
-            >
-
-              <div className="
-                flex h-10 w-10 shrink-0
-                items-center justify-center
-                rounded-xl bg-amber-400/10
-                text-amber-300
-              ">
-                <ShieldCheck size={21} weight="duotone" />
-              </div>
-
-              <div className="min-w-0 flex-1">
-
-                <p className="
-                  text-xs font-bold text-amber-200
-                ">
-                  {kyc?.status === 'PENDING'
-                    ? 'Verificação em análise'
-                    : 'Verificar identidade'}
-                </p>
-
-                <p className="
-                  mt-1 text-[10px]
-                  text-amber-100/50
-                ">
-                  {kyc?.status === 'PENDING'
-                    ? 'Aguardando validação dos documentos'
-                    : 'Conclua a verificação da sua conta'}
-                </p>
-
-              </div>
-
-              <ShieldCheck
-                size={18}
-                className="shrink-0 text-amber-300"
-              />
-
-            </button>
           )}
 
           {/* MENU DE OPERAÇÕES */}
