@@ -623,7 +623,7 @@ export default function PlanGrid({
 
           return {
 
-            title: "Recargas Diretas",
+            title: "Recargas Diretas UTTs",
 
             order: 1,
 
@@ -1092,10 +1092,10 @@ export default function PlanGrid({
       case "MOVICEL": {
         // 1. Carregamentos diretos
         if (isDirectVoiceRecharge(name)) {
-          return { title: "Recargas Diretas", order: 1 };
+          return { title: "Recargas Diretas UTTs", order: 1 };
         }
 
-        // 2. Planos de voz
+        // 2. Planos de voz + Dados
         if (
           name.includes("ADITIVO") ||
           name.includes("FLEX") ||
@@ -1103,7 +1103,7 @@ export default function PlanGrid({
           name.includes("VOZ KAMBA") ||
           hasVoiceKeyword(name)
         ) {
-          return { title: "Planos de Voz", order: 2 };
+          return { title: "Planos de Voz + Dados", order: 2 };
         }
 
         // 3. Planos de dados
@@ -1133,7 +1133,7 @@ export default function PlanGrid({
       case "AFRICELL": {
         // 1. Carregamentos diretos
         if (isDirectVoiceRecharge(name)) {
-          return { title: "Recargas Diretas", order: 1 };
+          return { title: "Recargas Diretas UTTs", order: 1 };
         }
 
         // 2. Planos de voz
@@ -1141,7 +1141,7 @@ export default function PlanGrid({
           name.includes("FALA TODOS") ||
           hasVoiceKeyword(name)
         ) {
-          return { title: "Planos de Voz", order: 2 };
+          return { title: "Planos de Voz + Dados", order: 2 };
         }
 
         // 3. Planos de dados
