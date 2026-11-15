@@ -22,9 +22,7 @@ import {
   PaperPlaneTilt,
   Gear,
   Info,
-  PencilSimple,
   CheckCircle,
-  UserCircle,
 } from '@phosphor-icons/react'
 
 import AgentDrawer from '../components/agent/AgentDrawer'
