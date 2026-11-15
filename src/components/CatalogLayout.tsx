@@ -231,10 +231,6 @@ export default function CatalogLayout() {
     return (
       <PlanGrid
         group={selectedGroup!}
-        onBack={() => {
-          setSelectedProvider(null);
-          setSelectedGroup(null);
-        }}
         onSelect={setSelectedPlan}
       />
     );
