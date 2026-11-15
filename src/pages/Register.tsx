@@ -1,332 +1,138 @@
 import { useEffect, useRef, useState, type FormEvent } from "react"
-
 import { Link, useNavigate } from "react-router-dom"
-
 import {
-
   ArrowLeft,
-
   BriefcaseBusiness,
-
   Check,
-
   Eye,
-
   EyeOff,
-
   LockKeyhole,
-
   Mail,
-
   Phone,
-
   UserRound,
-
   Wallet,
-
 } from "lucide-react"
-
-
-
 import Toast from "../components/ui/Toast"
-
-
-
 import {
-
   requestRegisterOtp,
-
   registerUser,
-
 } from "../services/api"
-
-
-
 type AccountRole = "CLIENT" | "AGENT"
-
-
-
 const TOTAL_STEPS = 7
-
 const RESEND_SECONDS = 60
-
-
-
 const inputClass =
-
   "w-full h-14 rounded-xl bg-[#0A2533] border border-[#24566A] px-4 text-[15px] text-white placeholder:text-[#7696A5] outline-none transition-colors focus:border-[#19C5CE] focus:ring-1 focus:ring-[#19C5CE]"
-
-
-
 const primaryButtonClass =
-
-  "w-full h-14 rounded-xl bg-[#079CB3] hover:bg-[#0BACC2] disabled:bg-[#315365] disabled:text-[#91A9B4] disabled:cursor-not-allowed text-white text-[15px] font-semibold tracking-wide transition-colors flex items-center justify-center"
-
-
-
+  "w-full h-12 sm:h-14 rounded-xl bg-[#079CB3] hover:bg-[#0BACC2] disabled:bg-[#315365] disabled:text-[#91A9B4] disabled:cursor-not-allowed text-white text-[15px] font-semibold tracking-wide transition-colors flex items-center justify-center"
 export default function Register() {
-
   const navigate = useNavigate()
-
-
-
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
   const otpRequestInFlight = useRef(false)
-
-
-
   const [step, setStep] = useState(0)
-
-
-
   const [role, setRole] = useState<AccountRole>("CLIENT")
-
-
-
   const [fullName, setFullName] = useState("")
-
   const [phone, setPhone] = useState("")
-
   const [password, setPassword] = useState("")
-
   const [confirmPassword, setConfirmPassword] = useState("")
-
   const [email, setEmail] = useState("")
-
   const [code, setCode] = useState("")
-
-
-
   const [showPassword, setShowPassword] = useState(false)
-
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-
-
-
   const [secondsLeft, setSecondsLeft] = useState(0)
-
-
-
   const [otpLoading, setOtpLoading] = useState(false)
   const [resendLoading, setResendLoading] = useState(false)
   const [registerLoading, setRegisterLoading] = useState(false)
-
-
-
   const [toast, setToast] = useState({
-
     visible: false,
-
     message: "",
-
     type: "success" as "success" | "error",
-
   })
-
-
-
   const progress = ((step + 1) / TOTAL_STEPS) * 100
-
-
-
   useEffect(() => {
-
     if (!toast.visible) return
-
-
-
     const timer = setTimeout(() => {
-
       setToast(previous => ({
-
         ...previous,
-
         visible: false,
-
       }))
-
     }, 3500)
-
-
-
     return () => clearTimeout(timer)
-
   }, [toast.visible, toast.message])
-
-
-
   useEffect(() => {
-
     if (secondsLeft <= 0) return
-
-
-
     const timer = setInterval(() => {
-
       setSecondsLeft(previous => Math.max(previous - 1, 0))
-
     }, 1000)
-
-
-
     return () => clearInterval(timer)
-
   }, [secondsLeft > 0])
-
-
-
   function notify(
-
     message: string,
-
     type: "success" | "error" = "error"
-
   ) {
-
     setToast({
-
       visible: true,
-
       message,
-
       type,
-
     })
-
   }
-
-
-
   function goBack() {
-
     if (otpLoading || registerLoading) return
-
-
-
     if (step === 0) {
-
       navigate("/login")
-
       return
-
     }
-
-
-
     setStep(previous => previous - 1)
-
   }
-
-
-
   function validateCurrentStep() {
-
     switch (step) {
-
       case 0:
-
         return true
-
-
-
       case 1:
-
         if (fullName.trim().length < 3) {
-
           notify("Introduza o seu nome completo.")
-
           return false
-
         }
-
         return true
-
-
-
       case 2:
-
         if (phone.length !== 9) {
-
           notify("Introduza um número de telefone válido.")
-
           return false
-
         }
-
         return true
-
-
-
       case 3:
-
         if (!password) {
-
           notify("Introduza a sua palavra-passe.")
-
           return false
-
         }
-
         return true
-
-
-
       case 4:
-
         if (password !== confirmPassword) {
-
           notify("As palavras-passe não coincidem.")
-
           return false
-
         }
-
         return true
-
-
-
       case 5:
-
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-
           notify("Introduza um endereço de email válido.")
-
           return false
-
         }
-
         return true
-
-
-
       default:
-
         return true
-
     }
-
   }
-
-
-
   async function handleRequestOtp() {
     if (otpRequestInFlight.current) return
-
     const normalizedEmail = email.trim().toLowerCase()
-
     try {
       otpRequestInFlight.current = true
       setOtpLoading(true)
-
       await requestRegisterOtp(normalizedEmail)
-
       setEmail(normalizedEmail)
       setCode("")
       setSecondsLeft(RESEND_SECONDS)
       setStep(6)
-
       notify("Código enviado com sucesso.", "success")
-
       window.setTimeout(() => {
         otpRefs.current[0]?.focus()
       }, 100)
@@ -340,239 +146,97 @@ export default function Register() {
       setOtpLoading(false)
     }
   }
-
   async function handleContinue() {
-
     if (!validateCurrentStep()) return
-
-
-
     if (step === 5) {
-
       await handleRequestOtp()
-
       return
-
     }
-
-
-
     setStep(previous => Math.min(previous + 1, 6))
-
   }
-
-
-
   function handleCodeChange(value: string, index: number) {
-
     const digit = value.replace(/\D/g, "").slice(-1)
-
-
-
     const digits = code.split("")
-
     digits[index] = digit
-
-
-
     const nextCode = Array.from(
-
       { length: 6 },
-
       (_, position) => digits[position] ?? ""
-
     ).join("")
-
-
-
     setCode(nextCode)
-
-
-
     if (digit && index < 5) {
-
       otpRefs.current[index + 1]?.focus()
-
     }
-
   }
-
-
-
   function handleCodeKeyDown(
-
     event: React.KeyboardEvent<HTMLInputElement>,
-
     index: number
-
   ) {
-
     if (
-
       event.key === "Backspace" &&
-
       !code[index] &&
-
       index > 0
-
     ) {
-
       otpRefs.current[index - 1]?.focus()
-
     }
-
-
-
     if (event.key === "ArrowLeft" && index > 0) {
-
       otpRefs.current[index - 1]?.focus()
-
     }
-
-
-
     if (event.key === "ArrowRight" && index < 5) {
-
       otpRefs.current[index + 1]?.focus()
-
     }
-
   }
-
-
-
   function handleCodePaste(
-
     event: React.ClipboardEvent<HTMLInputElement>
-
   ) {
-
     event.preventDefault()
-
-
-
     const pastedCode = event.clipboardData
-
       .getData("text")
-
       .replace(/\D/g, "")
-
       .slice(0, 6)
-
-
-
     setCode(pastedCode)
-
-
-
     const focusIndex = Math.min(pastedCode.length, 5)
-
-
-
     otpRefs.current[focusIndex]?.focus()
-
   }
-
-
-
   async function handleConfirmRegistration(
-
     event: FormEvent<HTMLFormElement>
-
   ) {
-
     event.preventDefault()
-
     if (registerLoading || otpLoading || resendLoading) return
-
     if (code.length !== 6) {
-
       notify("Introduza os seis dígitos do código.")
-
       return
-
     }
-
-
-
     try {
-
       setRegisterLoading(true)
-
-
-
       await registerUser(
-
         `+244${phone}`,
-
         email,
-
         password,
-
         code,
-
         fullName.trim(),
-
         role
-
       )
-
-
-
       notify("Conta criada com sucesso.", "success")
-
-
-
       setTimeout(() => {
-
         navigate("/login")
-
       }, 1200)
-
-
-
     } catch (error: any) {
-
       notify(
-
         error?.response?.data?.message ??
-
           "Não foi possível criar a conta."
-
       )
-
     } finally {
-
       setRegisterLoading(false)
-
     }
-
   }
-
-
-
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-
     event.preventDefault()
-
-
-
     if (step === 6) {
-
       void handleConfirmRegistration(event)
-
       return
-
     }
-
-
-
     void handleContinue()
-
   }
-
-
-
   async function handleResendOtp() {
     if (
       secondsLeft > 0 ||
@@ -582,24 +246,17 @@ export default function Register() {
     ) {
       return
     }
-
     const normalizedEmail = email.trim().toLowerCase()
-
     // Limpa o código anterior imediatamente ao solicitar um novo.
     setCode("")
     otpRefs.current[0]?.focus()
-
     try {
       otpRequestInFlight.current = true
       setResendLoading(true)
-
       await requestRegisterOtp(normalizedEmail)
-
       setEmail(normalizedEmail)
       setSecondsLeft(RESEND_SECONDS)
-
       notify("Novo código enviado com sucesso.", "success")
-
       window.setTimeout(() => {
         otpRefs.current[0]?.focus()
       }, 100)
@@ -613,57 +270,27 @@ export default function Register() {
       setResendLoading(false)
     }
   }
-
   const titles = [
-
     "Selecione o tipo de conta que deseja criar.",
-
     "Qual é o seu nome completo?",
-
     "Qual é o seu número de telefone?",
-
     "Crie a sua palavra-passe.",
-
     "Confirme a sua palavra-passe.",
-
     "Qual é o seu endereço de email?",
-
     "Verificação de email",
-
   ]
-
-
-
   const descriptions = [
-
     "Escolha como pretende utilizar a plataforma EMATEA.",
-
     "Introduza o nome que será associado à sua conta.",
-
     "Introduza o seu número de telemóvel.",
-
     "Defina uma palavra-passe para proteger a sua conta.",
-
     "Introduza novamente a palavra-passe.",
-
     "Utilizaremos este endereço para confirmar a sua conta.",
-
     "Introduza o código de seis dígitos que enviámos para o seu email.",
-
   ]
-
-
-
   const isPasswordStep = step === 3 || step === 4
-
-
-
   return (
-
-    <main className="min-h-screen bg-[#0A2533] text-white flex items-center justify-center px-4 py-8 sm:px-6">
-
-
-
+    <main className="min-h-[100dvh] bg-[#0A2533] text-white flex flex-col items-center justify-start sm:justify-center px-3 py-4 sm:px-6 sm:py-8">
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -672,889 +299,346 @@ export default function Register() {
           setToast(previous => ({ ...previous, visible: false }))
         }
       />
-
-
-
       <div className="w-full max-w-[460px]">
-
-
-
         {/* LOGÓTIPO */}
-
-
-
-        <header className="text-center mb-8">
-
-
-
+        <header className="text-center mb-5 sm:mb-8">
           <img
-
             src="/logo.png"
-
             alt="EMATEA"
-
-            className="mx-auto h-[68px] w-[68px] rounded-full object-cover"
-
+            className="mx-auto h-14 w-14 sm:h-[68px] sm:w-[68px] rounded-full object-cover"
           />
-
-
-
           <h1 className="mt-3 text-xl font-bold tracking-wide text-white">
-
             EMATEA
-
           </h1>
-
-
-
           <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-[#8BDCE8]">
-
           </p>
-
-
-
         </header>
-
-
-
         {/* CARTÃO PRINCIPAL */}
-
-
-
-        <section className="rounded-[26px] border border-[#24566A] bg-[#0E364A] px-5 py-7 sm:px-8 sm:py-9">
-
-
-
+        <section className="w-full rounded-[22px] sm:rounded-[26px] border border-[#24566A] bg-[#0E364A] px-4 py-5 sm:px-8 sm:py-8 shadow-xl shadow-black/10">
           {/* PROGRESSO */}
-
-
-
-          <div className="mb-8">
-
-
-
+          <div className="mb-5 sm:mb-8">
             <div className="flex items-center justify-between gap-3 mb-3">
-
-
-
               <span className="text-sm font-medium text-[#D8E8EE]">
-
                 Passo {step + 1} de {TOTAL_STEPS}
-
               </span>
-
-
-
               <span className="text-xs font-semibold text-[#8BDCE8]">
-
                 {Math.round(progress)}%
-
               </span>
-
-
-
             </div>
-
-
-
             <div
-
               className="h-[6px] w-full rounded-full bg-[#294D5E] overflow-hidden"
-
               role="progressbar"
-
               aria-valuenow={step + 1}
-
               aria-valuemin={1}
-
               aria-valuemax={TOTAL_STEPS}
-
             >
-
-
-
               <div
-
                 className="h-full rounded-full bg-[#19C5CE] transition-all duration-300"
-
                 style={{ width: `${progress}%` }}
-
               />
-
-
-
             </div>
-
-
-
           </div>
-
-
-
           {/* NAVEGAÇÃO */}
-
-
-
           <button
-
             type="button"
-
             onClick={goBack}
-
             disabled={otpLoading || resendLoading || registerLoading}
-
             aria-label="Voltar"
-
-            className="mb-6 flex h-10 w-10 items-center justify-center rounded-lg text-[#D8E8EE] transition-colors hover:bg-[#19475A] hover:text-white disabled:opacity-40"
-
+            className="mb-4 sm:mb-6 flex h-10 w-10 items-center justify-center rounded-lg text-[#D8E8EE] transition-colors hover:bg-[#19475A] hover:text-white disabled:opacity-40"
           >
-
             <ArrowLeft size={25} strokeWidth={2} />
-
           </button>
-
-
-
           {/* TÍTULO */}
-
-
-
-          <div className="mb-8">
-
-
-
+          <div className="mb-5 sm:mb-8">
             <h2 className="text-[23px] leading-snug font-semibold text-white tracking-tight">
-
               {titles[step]}
-
             </h2>
-
-
-
             <p className="mt-2 text-sm leading-relaxed text-[#A9C9D5]">
-
               {descriptions[step]}
-
             </p>
-
-
-
           </div>
-
-
-
           <form onSubmit={handleSubmit}>
-
-
-
             {/* ETAPA 1 — TIPO DE CONTA */}
-
-
-
             {step === 0 && (
-
-
-
               <div className="grid grid-cols-2 gap-3">
-
-
-
                 <button
-
                   type="button"
-
                   onClick={() => setRole("CLIENT")}
-
                   aria-pressed={role === "CLIENT"}
-
-                  className={`min-h-[155px] rounded-2xl border p-4 flex flex-col items-center justify-center gap-4 transition-colors ${
-
+                  className={`min-h-[125px] sm:min-h-[155px] rounded-2xl border p-4 flex flex-col items-center justify-center gap-4 transition-colors ${
                     role === "CLIENT"
-
                       ? "border-[#19C5CE] bg-[#17485B]"
-
                       : "border-[#31576A] bg-[#0A2533] hover:border-[#547A8C]"
-
                   }`}
-
                 >
-
-
-
-                  <div className={`flex h-16 w-16 items-center justify-center rounded-xl ${
-
+                  <div className={`flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-xl ${
                     role === "CLIENT"
-
                       ? "bg-[#0B6479]"
-
                       : "bg-[#163C4D]"
-
                   }`}>
-
                     <Wallet
-
                       size={34}
-
                       strokeWidth={1.7}
-
                       className="text-[#8BDCE8]"
-
                     />
-
                   </div>
-
-
-
                   <div className="text-center">
-
                     <span className="block text-sm font-semibold text-white">
-
                       Cliente
-
                     </span>
-
                     <span className="mt-1 block text-xs text-[#A9C9D5]">
-
                       Conta particular
-
                     </span>
-
                   </div>
-
-
-
                   {role === "CLIENT" && (
-
                     <Check
-
                       size={17}
-
                       className="text-[#19C5CE]"
-
                     />
-
                   )}
-
-
-
                 </button>
-
-
-
                 <button
-
                   type="button"
-
                   onClick={() => setRole("AGENT")}
-
                   aria-pressed={role === "AGENT"}
-
-                  className={`min-h-[155px] rounded-2xl border p-4 flex flex-col items-center justify-center gap-4 transition-colors ${
-
+                  className={`min-h-[125px] sm:min-h-[155px] rounded-2xl border p-4 flex flex-col items-center justify-center gap-4 transition-colors ${
                     role === "AGENT"
-
                       ? "border-[#19C5CE] bg-[#17485B]"
-
                       : "border-[#31576A] bg-[#0A2533] hover:border-[#547A8C]"
-
                   }`}
-
                 >
-
-
-
-                  <div className={`flex h-16 w-16 items-center justify-center rounded-xl ${
-
+                  <div className={`flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-xl ${
                     role === "AGENT"
-
                       ? "bg-[#0B6479]"
-
                       : "bg-[#163C4D]"
-
                   }`}>
-
                     <BriefcaseBusiness
-
                       size={34}
-
                       strokeWidth={1.7}
-
                       className="text-[#8BDCE8]"
-
                     />
-
                   </div>
-
-
-
                   <div className="text-center">
-
                     <span className="block text-sm font-semibold text-white">
-
                       Agente
-
                     </span>
-
                     <span className="mt-1 block text-xs text-[#A9C9D5]">
-
                       Conta profissional
-
                     </span>
-
                   </div>
-
-
-
                   {role === "AGENT" && (
-
                     <Check
-
                       size={17}
-
                       className="text-[#19C5CE]"
-
                     />
-
                   )}
-
-
-
                 </button>
-
-
-
               </div>
-
             )}
-
-
-
             {/* ETAPA 2 — NOME */}
-
-
-
             {step === 1 && (
-
-
-
               <div className="space-y-3">
-
-
-
                 <label className="block text-sm font-medium text-[#D8E8EE]">
-
                   Nome completo
-
                 </label>
-
-
-
                 <div className="relative">
-
-
-
                   <UserRound
-
                     size={19}
-
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-[#789EAE]"
-
                   />
-
-
-
                   <input
-
                     type="text"
-
                     autoFocus
-
                     autoComplete="name"
-
                     value={fullName}
-
                     onChange={event => setFullName(event.target.value)}
-
                     placeholder="Introduza o seu nome"
-
                     className={`${inputClass} pl-12`}
-
                   />
-
-
-
                 </div>
-
-
-
               </div>
-
             )}
-
-
-
             {/* ETAPA 3 — TELEFONE */}
-
-
-
             {step === 2 && (
-
-
-
               <div className="space-y-3">
-
-
-
                 <label className="block text-sm font-medium text-[#D8E8EE]">
-
                   Número de telefone
-
                 </label>
-
-
-
                 <div className="flex h-14 overflow-hidden rounded-xl border border-[#24566A] bg-[#0A2533] focus-within:border-[#19C5CE]">
-
-
-
                   <div className="flex items-center border-r border-[#24566A] px-4 text-sm font-semibold text-[#A9C9D5]">
-
                     +244
-
                   </div>
-
-
-
                   <input
-
                     type="tel"
-
                     inputMode="numeric"
-
                     autoFocus
-
                     autoComplete="tel-national"
-
                     maxLength={9}
-
                     value={phone}
-
                     onChange={event =>
-
                       setPhone(
-
                         event.target.value.replace(/\D/g, "").slice(0, 9)
-
                       )
-
                     }
-
                     placeholder="923 000 000"
-
                     className="min-w-0 flex-1 bg-transparent px-4 text-[15px] text-white placeholder:text-[#7696A5] outline-none"
-
                   />
-
-
-
                   <div className="flex items-center pr-4 text-[#789EAE]">
-
                     <Phone size={18} />
-
                   </div>
-
-
-
                 </div>
-
-
-
               </div>
-
             )}
-
-
-
             {/* ETAPAS 4 E 5 — PALAVRA-PASSE */}
-
-
-
             {isPasswordStep && (
-
-
-
               <div className="space-y-3">
-
-
-
                 <label className="block text-sm font-medium text-[#D8E8EE]">
-
                   {step === 3
-
                     ? "Palavra-passe"
-
                     : "Confirmar palavra-passe"}
-
                 </label>
-
-
-
                 <div className="relative">
-
-
-
                   <LockKeyhole
-
                     size={19}
-
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-[#789EAE]"
-
                   />
-
-
-
                   <input
-
                     type={
-
                       step === 3
-
                         ? showPassword ? "text" : "password"
-
                         : showConfirmPassword ? "text" : "password"
-
                     }
-
                     autoFocus
-
                     autoComplete={
-
                       step === 3 ? "new-password" : "new-password"
-
                     }
-
                     value={
-
                       step === 3 ? password : confirmPassword
-
                     }
-
                     onChange={event =>
-
                       step === 3
-
                         ? setPassword(event.target.value)
-
                         : setConfirmPassword(event.target.value)
-
                     }
-
                     placeholder="Introduza a palavra-passe"
-
                     className={`${inputClass} pl-12 pr-12`}
-
                   />
-
-
-
                   <button
-
                     type="button"
-
                     onClick={() =>
-
                       step === 3
-
                         ? setShowPassword(value => !value)
-
                         : setShowConfirmPassword(value => !value)
-
                     }
-
                     aria-label="Mostrar ou ocultar palavra-passe"
-
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8BAFBE] hover:text-white"
-
                   >
-
                     {(
-
                       step === 3
-
                         ? showPassword
-
                         : showConfirmPassword
-
                     ) ? (
-
                       <EyeOff size={19} />
-
                     ) : (
-
                       <Eye size={19} />
-
                     )}
-
                   </button>
-
-
-
                 </div>
-
-
-
                 {step === 4 && confirmPassword.length > 0 && (
-
                   <p className={`text-xs ${
-
                     password === confirmPassword
-
                       ? "text-[#58D6C7]"
-
                       : "text-[#F29B9B]"
-
                   }`}>
-
                     {password === confirmPassword
-
                       ? "As palavras-passe coincidem."
-
                       : "As palavras-passe ainda não coincidem."}
-
                   </p>
-
                 )}
-
-
-
               </div>
-
             )}
-
-
-
             {/* ETAPA 6 — EMAIL */}
-
-
-
             {step === 5 && (
-
-
-
               <div className="space-y-3">
-
-
-
                 <label className="block text-sm font-medium text-[#D8E8EE]">
-
                   Endereço de email
-
                 </label>
-
-
-
                 <div className="relative">
-
-
-
                   <Mail
-
                     size={19}
-
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-[#789EAE]"
-
                   />
-
-
-
                   <input
-
                     type="email"
-
                     autoFocus
-
                     autoComplete="email"
-
                     value={email}
-
                     onChange={event => setEmail(event.target.value)}
-
                     placeholder="seuemail@exemplo.com"
-
                     className={`${inputClass} pl-12`}
-
                   />
-
-
-
                 </div>
-
-
-
               </div>
-
             )}
-
-
-
             {/* ETAPA 7 — CONFIRMAÇÃO OTP */}
-
-
-
             {step === 6 && (
-
-
-
               <div className="space-y-6">
-
-
-
                 <div className="flex items-center gap-3 rounded-xl border border-[#24566A] bg-[#0A2533] p-4">
-
-
-
                   <Mail
-
                     size={20}
-
                     className="shrink-0 text-[#19C5CE]"
-
                   />
-
-
-
                   <div className="min-w-0">
-
                     <p className="text-xs text-[#8BAFBE]">
-
                       Código enviado para
-
                     </p>
-
                     <p className="mt-1 break-all text-sm font-medium text-white">
-
                       {email}
-
                     </p>
-
                   </div>
-
-
-
                 </div>
-
-
-
                 <div className="space-y-3">
-
-
-
                   <label className="block text-sm font-medium text-[#D8E8EE]">
-
                     Código de confirmação
-
                   </label>
-
-
-
                   <div className="grid grid-cols-6 gap-2">
-
-
-
                     {Array.from({ length: 6 }).map((_, index) => (
-
-
-
                       <input
-
                         key={index}
-
                         ref={element => {
-
                           otpRefs.current[index] = element
-
                         }}
-
                         type="text"
-
                         inputMode="numeric"
-
                         autoComplete="one-time-code"
-
                         maxLength={1}
-
                         value={code[index] ?? ""}
-
                         onChange={event =>
-
                           handleCodeChange(event.target.value, index)
-
                         }
-
                         onKeyDown={event =>
-
                           handleCodeKeyDown(event, index)
-
                         }
-
                         onPaste={handleCodePaste}
-
                         aria-label={`Dígito ${index + 1}`}
-
                         className="h-[54px] min-w-0 rounded-xl border border-[#456B7D] bg-[#0A2533] text-center text-xl font-semibold text-white outline-none transition-colors focus:border-[#19C5CE] focus:ring-1 focus:ring-[#19C5CE]"
-
                       />
-
-
-
                     ))}
-
-
-
                   </div>
-
-
-
                 </div>
-
-
-
                 <div className="text-center space-y-3">
-
-
-
                   <p className="text-xs leading-relaxed text-[#A9C9D5]">
-
                     Caso não receba o código em 30 segundos,
-
                     verifique também a pasta Spam ou Lixo eletrónico.
-
                   </p>
-
-
-
                   {secondsLeft > 0 ? (
-
-
-
                     <p className="text-sm text-[#A9C9D5]">
-
                       Reenviar código em{" "}
-
                       <span className="font-semibold text-[#19C5CE]">
-
                         {secondsLeft}s
-
                       </span>
-
                     </p>
-
-
-
                   ) : (
-
-
-
                     <button
                       type="button"
                       onClick={handleResendOtp}
@@ -1574,133 +658,51 @@ export default function Register() {
                         "Reenviar código"
                       )}
                     </button>
-
-
-
                   )}
-
-
-
                 </div>
-
-
-
               </div>
-
             )}
-
-
-
             {/* BOTÃO PRINCIPAL */}
-
-
-
             <button
-
               type="submit"
-
               disabled={
-
                 otpLoading ||
-
                 resendLoading ||
-
                 registerLoading ||
-
                 (step === 4 &&
-
                   (!confirmPassword ||
-
                     password !== confirmPassword)) ||
-
                 (step === 6 && code.length !== 6)
-
               }
-
-              className={`${primaryButtonClass} mt-8`}
-
+              className={`${primaryButtonClass} mt-5 sm:mt-8`}
             >
-
-
-
               {otpLoading ? (
-
                 "A enviar código..."
-
               ) : registerLoading ? (
-
                 "A criar conta..."
-
               ) : step === 6 ? (
-
                 "Confirmar e criar conta"
-
               ) : (
-
                 "Continuar"
-
               )}
-
-
-
             </button>
-
-
-
           </form>
-
-
-
           {/* INFORMAÇÃO DE LOGIN */}
-
-
-
           {step === 0 && (
-
-
-
             <div className="mt-7 border-t border-[#24566A] pt-6 text-center">
-
-
-
               <p className="text-sm text-[#A9C9D5]">
-
                 Já possui uma conta?
-
               </p>
-
-
-
               <Link
-
                 to="/login"
-
                 className="mt-2 inline-block text-sm font-semibold text-[#19C5CE] hover:text-[#75E3E9]"
-
               >
-
                 Entrar na plataforma
-
               </Link>
-
-
-
             </div>
-
           )}
-
-
-
         </section>
-
-
-
       </div>
-
-
-
     </main>
-
   )
-
 }

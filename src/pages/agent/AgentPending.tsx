@@ -122,24 +122,28 @@ export default function AgentPending() {
 
       <div className="w-full max-w-[430px]">
 
-        {/* BRANDING */}
+        {/* BRANDING EMATEA */}
 
-        <header className="text-center mb-6">
+<header className="text-center mb-6">
 
-          <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/20 mb-3">
+  <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border border-cyan-500/30 overflow-hidden bg-[#0e364a] shadow-lg shadow-cyan-950/30 mb-2">
 
-            <ShieldCheck
-              size={23}
-              className="text-cyan-400"
-            />
+    <img
+      src="/logo.png"
+      alt="EMATEA"
+      className="w-full h-full object-cover rounded-full"
+    />
 
-          </div>
+  </div>
 
-          <p className="text-[11px] font-bold tracking-[0.25em] text-cyan-300/60 uppercase">
-            EMATEA
-          </p>
+  <h2 className="text-base font-black tracking-tight text-white">
+    EMATEA
+  </h2>
 
-        </header>
+  <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-cyan-400 mt-1">
+  </p>
+
+</header>
 
         {/* CARD PRINCIPAL */}
 
