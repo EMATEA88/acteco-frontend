@@ -159,6 +159,41 @@ export const loginUser = async (
   }
 }
 
+
+/* =========================
+   NIF.AO — CONSULTA DE NIF
+========================= */
+
+export interface NifLookupResponse {
+  success: boolean;
+  data: {
+    nif: string;
+    name: string;
+    taxpayerType: string;
+    status: string;
+    vatRegime: string | null;
+    nonResident: boolean | null;
+    source: string;
+    checkedAt: string | null;
+    attribution: {
+      text: string;
+      url: string;
+    };
+  };
+}
+
+export const verifyNif = async (
+  nif: string
+): Promise<NifLookupResponse> => {
+  const { data } = await api.post<NifLookupResponse>(
+    "/agt/verify-nif",
+    { nif }
+  );
+
+  return data;
+};
+
+
 /* =========================
    LOGOUT
 ========================= */

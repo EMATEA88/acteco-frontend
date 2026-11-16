@@ -12,12 +12,14 @@ import {
   WhatsappLogo,
   CloudArrowUp,
   Check,
+  BuildingOffice,
 } from '@phosphor-icons/react'
 
 import { RechargeService } from '../services/recharge.service'
 import { UserService } from '../services/user.service'
 import { RedotPayService } from '../services/redotpay.service'
 import { api } from '../services/api'
+import { IntelizeService, type IntelizeReference } from '../services/intelize.service'
 
 type BankType = {
   id: number
@@ -46,6 +48,7 @@ export default function DepositCoordinator() {
         <Route path="/" element={<SelectMethod />} />
         <Route path="/aoa" element={<DepositAOA />} />
         <Route path="/redotpay" element={<DepositRedotPay />} />
+        <Route path="/entity" element={<DepositEntity />} />
         <Route path="/banks/:id" element={<DepositBanks />} />
       </Routes>
     </div>
@@ -213,9 +216,228 @@ function SelectMethod() {
           <span className="text-lg text-[#19C5CE]">›</span>
         </button>
 
+        <button
+          type="button"
+          onClick={() => navigate('/deposit/entity')}
+          className="flex w-full items-center gap-4 rounded-xl border border-[#24566A] bg-[#103647] p-4 text-left transition-colors hover:border-[#19C5CE]/50 hover:bg-[#16465A]"
+        >
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#0a2533] text-[#19C5CE]">
+            <BuildingOffice size={23} weight="regular" />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-white">
+              Pagamento por Entidade
+            </p>
+            <p className="mt-1 text-xs text-[#A9C4CF]">
+              Deposite através de uma referência EMATEA
+            </p>
+          </div>
+        </button>
+
       </div>
 
       <BackButton onClick={() => navigate(-1)} />
+    </PageContainer>
+  )
+}
+
+/* =====================================================
+   DEPÓSITO POR ENTIDADE
+===================================================== */
+
+function DepositEntity() {
+  const navigate = useNavigate()
+
+  const [referenceData, setReferenceData] =
+    useState<IntelizeReference | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  async function loadReference() {
+    try {
+      setLoading(true)
+      setError(false)
+
+      const data = await IntelizeService.getReference()
+      setReferenceData(data)
+    } catch (err: any) {
+      console.error(
+        'Erro ao carregar referência Intelize:',
+        err.response?.data || err
+      )
+      setReferenceData(null)
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    let active = true
+
+    async function load() {
+      try {
+        setLoading(true)
+        setError(false)
+
+        const data = await IntelizeService.getReference()
+
+        if (active) {
+          setReferenceData(data)
+        }
+      } catch (err: any) {
+        console.error(
+          'Erro ao carregar referência Intelize:',
+          err.response?.data || err
+        )
+
+        if (active) {
+          setReferenceData(null)
+          setError(true)
+        }
+      } finally {
+        if (active) {
+          setLoading(false)
+        }
+      }
+    }
+
+    load()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  async function copyReference() {
+    if (!referenceData?.reference) return
+
+    try {
+      await navigator.clipboard.writeText(referenceData.reference)
+      setCopied(true)
+      toast.success('Referência copiada.')
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast.error('Não foi possível copiar a referência.')
+    }
+  }
+
+  return (
+    <PageContainer>
+      <PageTitle title="Pagamento por Entidade" />
+
+      <div className="mb-5 rounded-xl border border-[#24566A] bg-[#103647] p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#0a2533] text-[#19C5CE]">
+            <BuildingOffice size={24} />
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold text-white">
+              EMATEA LDA
+            </p>
+            <p className="mt-1 text-xs text-[#A9C4CF]">
+              Pagamento por referência
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="space-y-4 rounded-xl border border-[#24566A] bg-[#103647] p-4">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      ) : error ? (
+        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-5 text-center">
+          <p className="text-sm font-semibold text-white">
+            Não foi possível carregar os dados
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-[#A9C4CF]">
+            Ocorreu um problema ao consultar a sua referência. Tente novamente.
+          </p>
+          <div className="mt-5">
+            <PrimaryButton onClick={loadReference}>
+              Tentar novamente
+            </PrimaryButton>
+          </div>
+        </div>
+      ) : !referenceData?.isActive ? (
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-5 text-center">
+          <p className="text-sm font-semibold text-white">
+            Referência indisponível
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-[#A9C4CF]">
+            Neste momento, a sua referência não está ativa. Contacte o suporte
+            para obter assistência.
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-xl border border-[#24566A] bg-[#103647] p-4">
+          <div>
+            <p className="text-xs text-[#A9C4CF]">
+              Entidade
+            </p>
+            <p className="mt-1 text-base font-semibold text-white">
+              {referenceData.entityCode}
+            </p>
+          </div>
+
+          <div className="my-4 border-t border-[#24566A]" />
+
+          <div>
+            <p className="text-xs text-[#A9C4CF]">
+              Beneficiário
+            </p>
+            <p className="mt-1 text-sm font-semibold text-white">
+              EMATEA LDA
+            </p>
+          </div>
+
+          <div className="my-4 border-t border-[#24566A]" />
+
+          <div>
+            <p className="mb-2 text-xs text-[#A9C4CF]">
+              A sua referência de pagamento
+            </p>
+
+            <div className="flex items-center gap-3 rounded-lg border border-[#24566A] bg-[#0a2533] p-3">
+              <span className="min-w-0 flex-1 break-all text-lg font-bold tracking-wider text-white">
+                {referenceData.reference}
+              </span>
+
+              <button
+                type="button"
+                onClick={copyReference}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#103647] text-[#19C5CE] transition-colors hover:bg-[#16465A]"
+                aria-label="Copiar referência"
+              >
+                {copied ? (
+                  <CheckCircle size={21} weight="fill" />
+                ) : (
+                  <Copy size={21} />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-5 rounded-xl border border-[#24566A] bg-[#103647] p-4">
+        <p className="text-xs font-semibold text-white">
+          Informação
+        </p>
+        <p className="mt-2 text-xs leading-relaxed text-[#A9C4CF]">
+          Utilize os dados apresentados para identificar o pagamento destinado
+          à sua conta EMATEA. A referência está associada ao seu registo.
+        </p>
+      </div>
+
+      <BackButton onClick={() => navigate('/deposit')} />
     </PageContainer>
   )
 }

@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 import Toast from "../components/ui/Toast"
 import {
+  api,
   requestRegisterOtp,
   registerUser,
 } from "../services/api"
@@ -30,6 +31,10 @@ export default function Register() {
   const [step, setStep] = useState(0)
   const [role, setRole] = useState<AccountRole>("CLIENT")
   const [fullName, setFullName] = useState("")
+  const [nif, setNif] = useState("")
+  const [nifLoading, setNifLoading] = useState(false)
+  const [nifVerified, setNifVerified] = useState(false)
+  const [nifError, setNifError] = useState("")
   const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -74,6 +79,61 @@ export default function Register() {
       type,
     })
   }
+  async function handleVerifyNif() {
+    const normalizedNif = nif.replace(/\s+/g, "").toUpperCase()
+    if (!normalizedNif) {
+      notify("Introduza o seu BI ou NIF.")
+      return
+    }
+    if (nifLoading) return
+    try {
+      setNifLoading(true)
+      setNifError("")
+      setNifVerified(false)
+      setFullName("")
+      const { data } = await api.post<{
+        success: boolean
+        data?: {
+          nif: string
+          name: string
+          status: string
+          attribution?: {
+            text: string
+            url: string
+          }
+        }
+      }>("/agt/verify-nif", { nif: normalizedNif })
+      if (!data?.success || !data.data?.name?.trim()) {
+        throw new Error("NIF_INVALID_RESPONSE")
+      }
+      if (data.data.status !== "active") {
+        throw new Error("NIF_INACTIVE")
+      }
+      setNif(normalizedNif)
+      setFullName(data.data.name.trim())
+      setNifVerified(true)
+      notify("Nome confirmado através da NIF.AO.", "success")
+    } catch (error: any) {
+      const status = error?.response?.status
+      const code = error?.response?.data?.code
+      const message =
+        error?.message === "NIF_INACTIVE"
+          ? "Este NIF não está ativo."
+          : status === 404 || code === "NIF_NOT_FOUND"
+            ? "Não foi encontrado um contribuinte com este número."
+            : status === 429
+              ? "Limite de consultas atingido. Aguarde antes de tentar novamente."
+              : status >= 500
+                ? "Serviço temporariamente indisponível. Tente novamente."
+                : "Não foi possível confirmar o BI/NIF. Verifique o número e tente novamente."
+      setNifVerified(false)
+      setFullName("")
+      setNifError(message)
+      notify(message)
+    } finally {
+      setNifLoading(false)
+    }
+  }
   function goBack() {
     if (otpLoading || registerLoading) return
     if (step === 0) {
@@ -87,8 +147,16 @@ export default function Register() {
       case 0:
         return true
       case 1:
+        if (!nif.trim()) {
+          notify("Introduza o seu BI ou NIF.")
+          return false
+        }
+        if (!nifVerified) {
+          notify("Consulte e confirme o seu BI/NIF antes de continuar.")
+          return false
+        }
         if (fullName.trim().length < 3) {
-          notify("Introduza o seu nome completo.")
+          notify("O nome devolvido pela consulta é inválido.")
           return false
         }
         return true
@@ -410,27 +478,102 @@ export default function Register() {
                 </button>
               </div>
             )}
-            {/* ETAPA 2 — NOME */}
+            {/* ETAPA 2 — IDENTIFICAÇÃO E NOME */}
             {step === 1 && (
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-[#D8E8EE]">
-                  Nome completo
-                </label>
-                <div className="relative">
-                  <UserRound
-                    size={19}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#789EAE]"
-                  />
-                  <input
-                    type="text"
-                    autoFocus
-                    autoComplete="name"
-                    value={fullName}
-                    onChange={event => setFullName(event.target.value)}
-                    placeholder="Introduza o seu nome"
-                    className={`${inputClass} pl-12`}
-                  />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="register-nif"
+                    className="block text-sm font-medium text-[#D8E8EE]"
+                  >
+                    Bilhete de Identidade / NIF
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      id="register-nif"
+                      type="text"
+                      autoFocus
+                      autoComplete="off"
+                      maxLength={20}
+                      value={nif}
+                      disabled={nifLoading || nifVerified}
+                      onChange={event => {
+                        const value = event.target.value
+                          .replace(/[^a-zA-Z0-9]/g, "")
+                          .toUpperCase()
+                        setNif(value)
+                        setNifVerified(false)
+                        setFullName("")
+                        setNifError("")
+                      }}
+                      onKeyDown={event => {
+                        if (event.key === "Enter") {
+                          event.preventDefault()
+                          void handleVerifyNif()
+                        }
+                      }}
+                      placeholder="Introduza o BI ou NIF"
+                      className={`${inputClass} min-w-0 flex-1 uppercase disabled:opacity-70`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void handleVerifyNif()}
+                      disabled={!nif.trim() || nifLoading || nifVerified}
+                      className="shrink-0 rounded-xl bg-[#079CB3] px-3 sm:px-4 text-sm font-semibold text-white transition-colors hover:bg-[#0BACC2] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {nifLoading
+                        ? "A consultar..."
+                        : nifVerified
+                          ? "Confirmado"
+                          : "Consultar"}
+                    </button>
+                  </div>
+                  {nifError && (
+                    <p role="alert" className="text-xs text-[#F29B9B]">
+                      {nifError}
+                    </p>
+                  )}
                 </div>
+                <div className="space-y-2">
+                  <label
+                    htmlFor="register-full-name"
+                    className="block text-sm font-medium text-[#D8E8EE]"
+                  >
+                    Nome completo
+                  </label>
+                  <div className="relative">
+                    <UserRound
+                      size={19}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[#789EAE]"
+                    />
+                    <input
+                      id="register-full-name"
+                      type="text"
+                      value={fullName}
+                      readOnly
+                      aria-readonly="true"
+                      placeholder="O nome será preenchido após a consulta"
+                      className={`${inputClass} pl-12 cursor-not-allowed opacity-90`}
+                    />
+                  </div>
+                </div>
+                {nifVerified && (
+                  <p className="flex items-center gap-2 text-xs text-[#58D6C7]">
+                    <Check size={15} />
+                    Nome confirmado.
+                  </p>
+                )}
+                <p className="text-[11px] text-[#8BAFBE]">
+                  Dados:{" "}
+                  <a
+                    href="https://nif.ao"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-[#19C5CE] underline underline-offset-2"
+                  >
+                    NIF.AO
+                  </a>
+                </p>
               </div>
             )}
             {/* ETAPA 3 — TELEFONE */}
